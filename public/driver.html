@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Driver Tracking - MyFreightTracker</title>
+</head>
+<body>
+  <h2>Driver Location Sharing</h2>
+  <p id="status">Preparing...</p>
+
+  <script>
+    const statusEl = document.getElementById('status');
+
+    // Get ?s=TOKEN from the URL
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('s');
+
+    if (!token) {
+      statusEl.innerText = 'Missing tracking token in link.';
+    } else {
+      startTracking();
+    }
+
+    function startTracking() {
+      if (!navigator.geolocation) {
+        statusEl.innerText = 'Geolocation is not supported on this device.';
+        return;
+      }
+
+      statusEl.innerText = 'Waiting for location permission...';
+
+      navigator.geolocation.watchPosition(
+        async (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+
+          statusEl.innerText =
+            `Sharing location.\nLat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`;
+
+          try {
+            await fetch('/api/ping', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token, lat, lng })
+            });
+          } catch (err) {
+            console.error('Failed to send location', err);
+          }
+        },
+        (err) => {
+          console.error(err);
+          statusEl.innerText = 'Error getting location: ' + err.message;
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 5000,
+          timeout: 10000
+        }
+      );
+    }
+  </script>
+</body>
+</html>
