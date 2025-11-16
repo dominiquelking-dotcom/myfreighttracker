@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Broker Login – MyFreightTracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .container {
+      background: #f9fafb;
+      border-radius: 18px;
+      max-width: 420px;
+      width: 100%;
+      padding: 24px 24px 28px;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.7);
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: bold;
+      margin-bottom: 4px;
+      color: #0f172a;
+      text-align: center;
+    }
+
+    .logo span {
+      color: #22c55e;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      text-align: center;
+      color: #6b7280;
+      margin-bottom: 18px;
+    }
+
+    .subsidiary {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-bottom: 16px;
+    }
+
+    .subsidiary span {
+      font-weight: 600;
+      color: #6b7280;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.2rem;
+      margin-bottom: 6px;
+      color: #111827;
+    }
+
+    form {
+      margin-top: 10px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+      color: #374151;
+    }
+
+    input {
+      width: 100%;
+      padding: 9px 10px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 1px #22c55e33;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 10px;
+      border-radius: 999px;
+      border: none;
+      background: #22c55e;
+      color: #0f172a;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    .btn-login:hover {
+      filter: brightness(1.05);
+    }
+
+    .footer-links {
+      margin-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+    }
+
+    .footer-links a {
+      color: #4b5563;
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+
+    .back-link {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 0.8rem;
+    }
+
+    .back-link a {
+      color: #4b5563;
+      text-decoration: none;
+    }
+
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+
+    .tip {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-top: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      MyFreight<span>Tracker</span>
+    </div>
+    <p class="subtitle">Broker Portal Login</p>
+    <p class="subsidiary">
+      A subsidiary company of <span>Leatherneck Trucking LLC</span>
+    </p>
+
+    <h1>Sign in to your broker account</h1>
+
+    <!--
+      NOTE:
+      For now this form just POSTS to /broker-login (you can change this later).
+      Your Express server can handle this route when you're ready.
+    -->
+    <form method="POST" action="/broker-login">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required placeholder="you@example.com" />
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" required placeholder="••••••••" />
+
+      <button type="submit" class="btn-login">Log In</button>
+    </form>
+
+    <div class="footer-links">
+      <a href="#">Forgot password?</a>
+      <a href="#">Need an account?</a>
+    </div>
+
+    <div class="back-link">
+      <a href="broker.html">← Back to Broker Landing</a>
+    </div>
+
+    <p class="tip">
+      Admin note: hook this form up to your real authentication later.
+    </p>
+  </div>
+</body>
+</html>
