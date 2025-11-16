@@ -43,7 +43,7 @@
     }
 
     main {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 24px auto;
       padding: 0 16px 32px;
     }
@@ -61,7 +61,7 @@
 
     .grid {
       display: grid;
-      grid-template-columns: minmax(260px, 340px) 1fr;
+      grid-template-columns: minmax(280px, 360px) 1fr;
       gap: 24px;
       align-items: flex-start;
     }
@@ -85,7 +85,7 @@
       color: #374151;
     }
 
-    input {
+    input, textarea {
       width: 100%;
       padding: 8px 9px;
       margin-bottom: 10px;
@@ -93,20 +93,21 @@
       border: 1px solid #d1d5db;
       font-size: 0.9rem;
       outline: none;
+      resize: vertical;
     }
 
-    input:focus {
+    input:focus, textarea:focus {
       border-color: #22c55e;
       box-shadow: 0 0 0 1px #22c55e33;
     }
 
     button {
-      padding: 9px 14px;
+      padding: 7px 12px;
       border-radius: 999px;
       border: none;
       background: #22c55e;
       color: #0f172a;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: 600;
       cursor: pointer;
       margin-top: 4px;
@@ -114,6 +115,12 @@
 
     button:hover {
       filter: brightness(1.05);
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+      margin-left: 4px;
     }
 
     .small {
@@ -136,13 +143,14 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 10px;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
     }
 
     th, td {
       border-bottom: 1px solid #e5e7eb;
       text-align: left;
       padding: 6px 4px;
+      vertical-align: top;
     }
 
     th {
@@ -180,7 +188,15 @@
       margin-top: 8px;
     }
 
-    @media (max-width: 800px) {
+    #map {
+      width: 100%;
+      height: 300px;
+      margin-top: 16px;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+    }
+
+    @media (max-width: 900px) {
       .grid {
         grid-template-columns: 1fr;
       }
@@ -200,7 +216,7 @@
   <main>
     <h1>Broker Dashboard</h1>
     <p class="subtitle">
-      Originate loads, get driver tracking links, and see last known locations.
+      Originate loads, get driver tracking links, and see last known locations on a map.
     </p>
 
     <div class="grid">
@@ -211,33 +227,103 @@
           <label for="reference">Load reference (PO, BOL, etc.)</label>
           <input id="reference" name="reference" required placeholder="e.g. PO-12345" />
 
+          <label for="driverName">Driver name</label>
+          <input id="driverName" name="driverName" placeholder="e.g. John Doe" />
+
           <label for="driverPhone">Driver phone</label>
-          <input id="driverPhone" name="driverPhone" required placeholder="e.g. 555-123-4567" />
+          <input id="driverPhone" name="driverPhone" required placeholder="e.g. +15551234567" />
+
+          <label for="tractorNumber">Tractor #</label>
+          <input id="tractorNumber" name="tractorNumber" placeholder="e.g. 101" />
+
+          <label for="trailerNumber">Trailer #</label>
+          <input id="trailerNumber" name="trailerNumber" placeholder="e.g. 53-12" />
+
+          <label for="equipmentType">Equipment type</label>
+          <input id="equipmentType" name="equipmentType" placeholder="e.g. Van, Flatbed" />
+
+          <label for="pickupAddress">Pickup address</label>
+          <input id="pickupAddress" name="pickupAddress" placeholder="City / State or full address" />
+
+          <label for="deliveryAddress">Delivery address</label>
+          <input id="deliveryAddress" name="deliveryAddress" placeholder="City / State or full address" />
+
+          <label for="rate">Rate</label>
+          <input id="rate" name="rate" placeholder="e.g. 1500.00" />
+
+          <label for="notes">Notes</label>
+          <textarea id="notes" name="notes" rows="2" placeholder="Any special instructions"></textarea>
 
           <button type="submit">Create Load</button>
 
           <p class="small">
-            When you create a load, you’ll get a driver link you can text to your driver.
+            After creating a load, you'll get a driver link. You can text it manually or use the SMS button in the table.
           </p>
         </form>
 
         <div id="driver-link-container" class="driver-link-box" style="display:none;"></div>
       </section>
 
-      <!-- Right: Loads List -->
+      <!-- Right: Loads List & Map -->
       <section class="card">
         <h2>Active & recent loads</h2>
         <button id="refresh-loads-btn" type="button">Refresh loads</button>
-        <p class="small">Shows status and last known location (if tracking).</p>
+        <p class="small">Shows status, details, and last known location (if tracking).</p>
 
         <div id="loads-container">
           <p class="no-loads">No loads yet. Create one on the left to get started.</p>
         </div>
+
+        <div id="map"></div>
       </section>
     </div>
   </main>
 
   <script>
+    let map;
+    let markers = [];
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: 39.8283, lng: -98.5795 }, // USA center-ish
+        zoom: 4
+      });
+    }
+
+    function clearMarkers() {
+      markers.forEach(m => m.setMap(null));
+      markers = [];
+    }
+
+    function updateMap(loads) {
+      if (!map) return;
+      clearMarkers();
+
+      const bounds = new google.maps.LatLngBounds();
+      let hasPoints = false;
+
+      loads.forEach(load => {
+        if (load.lastLocation) {
+          const pos = {
+            lat: load.lastLocation.lat,
+            lng: load.lastLocation.lng
+          };
+          const marker = new google.maps.Marker({
+            position: pos,
+            map,
+            title: `${load.reference} (${load.driverName || load.driverPhone || 'Driver'})`
+          });
+          markers.push(marker);
+          bounds.extend(pos);
+          hasPoints = true;
+        }
+      });
+
+      if (hasPoints) {
+        map.fitBounds(bounds);
+      }
+    }
+
     const createForm = document.getElementById('create-load-form');
     const driverLinkBox = document.getElementById('driver-link-container');
     const loadsContainer = document.getElementById('loads-container');
@@ -247,11 +333,21 @@
     createForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const reference = document.getElementById('reference').value.trim();
-      const driverPhone = document.getElementById('driverPhone').value.trim();
+      const body = {
+        reference: document.getElementById('reference').value.trim(),
+        driverName: document.getElementById('driverName').value.trim(),
+        driverPhone: document.getElementById('driverPhone').value.trim(),
+        tractorNumber: document.getElementById('tractorNumber').value.trim(),
+        trailerNumber: document.getElementById('trailerNumber').value.trim(),
+        equipmentType: document.getElementById('equipmentType').value.trim(),
+        pickupAddress: document.getElementById('pickupAddress').value.trim(),
+        deliveryAddress: document.getElementById('deliveryAddress').value.trim(),
+        rate: document.getElementById('rate').value.trim(),
+        notes: document.getElementById('notes').value.trim()
+      };
 
-      if (!reference || !driverPhone) {
-        alert('Please fill out both fields.');
+      if (!body.reference || !body.driverPhone) {
+        alert('Please fill out at least reference and driver phone.');
         return;
       }
 
@@ -261,7 +357,7 @@
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ reference, driverPhone })
+          body: JSON.stringify(body)
         });
 
         if (!resp.ok) {
@@ -282,10 +378,7 @@
           </span>
         `;
 
-        // Clear form
         createForm.reset();
-
-        // Refresh load list
         await loadLoads();
       } catch (err) {
         console.error(err);
@@ -306,6 +399,7 @@
 
         if (!loads.length) {
           loadsContainer.innerHTML = '<p class="no-loads">No loads yet.</p>';
+          updateMap([]);
           return;
         }
 
@@ -314,10 +408,12 @@
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Reference</th>
-                <th>Driver phone</th>
+                <th>Ref / Driver</th>
+                <th>Equip</th>
+                <th>Route</th>
                 <th>Status</th>
                 <th>Last location</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -334,30 +430,97 @@
             lastLocText = `${load.lastLocation.lat.toFixed(5)}, ${load.lastLocation.lng.toFixed(5)}\n(${load.lastLocation.recordedAt})`;
           }
 
+          const routeText = `${load.pickupAddress || '-'} → ${load.deliveryAddress || '-'}`;
+
           html += `
             <tr>
               <td>${load.id}</td>
-              <td>${load.reference}</td>
-              <td>${load.driverPhone}</td>
+              <td>
+                <strong>${load.reference}</strong><br>
+                ${(load.driverName || '')} ${load.driverPhone ? `<br>${load.driverPhone}` : ''}
+                ${load.tractorNumber || load.trailerNumber || load.rate
+                  ? `<br><span class="small">
+                      ${load.tractorNumber ? 'Tractor ' + load.tractorNumber + ' ' : ''}
+                      ${load.trailerNumber ? 'Trailer ' + load.trailerNumber + ' ' : ''}
+                      ${load.rate ? 'Rate $' + load.rate : ''}
+                    </span>`
+                  : ''}
+              </td>
+              <td>${load.equipmentType || '-'}</td>
+              <td style="white-space: pre-line;">${routeText}</td>
               <td><span class="${statusClass}">${load.status}</span></td>
               <td style="white-space: pre-line;">${lastLocText}</td>
+              <td>
+                <button type="button" onclick="sendSms(${load.id})">SMS link</button>
+                <button type="button" class="btn-secondary" onclick="markComplete(${load.id})">Complete</button>
+              </td>
             </tr>
           `;
         }
 
         html += '</tbody></table>';
         loadsContainer.innerHTML = html;
+
+        updateMap(loads);
       } catch (err) {
         console.error(err);
         loadsContainer.innerHTML = '<p class="no-loads">Error loading loads.</p>';
+        updateMap([]);
       }
     }
+
+    // Send SMS with driver link
+    async function sendSms(id) {
+      if (!confirm('Send driver link via SMS for load #' + id + '?')) return;
+      try {
+        const resp = await fetch(`/api/loads/${id}/send-link`, {
+          method: 'POST'
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          alert('Error sending SMS: ' + (data.error || resp.statusText));
+          return;
+        }
+        alert('SMS sent (if Twilio is configured).');
+      } catch (err) {
+        console.error(err);
+        alert('Error sending SMS.');
+      }
+    }
+
+    // Mark load completed
+    async function markComplete(id) {
+      if (!confirm('Mark load #' + id + ' as completed?')) return;
+      try {
+        const resp = await fetch(`/api/loads/${id}/complete`, {
+          method: 'POST'
+        });
+        if (!resp.ok) {
+          const data = await resp.json().catch(() => ({}));
+          alert('Error completing load: ' + (data.error || resp.statusText));
+          return;
+        }
+        await loadLoads();
+      } catch (err) {
+        console.error(err);
+        alert('Error completing load.');
+      }
+    }
+
+    // Expose some functions globally
+    window.sendSms = sendSms;
+    window.markComplete = markComplete;
 
     // Refresh button
     refreshBtn.addEventListener('click', loadLoads);
 
     // Load loads on page load
     loadLoads();
+  </script>
+
+  <!-- 🔑 Replace YOUR_API_KEY_HERE with your actual Google Maps JS API key -->
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE&callback=initMap">
   </script>
 </body>
 </html>
