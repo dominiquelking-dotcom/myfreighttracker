@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Broker Dashboard - MyFreightTracker</title>
+</head>
+<body>
+  <h1>Broker Dashboard</h1>
+
+  <h2>Create New Load</h2>
+  <form id="loadForm">
+    <label>
+      Load Reference:
+      <input type="text" id="reference" required />
+    </label>
+    <br /><br />
+    <label>
+      Driver Phone:
+      <input type="text" id="driverPhone" required />
+    </label>
+    <br /><br />
+    <button type="submit">Create Load</button>
+  </form>
+
+  <p id="createResult"></p>
+
+  <hr />
+
+  <h2>Your Loads</h2>
+  <button id="refreshBtn">Refresh Loads</button>
+  <div id="loadsContainer"></div>
+
+  <script>
+    const loadForm = document.getElementById('loadForm');
+    const createResult = document.getElementById('createResult');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const loadsContainer = document.getElementById('loadsContainer');
+
+    loadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const reference = document.getElementById('reference').value;
+      const driverPhone = document.getElementById('driverPhone').value;
+
+      const res = await fetch('/api/loads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reference, driverPhone })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        createResult.innerHTML = `
+          <strong>Load created!</strong><br/>
+          Load ID: ${data.load.id}<br/>
+          Driver link (send this to the driver):<br/>
+          <a href="${data.driverLink}" target="_blank">${data.driverLink}</a>
+        `;
+        loadForm.reset();
+        fetchLoads();
+      } else {
+        createResult.innerText = 'Error: ' + (data.error || 'Unknown error');
+      }
+    });
+
+    refreshBtn.addEventListener('click', fetchLoads);
+
+    async function fetchLoads() {
+      const res = await fetch('/api/loads');
+      const loads = await res.json();
+
+      loadsContainer.innerHTML = '';
+
+      loads.forEach(load => {
+        const div = document.createElement('div');
+        div.style.border = '1px solid #ccc';
+        div.style.margin = '10px 0';
+        div.style.padding = '10px';
+
+        div.innerHTML = `
+          <strong>Load #${load.id} (${load.reference})</strong><br/>
+          Status: ${load.status}<br/>
+          Driver phone: ${load.driverPhone}<br/>
+          Last location: ${
+            load.lastLocation
+              ? `Lat: ${load.lastLocation.lat.toFixed(5)}, Lng: ${load.lastLocation.lng.toFixed(5)}<br/>at ${load.lastLocation.recordedAt}`
+              : 'No location yet'
+          }
+        `;
+
+        loadsContainer.appendChild(div);
+      });
+    }
+
+    // Load initial list when page opens
+    fetchLoads();
+  </script>
+</body>
+</html>
