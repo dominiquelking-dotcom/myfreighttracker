@@ -30,11 +30,52 @@
   <button id="refreshBtn">Refresh Loads</button>
   <div id="loadsContainer"></div>
 
+  <!-- Map container -->
+  <h2>Live Map (Last Known Location)</h2>
+  <div
+    id="map"
+    style="width: 100%; height: 400px; border: 1px solid #ccc; margin-top: 10px;"
+  ></div>
+
   <script>
     const loadForm = document.getElementById('loadForm');
     const createResult = document.getElementById('createResult');
     const refreshBtn = document.getElementById('refreshBtn');
     const loadsContainer = document.getElementById('loadsContainer');
+
+    let map;
+    let marker;
+
+    // Called by Google Maps when the script loads
+    function initMap() {
+      // Default center (middle of USA)
+      const usaCenter = { lat: 39.8283, lng: -98.5795 };
+
+      map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 4,
+        center: usaCenter
+      });
+    }
+
+    // Update map to show the latest location
+    function updateMap(lat, lng) {
+      if (!map) return; // map not ready yet
+
+      const position = { lat, lng };
+
+      if (!marker) {
+        marker = new google.maps.Marker({
+          position,
+          map,
+          title: 'Last known truck location'
+        });
+      } else {
+        marker.setPosition(position);
+      }
+
+      map.setCenter(position);
+      map.setZoom(10);
+    }
 
     loadForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -87,14 +128,44 @@
               ? `Lat: ${load.lastLocation.lat.toFixed(5)}, Lng: ${load.lastLocation.lng.toFixed(5)}<br/>at ${load.lastLocation.recordedAt}`
               : 'No location yet'
           }
+          <br/>
+          ${
+            load.lastLocation
+              ? `<button data-lat="${load.lastLocation.lat}" data-lng="${load.lastLocation.lng}" class="viewOnMapBtn">View on Map</button>`
+              : ''
+          }
         `;
 
         loadsContainer.appendChild(div);
       });
+
+      // Attach click handlers to "View on Map" buttons
+      document.querySelectorAll('.viewOnMapBtn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const lat = parseFloat(btn.getAttribute('data-lat'));
+          const lng = parseFloat(btn.getAttribute('data-lng'));
+          updateMap(lat, lng);
+        });
+      });
+
+      // Also auto-focus map on the most recent load that has a location
+      const latestWithLocation = [...loads].reverse().find(l => l.lastLocation);
+      if (latestWithLocation && latestWithLocation.lastLocation) {
+        updateMap(
+          latestWithLocation.lastLocation.lat,
+          latestWithLocation.lastLocation.lng
+        );
+      }
     }
 
-    // Load initial list when page opens
+    // Load initial list on page open
     fetchLoads();
   </script>
+
+  <!-- Google Maps script: replace YOUR_API_KEY_HERE with your real key -->
+  <script
+    async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCU-hXnGUEhJSp5kuo7ZM0XFsisuXJkR2E&callback=initMap"
+  ></script>
 </body>
 </html>
