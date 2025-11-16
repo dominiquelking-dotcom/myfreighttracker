@@ -17,10 +17,23 @@ function getBaseUrl(req) {
 
 // Middlewares
 app.use(cors());
+
+// ⬇️ NEW: this lets Express read JSON bodies (already had this)
 app.use(express.json());
+
+// ⬇️ NEW: this lets Express read form fields from broker-login.html
+app.use(express.urlencoded({ extended: true }));
 
 // Serve static files (HTML) from /public
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ⬇️ NEW: super simple in-memory "broker accounts"
+const BROKER_USERS = [
+  {
+    email: 'broker@test.com',
+    password: 'password123' // demo only
+  }
+];
 
 // Simple in-memory "database"
 let loads = [];          // { id, reference, driverPhone, sessionToken, status }
@@ -132,6 +145,30 @@ app.post('/api/loads/:id/complete', (req, res) => {
 
   load.status = 'completed';
   res.json({ message: 'Load marked as completed', load });
+});
+
+// ⬇️ NEW: Broker login route (matches broker-login.html form)
+app.post('/broker-login', (req, res) => {
+  const { email, password } = req.body;
+
+  const user = BROKER_USERS.find(
+    (u) => u.email === email && u.password === password
+  );
+
+  if (!user) {
+    return res.status(401).send(`
+      <h1>Login failed</h1>
+      <p>Invalid email or password.</p>
+      <p><a href="/broker-login.html">Back to login</a></p>
+    `);
+  }
+
+  // Simple success page for now
+  res.send(`
+    <h1>Welcome, ${user.email}</h1>
+    <p>You are now logged in as a broker.</p>
+    <p><a href="/index.html">Back to Broker Landing</a></p>
+  `);
 });
 
 // Start the server
