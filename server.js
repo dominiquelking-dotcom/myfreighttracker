@@ -7,9 +7,7 @@ const app = express();
 // Render will set PORT for us. Locally we use 3000.
 const PORT = process.env.PORT || 3000;
 
-// ✏️ IMPORTANT: Change this later to your Render URL
-// For now we'll just build links using the same host the browser uses
-// so we don't hardcode anything.
+// Utility for dynamic URLs (Render / localhost)
 function getBaseUrl(req) {
   const protocol = req.headers['x-forwarded-proto'] || req.protocol;
   return `${protocol}://${req.get('host')}`;
@@ -17,17 +15,15 @@ function getBaseUrl(req) {
 
 // Middlewares
 app.use(cors());
-
-// ⬇️ NEW: this lets Express read JSON bodies (already had this)
 app.use(express.json());
 
-// ⬇️ NEW: this lets Express read form fields from broker-login.html
+// ✔ NEW: Needed for POST form fields (broker login)
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files (HTML) from /public
+// Serve HTML files from /public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ⬇️ NEW: super simple in-memory "broker accounts"
+// ✔ NEW: Simple broker account (for now)
 const BROKER_USERS = [
   {
     email: 'broker@test.com',
@@ -39,7 +35,7 @@ const BROKER_USERS = [
 let loads = [];          // { id, reference, driverPhone, sessionToken, status }
 let trackingPoints = []; // { sessionToken, lat, lng, recordedAt }
 
-// Make a random token for each tracking session
+// Generate random token for driver tracking
 function makeToken(length = 24) {
   const chars =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -50,7 +46,7 @@ function makeToken(length = 24) {
   return token;
 }
 
-// Home route: just show a simple message
+// API home route
 app.get('/api', (req, res) => {
   res.json({ message: 'MyFreightTracker API is running' });
 });
@@ -71,7 +67,7 @@ app.post('/api/loads', (req, res) => {
     reference,
     driverPhone,
     sessionToken,
-    status: 'invited' // invited -> tracking -> completed
+    status: 'invited'
   };
 
   loads.push(newLoad);
@@ -86,7 +82,7 @@ app.post('/api/loads', (req, res) => {
   });
 });
 
-// Broker gets all loads + last known locations
+// Broker views all loads with last known location
 app.get('/api/loads', (req, res) => {
   const result = loads.map(load => {
     const points = trackingPoints.filter(
@@ -109,7 +105,7 @@ app.get('/api/loads', (req, res) => {
   res.json(result);
 });
 
-// Driver sends GPS pings here
+// Drivers send GPS updates here
 app.post('/api/ping', (req, res) => {
   const { token, lat, lng } = req.body;
 
@@ -134,7 +130,7 @@ app.post('/api/ping', (req, res) => {
   res.json({ ok: true });
 });
 
-// Mark load completed (not required, but handy)
+// Manually mark a load complete
 app.post('/api/loads/:id/complete', (req, res) => {
   const id = parseInt(req.params.id, 10);
   const load = loads.find(l => l.id === id);
@@ -147,7 +143,7 @@ app.post('/api/loads/:id/complete', (req, res) => {
   res.json({ message: 'Load marked as completed', load });
 });
 
-// ⬇️ NEW: Broker login route (matches broker-login.html form)
+// ✔ NEW: Broker login route
 app.post('/broker-login', (req, res) => {
   const { email, password } = req.body;
 
@@ -163,15 +159,12 @@ app.post('/broker-login', (req, res) => {
     `);
   }
 
-  // Simple success page for now
-  res.send(`
-    <h1>Welcome, ${user.email}</h1>
-    <p>You are now logged in as a broker.</p>
-    <p><a href="/index.html">Back to Broker Landing</a></p>
-  `);
+  // ✔ NEW: Redirect to real dashboard page
+  res.redirect('/broker-dashboard.html');
 });
 
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
