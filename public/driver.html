@@ -1,63 +1,422 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Driver Tracking - MyFreightTracker</title>
+  <title>Driver Location – MyFreightTracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1f2937, #020617 55%);
+      color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 460px;
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: 20px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+      padding: 22px 20px 18px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .logo span {
+      color: #22c55e;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(31, 41, 55, 0.85);
+      border: 1px solid rgba(75, 85, 99, 0.8);
+      color: #9ca3af;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: #9ca3af;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 16px;
+      padding: 14px 14px 12px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      margin-bottom: 10px;
+    }
+
+    .section-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 0.8rem;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(31, 41, 55, 0.9);
+      border: 1px solid rgba(55, 65, 81, 0.9);
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #9ca3af;
+    }
+
+    .dot.active {
+      background: #22c55e;
+    }
+
+    .label {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-bottom: 2px;
+    }
+
+    .value {
+      font-size: 0.85rem;
+      color: #e5e7eb;
+      word-break: break-word;
+    }
+
+    .muted {
+      color: #6b7280;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    button {
+      flex: 1;
+      padding: 9px 8px;
+      border-radius: 999px;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.05s ease, box-shadow 0.1s ease, filter 0.1s ease;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .btn-primary {
+      background: #22c55e;
+      color: #052e16;
+      box-shadow: 0 8px 18px rgba(34, 197, 94, 0.4);
+    }
+
+    .btn-primary:active:not(:disabled) {
+      transform: translateY(1px);
+      box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3);
+      filter: brightness(0.98);
+    }
+
+    .btn-secondary {
+      background: rgba(31, 41, 55, 0.95);
+      color: #e5e7eb;
+      border: 1px solid rgba(55, 65, 81, 0.95);
+    }
+
+    .btn-secondary:active:not(:disabled) {
+      transform: translateY(1px);
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.8);
+      filter: brightness(1.02);
+    }
+
+    .info-text {
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    .error-box {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(127, 29, 29, 0.1);
+      border: 1px solid rgba(153, 27, 27, 0.8);
+      color: #fecaca;
+      font-size: 0.8rem;
+      display: none;
+    }
+
+    .footer {
+      margin-top: 8px;
+      font-size: 0.7rem;
+      color: #4b5563;
+      text-align: center;
+    }
+
+    .footer span {
+      color: #9ca3af;
+    }
+
+    @media (max-width: 480px) {
+      .shell {
+        padding: 18px 16px 16px;
+        border-radius: 16px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h2>Driver Location Sharing</h2>
-  <p id="status">Preparing...</p>
+  <div class="shell">
+    <header>
+      <div class="logo">
+        MyFreight<span>Tracker</span>
+      </div>
+      <div class="badge">Driver link</div>
+    </header>
+
+    <main>
+      <h1>Share your live location</h1>
+      <p class="subtitle">
+        This page securely shares your GPS position with the broker so they can keep the shipper updated.
+        You can stop sharing at any time.
+      </p>
+
+      <section class="card">
+        <div class="section-title">Connection status</div>
+
+        <div class="status-row">
+          <div>
+            <div class="label">Status</div>
+            <div class="value" id="statusText">Checking link…</div>
+          </div>
+          <div class="status-pill">
+            <span class="dot" id="statusDot"></span>
+            <span id="statusPillText">Idle</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 6px;">
+          <div class="label">Driver link ID</div>
+          <div class="value" id="tokenShort" class="muted">—</div>
+        </div>
+
+        <div style="margin-top: 6px;">
+          <div class="label">Last location sent</div>
+          <div class="value" id="lastLocation">Not sent yet</div>
+        </div>
+
+        <div style="margin-top: 4px;">
+          <div class="label">Last updated</div>
+          <div class="value" id="lastUpdated" class="muted">—</div>
+        </div>
+
+        <div class="buttons">
+          <button id="startBtn" class="btn-primary">
+            ▶ Start sharing
+          </button>
+          <button id="stopBtn" class="btn-secondary" disabled>
+            ✕ Stop
+          </button>
+        </div>
+
+        <p class="info-text">
+          Keep this page open while you’re under load. If you close it or lose signal, location updates will pause.
+        </p>
+
+        <div id="errorBox" class="error-box"></div>
+      </section>
+
+      <p class="footer">
+        Location is shared only with your broker for this load. <span>Powered by Leatherneck Trucking LLC.</span>
+      </p>
+    </main>
+  </div>
 
   <script>
-    const statusEl = document.getElementById('status');
-
-    // Get ?s=TOKEN from the URL
     const params = new URLSearchParams(window.location.search);
     const token = params.get('s');
 
-    if (!token) {
-      statusEl.innerText = 'Missing tracking token in link.';
-    } else {
-      startTracking();
+    const statusText = document.getElementById('statusText');
+    const statusDot = document.getElementById('statusDot');
+    const statusPillText = document.getElementById('statusPillText');
+    const tokenShort = document.getElementById('tokenShort');
+    const lastLocation = document.getElementById('lastLocation');
+    const lastUpdated = document.getElementById('lastUpdated');
+    const errorBox = document.getElementById('errorBox');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+
+    let watchId = null;
+    let isSending = false;
+
+    function setStatus({ text, pill = 'Idle', active = false }) {
+      statusText.textContent = text;
+      statusPillText.textContent = pill;
+      if (active) {
+        statusDot.classList.add('active');
+      } else {
+        statusDot.classList.remove('active');
+      }
     }
 
-    function startTracking() {
+    function showError(msg) {
+      errorBox.textContent = msg;
+      errorBox.style.display = 'block';
+    }
+
+    function clearError() {
+      errorBox.textContent = '';
+      errorBox.style.display = 'none';
+    }
+
+    // Initialize token display
+    if (!token) {
+      setStatus({ text: 'Invalid or missing driver link.', pill: 'Error', active: false });
+      tokenShort.textContent = '—';
+      startBtn.disabled = true;
+      showError('This tracking link is missing its ID. Ask your broker to resend the link.');
+    } else {
+      const short = token.length > 8
+        ? token.slice(0, 4) + '…' + token.slice(-4)
+        : token;
+      tokenShort.textContent = short;
+      setStatus({ text: 'Ready to start sharing your location.', pill: 'Idle', active: false });
+    }
+
+    async function sendPing(lat, lng) {
+      try {
+        isSending = true;
+        const resp = await fetch('/api/ping', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ token, lat, lng })
+        });
+
+        if (!resp.ok) {
+          const data = await resp.json().catch(() => ({}));
+          throw new Error(data.error || resp.statusText);
+        }
+
+        const now = new Date();
+        lastLocation.textContent = lat.toFixed(5) + ', ' + lng.toFixed(5);
+        lastUpdated.textContent = now.toLocaleString();
+        clearError();
+      } catch (err) {
+        console.error(err);
+        showError('Problem sending location to broker. We will keep trying as your signal improves.');
+      } finally {
+        isSending = false;
+      }
+    }
+
+    function handlePosition(pos) {
+      const { latitude, longitude } = pos.coords;
+      setStatus({ text: 'Sharing your live location with the broker.', pill: 'Live', active: true });
+      // Avoid sending overlapping requests
+      if (!isSending) {
+        sendPing(latitude, longitude);
+      }
+    }
+
+    function handleGeoError(err) {
+      console.error(err);
+      setStatus({ text: 'Unable to read GPS location.', pill: 'Error', active: false });
+      showError(
+        'We could not access your location. Make sure location services are enabled and allowed for your browser.'
+      );
+    }
+
+    function startSharing() {
+      if (!token) return;
       if (!navigator.geolocation) {
-        statusEl.innerText = 'Geolocation is not supported on this device.';
+        setStatus({ text: 'This device does not support GPS.', pill: 'Error', active: false });
+        showError('Geolocation is not supported on this device.');
         return;
       }
 
-      statusEl.innerText = 'Waiting for location permission...';
+      clearError();
+      setStatus({ text: 'Requesting GPS permission…', pill: 'Connecting', active: false });
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
 
-      navigator.geolocation.watchPosition(
-        async (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-
-          statusEl.innerText =
-            `Sharing location.\nLat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`;
-
-          try {
-            await fetch('/api/ping', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ token, lat, lng })
-            });
-          } catch (err) {
-            console.error('Failed to send location', err);
-          }
-        },
-        (err) => {
-          console.error(err);
-          statusEl.innerText = 'Error getting location: ' + err.message;
-        },
-        {
-          enableHighAccuracy: true,
-          maximumAge: 5000,
-          timeout: 10000
-        }
-      );
+      watchId = navigator.geolocation.watchPosition(handlePosition, handleGeoError, {
+        enableHighAccuracy: true,
+        maximumAge: 5000,
+        timeout: 15000
+      });
     }
+
+    function stopSharing() {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+      setStatus({ text: 'Location sharing paused.', pill: 'Paused', active: false });
+      stopBtn.disabled = true;
+      startBtn.disabled = false;
+    }
+
+    startBtn.addEventListener('click', startSharing);
+    stopBtn.addEventListener('click', stopSharing);
+
+    // Optional: auto-start sharing when the page loads and token is valid
+    // Uncomment this line if you want auto-start:
+    // if (token) startSharing();
   </script>
 </body>
 </html>
