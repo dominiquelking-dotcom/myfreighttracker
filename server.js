@@ -4,6 +4,16 @@ const path = require('path');
 
 const app = express();
 
+// Optional: Twilio for SMS (install with: npm install twilio)
+let twilioClient = null;
+if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+  const twilio = require('twilio');
+  twilioClient = twilio(
+    process.env.TWILIO_ACCOUNT_SID,
+    process.env.TWILIO_AUTH_TOKEN
+  );
+}
+
 // Render will set PORT for us. Locally we use 3000.
 const PORT = process.env.PORT || 3000;
 
@@ -16,14 +26,12 @@ function getBaseUrl(req) {
 // Middlewares
 app.use(cors());
 app.use(express.json());
-
-// ✔ NEW: Needed for POST form fields (broker login)
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true })); // for form posts
 
 // Serve HTML files from /public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ✔ NEW: Simple broker account (for now)
+// Simple broker accounts (in-memory for now)
 const BROKER_USERS = [
   {
     email: 'broker@test.com',
@@ -32,7 +40,7 @@ const BROKER_USERS = [
 ];
 
 // Simple in-memory "database"
-let loads = [];          // { id, reference, driverPhone, sessionToken, status }
+let loads = [];          // { id, reference, driverName, driverPhone, tractorNumber, trailerNumber, equipmentType, pickupAddress, deliveryAddress, rate, notes, sessionToken, status }
 let trackingPoints = []; // { sessionToken, lat, lng, recordedAt }
 
 // Generate random token for driver tracking
@@ -53,7 +61,18 @@ app.get('/api', (req, res) => {
 
 // Broker creates a new load
 app.post('/api/loads', (req, res) => {
-  const { reference, driverPhone } = req.body;
+  const {
+    reference,
+    driverName,
+    driverPhone,
+    tractorNumber,
+    trailerNumber,
+    equipmentType,
+    pickupAddress,
+    deliveryAddress,
+    rate,
+    notes
+  } = req.body;
 
   if (!reference || !driverPhone) {
     return res
@@ -65,9 +84,17 @@ app.post('/api/loads', (req, res) => {
   const newLoad = {
     id: loads.length + 1,
     reference,
+    driverName: driverName || '',
     driverPhone,
+    tractorNumber: tractorNumber || '',
+    trailerNumber: trailerNumber || '',
+    equipmentType: equipmentType || '',
+    pickupAddress: pickupAddress || '',
+    deliveryAddress: deliveryAddress || '',
+    rate: rate || '',
+    notes: notes || '',
     sessionToken,
-    status: 'invited'
+    status: 'invited' // invited -> tracking -> completed
   };
 
   loads.push(newLoad);
@@ -143,7 +170,63 @@ app.post('/api/loads/:id/complete', (req, res) => {
   res.json({ message: 'Load marked as completed', load });
 });
 
-// ✔ NEW: Broker login route
+// Optional: send driver link by SMS via Twilio
+app.post('/api/loads/:id/send-link', async (req, res) => {
+  if (!twilioClient) {
+    return res
+      .status(500)
+      .json({ error: 'Twilio not configured on server (check env vars)' });
+  }
+
+  const id = parseInt(req.params.id, 10);
+  const load = loads.find(l => l.id === id);
+
+  if (!load) {
+    return res.status(404).json({ error: 'Load not found' });
+  }
+
+  if (!load.driverPhone) {
+    return res.status(400).json({ error: 'No driver phone on this load' });
+  }
+
+  const baseUrl = getBaseUrl(req);
+  const driverLink = `${baseUrl}/driver.html?s=${load.sessionToken}`;
+
+  try {
+    await twilioClient.messages.create({
+      to: load.driverPhone,
+      from: process.env.TWILIO_FROM_NUMBER,
+      body: `MyFreightTracker: Start tracking your load here: ${driverLink}`
+    });
+
+    res.json({ message: 'SMS sent', driverLink });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to send SMS' });
+  }
+});
+
+// Broker registration (simple, in-memory)
+app.post('/broker-register', (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).send('Email and password are required.');
+  }
+
+  const existing = BROKER_USERS.find(u => u.email === email);
+  if (existing) {
+    return res.status(400).send('Account already exists. Try logging in.');
+  }
+
+  BROKER_USERS.push({ email, password });
+  res.send(`
+    <h1>Account created</h1>
+    <p>You can now <a href="/broker-login.html">log in</a> as ${email}.</p>
+  `);
+});
+
+// Broker login route
 app.post('/broker-login', (req, res) => {
   const { email, password } = req.body;
 
@@ -159,7 +242,7 @@ app.post('/broker-login', (req, res) => {
     `);
   }
 
-  // ✔ NEW: Redirect to real dashboard page
+  // For now, we don't use real sessions; we just redirect.
   res.redirect('/broker-dashboard.html');
 });
 
@@ -167,4 +250,3 @@ app.post('/broker-login', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
