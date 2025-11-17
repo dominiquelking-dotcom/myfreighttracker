@@ -4,7 +4,10 @@ const path = require('path');
 
 const app = express();
 
-// Optional: Twilio for SMS (install with: npm install twilio)
+//
+// ----------------------
+//  TWILIO (OPTIONAL)
+// ----------------------
 let twilioClient = null;
 if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
   const twilio = require('twilio');
@@ -14,64 +17,96 @@ if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
   );
 }
 
-// Render will set PORT for us. Locally we use 3000.
+//
+// ----------------------
+//  EMAIL (Nodemailer)
+// ----------------------
+let mailTransport = null;
+if (
+  process.env.SMTP_HOST &&
+  process.env.SMTP_PORT &&
+  process.env.SMTP_USER &&
+  process.env.SMTP_PASS
+) {
+  const nodemailer = require('nodemailer');
+  mailTransport = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    secure: false, // Only true if using port 465
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS
+    }
+  });
+}
+
+//
+// ----------------------
+//  SERVER CONFIG
+// ----------------------
 const PORT = process.env.PORT || 3000;
 
-// Utility for dynamic URLs (Render / localhost)
 function getBaseUrl(req) {
   const protocol = req.headers['x-forwarded-proto'] || req.protocol;
   return `${protocol}://${req.get('host')}`;
 }
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // for form posts
+app.use(express.urlencoded({ extended: true }));
 
-// Serve HTML files from /public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Simple broker accounts (in-memory for now)
-// plan: "tracking" = GPS only, "tms" = GPS + TMS tools
+//
+// ----------------------
+//  BROKER ACCOUNTS
+// ----------------------
 const BROKER_USERS = [
   {
     email: 'broker@test.com',
-    password: 'password123', // demo only
+    password: 'password123',
     plan: 'tracking'
   },
   {
     email: 'tms@test.com',
-    password: 'password123', // demo only
+    password: 'password123',
     plan: 'tms'
   }
 ];
 
-// Simple in-memory "database"
-let loads = [];          // load records
-let trackingPoints = []; // GPS history
+//
+// ----------------------
+//  IN-MEMORY DATA
+// ----------------------
+let loads = [];
+let trackingPoints = [];
 
-// TMS data (in-memory for now)
-let customers = []; // { id, name, contactName, phone, email, mcNumber, notes, createdAt }
-let carriers = [];  // { id, name, mcNumber, phone, email, truckstopId, datId, notes, createdAt }
-let documents = []; // { id, type, reference, loadId, customerName, carrierName, notes, createdAt }
+let customers = [];
+let carriers = [];
+let documents = [];
 
-// Generate random token for driver tracking
 function makeToken(length = 24) {
   const chars =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let token = '';
+  let t = '';
   for (let i = 0; i < length; i++) {
-    token += chars.charAt(Math.floor(Math.random() * chars.length));
+    t += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  return token;
+  return t;
 }
 
-// API home route
+//
+// ----------------------
+//  BASIC API
+// ----------------------
 app.get('/api', (req, res) => {
   res.json({ message: 'MyFreightTracker API is running' });
 });
 
-// Broker creates a new load
+//
+// ----------------------
+//  LOAD CREATION
+// ----------------------
 app.post('/api/loads', (req, res) => {
   const {
     reference,
@@ -87,12 +122,12 @@ app.post('/api/loads', (req, res) => {
   } = req.body;
 
   if (!reference || !driverPhone) {
-    return res
-      .status(400)
-      .json({ error: 'reference and driverPhone are required' });
+    return res.status(400).json({
+      error: 'reference and driverPhone are required'
+    });
   }
 
-  const sessionToken = makeToken();
+  const token = makeToken();
   const newLoad = {
     id: loads.length + 1,
     reference,
@@ -105,14 +140,14 @@ app.post('/api/loads', (req, res) => {
     deliveryAddress: deliveryAddress || '',
     rate: rate || '',
     notes: notes || '',
-    sessionToken,
-    status: 'invited' // invited -> tracking -> completed
+    sessionToken: token,
+    status: 'invited'
   };
 
   loads.push(newLoad);
 
   const baseUrl = getBaseUrl(req);
-  const driverLink = `${baseUrl}/driver.html?s=${sessionToken}`;
+  const driverLink = `${baseUrl}/driver.html?s=${token}`;
 
   res.json({
     message: 'Load created',
@@ -121,21 +156,24 @@ app.post('/api/loads', (req, res) => {
   });
 });
 
-// Broker views all loads with last known location
+//
+// ----------------------
+//  GET LOADS WITH LAST GPS
+// ----------------------
 app.get('/api/loads', (req, res) => {
   const result = loads.map(load => {
     const points = trackingPoints.filter(
       p => p.sessionToken === load.sessionToken
     );
-    const lastPoint = points[points.length - 1] || null;
+    const last = points[points.length - 1] || null;
 
     return {
       ...load,
-      lastLocation: lastPoint
+      lastLocation: last
         ? {
-            lat: lastPoint.lat,
-            lng: lastPoint.lng,
-            recordedAt: lastPoint.recordedAt
+            lat: last.lat,
+            lng: last.lng,
+            recordedAt: last.recordedAt
           }
         : null
     };
@@ -144,7 +182,10 @@ app.get('/api/loads', (req, res) => {
   res.json(result);
 });
 
-// Drivers send GPS updates here
+//
+// ----------------------
+//  DRIVER GPS PING
+// ----------------------
 app.post('/api/ping', (req, res) => {
   const { token, lat, lng } = req.body;
 
@@ -153,9 +194,7 @@ app.post('/api/ping', (req, res) => {
   }
 
   const load = loads.find(l => l.sessionToken === token);
-  if (!load) {
-    return res.status(404).json({ error: 'Invalid session token' });
-  }
+  if (!load) return res.status(404).json({ error: 'Invalid session token' });
 
   load.status = 'tracking';
 
@@ -169,60 +208,61 @@ app.post('/api/ping', (req, res) => {
   res.json({ ok: true });
 });
 
-// Manually mark a load complete
+//
+// ----------------------
+//  COMPLETE A LOAD
+// ----------------------
 app.post('/api/loads/:id/complete', (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = Number(req.params.id);
   const load = loads.find(l => l.id === id);
-
-  if (!load) {
-    return res.status(404).json({ error: 'Load not found' });
-  }
+  if (!load) return res.status(404).json({ error: 'Load not found' });
 
   load.status = 'completed';
   res.json({ message: 'Load marked as completed', load });
 });
 
-// Optional: send driver link by SMS via Twilio
+//
+// ----------------------
+//  SMS DRIVER LINK (Twilio)
+// ----------------------
 app.post('/api/loads/:id/send-link', async (req, res) => {
   if (!twilioClient) {
-    return res
-      .status(500)
-      .json({ error: 'Twilio not configured on server (check env vars)' });
+    return res.status(500).json({
+      error: 'Twilio not configured'
+    });
   }
 
-  const id = parseInt(req.params.id, 10);
+  const id = Number(req.params.id);
   const load = loads.find(l => l.id === id);
 
-  if (!load) {
-    return res.status(404).json({ error: 'Load not found' });
-  }
-
-  if (!load.driverPhone) {
-    return res.status(400).json({ error: 'No driver phone on this load' });
-  }
+  if (!load) return res.status(404).json({ error: 'Load not found' });
+  if (!load.driverPhone)
+    return res.status(400).json({ error: 'Driver phone missing' });
 
   const baseUrl = getBaseUrl(req);
-  const driverLink = `${baseUrl}/driver.html?s=${load.sessionToken}`;
+  const link = `${baseUrl}/driver.html?s=${load.sessionToken}`;
 
   try {
     await twilioClient.messages.create({
       to: load.driverPhone,
       from: process.env.TWILIO_FROM_NUMBER,
-      body: `MyFreightTracker: Start tracking your load here: ${driverLink}`
+      body: `MyFreightTracker: Start tracking your load here: ${link}`
     });
 
-    res.json({ message: 'SMS sent', driverLink });
+    res.json({ message: 'SMS sent', driverLink: link });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to send SMS' });
+    res.status(500).json({ error: 'Twilio SMS failed' });
   }
 });
 
 //
-// ---- TMS APIs ----
+// ======================
+//  TMS FEATURES
+// ======================
 //
 
-// Customers
+// CUSTOMERS
 app.get('/api/customers', (req, res) => {
   res.json(customers);
 });
@@ -230,11 +270,10 @@ app.get('/api/customers', (req, res) => {
 app.post('/api/customers', (req, res) => {
   const { name, contactName, phone, email, mcNumber, notes } = req.body;
 
-  if (!name) {
+  if (!name)
     return res.status(400).json({ error: 'Customer name is required' });
-  }
 
-  const newCustomer = {
+  const record = {
     id: customers.length + 1,
     name,
     contactName: contactName || '',
@@ -245,11 +284,11 @@ app.post('/api/customers', (req, res) => {
     createdAt: new Date().toISOString()
   };
 
-  customers.push(newCustomer);
-  res.json(newCustomer);
+  customers.push(record);
+  res.json(record);
 });
 
-// Carriers
+// CARRIERS
 app.get('/api/carriers', (req, res) => {
   res.json(carriers);
 });
@@ -257,11 +296,10 @@ app.get('/api/carriers', (req, res) => {
 app.post('/api/carriers', (req, res) => {
   const { name, mcNumber, phone, email, truckstopId, datId, notes } = req.body;
 
-  if (!name) {
+  if (!name)
     return res.status(400).json({ error: 'Carrier name is required' });
-  }
 
-  const newCarrier = {
+  const record = {
     id: carriers.length + 1,
     name,
     mcNumber: mcNumber || '',
@@ -273,11 +311,11 @@ app.post('/api/carriers', (req, res) => {
     createdAt: new Date().toISOString()
   };
 
-  carriers.push(newCarrier);
-  res.json(newCarrier);
+  carriers.push(record);
+  res.json(record);
 });
 
-// Documents (rate confirmations, BOLs, carrier packets)
+// DOCUMENTS
 app.get('/api/documents', (req, res) => {
   res.json(documents);
 });
@@ -285,15 +323,14 @@ app.get('/api/documents', (req, res) => {
 app.post('/api/documents', (req, res) => {
   const { type, reference, loadId, customerName, carrierName, notes } = req.body;
 
-  if (!type || !reference) {
-    return res
-      .status(400)
-      .json({ error: 'type and reference are required for a document' });
-  }
+  if (!type || !reference)
+    return res.status(400).json({
+      error: 'type and reference required'
+    });
 
-  const newDoc = {
+  const record = {
     id: documents.length + 1,
-    type, // 'rate-confirmation' | 'bol' | 'carrier-packet'
+    type,
     reference,
     loadId: loadId || null,
     customerName: customerName || '',
@@ -302,58 +339,147 @@ app.post('/api/documents', (req, res) => {
     createdAt: new Date().toISOString()
   };
 
-  documents.push(newDoc);
-  res.json(newDoc);
+  documents.push(record);
+  res.json(record);
 });
 
 //
-// ---- Broker auth ----
-//
+// ----------------------
+//  EMAIL DOCUMENT TO CARRIER
+// ----------------------
+app.post('/api/documents/:id/send-to-carrier', async (req, res) => {
+  if (!mailTransport) {
+    return res.status(500).json({
+      error: 'Email not configured (check SMTP env vars)'
+    });
+  }
 
-// Broker registration (simple, in-memory)
+  const id = Number(req.params.id);
+  const doc = documents.find(d => d.id === id);
+
+  if (!doc) return res.status(404).json({ error: 'Document not found' });
+  if (!doc.carrierName)
+    return res
+      .status(400)
+      .json({ error: 'carrierName not set on document' });
+
+  const carrier = carriers.find(
+    c => c.name.toLowerCase() === doc.carrierName.toLowerCase()
+  );
+
+  if (!carrier)
+    return res.status(404).json({
+      error: `Carrier "${doc.carrierName}" not found`
+    });
+
+  if (!carrier.email)
+    return res
+      .status(400)
+      .json({ error: 'Carrier has no email address' });
+
+  const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
+
+  const brokerEmail = 'broker@example.com'; // placeholder until real auth system
+
+  const typeLabel =
+    doc.type === 'rate-confirmation'
+      ? 'Rate Confirmation'
+      : doc.type === 'bol'
+      ? 'Bill of Lading'
+      : doc.type === 'carrier-packet'
+      ? 'Carrier Packet'
+      : doc.type;
+
+  const subject = `MyFreightTracker: ${typeLabel} ${doc.reference}`;
+
+  const textBody = `
+Hello,
+
+Please find the details for the ${typeLabel.toLowerCase()} below:
+
+Type: ${typeLabel}
+Reference: ${doc.reference}
+Load ID: ${doc.loadId || '-'}
+Customer: ${doc.customerName || '-'}
+Carrier: ${doc.carrierName || '-'}
+
+Notes:
+${doc.notes || '-'}
+
+This is an automated message from MyFreightTracker.
+(No PDF attachment yet — coming soon.)
+  `.trim();
+
+  try {
+    await mailTransport.sendMail({
+      from: fromEmail,
+      to: carrier.email,
+      replyTo: brokerEmail,  // replies go to broker
+      subject,
+      text: textBody
+    });
+
+    res.json({
+      message: 'Email sent to carrier',
+      to: carrier.email,
+      subject
+    });
+  } catch (err) {
+    console.error('Email error:', err);
+    res.status(500).json({ error: 'Failed to send email' });
+  }
+});
+
+//
+// ----------------------
+//  BROKER REGISTRATION
+// ----------------------
 app.post('/broker-register', (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
+  if (!email || !password)
     return res.status(400).send('Email and password are required.');
-  }
 
-  const existing = BROKER_USERS.find(u => u.email === email);
-  if (existing) {
-    return res.status(400).send('Account already exists. Try logging in.');
-  }
+  const exists = BROKER_USERS.find(u => u.email === email);
+  if (exists)
+    return res.status(400).send('Account already exists.');
 
-  // New accounts default to tracking-only plan
   BROKER_USERS.push({ email, password, plan: 'tracking' });
+
   res.send(`
     <h1>Account created</h1>
-    <p>You can now <a href="/broker-login.html">log in</a> as ${email}.</p>
+    <p>Login at <a href="/broker-login.html">Broker Login</a></p>
   `);
 });
 
-// Broker login route
+//
+// ----------------------
+//  BROKER LOGIN
+// ----------------------
 app.post('/broker-login', (req, res) => {
   const { email, password } = req.body;
 
   const user = BROKER_USERS.find(
-    (u) => u.email === email && u.password === password
+    u => u.email === email && u.password === password
   );
 
   if (!user) {
     return res.status(401).send(`
       <h1>Login failed</h1>
       <p>Invalid email or password.</p>
-      <p><a href="/broker-login.html">Back to login</a></p>
+      <a href="/broker-login.html">Back to login</a>
     `);
   }
 
   const plan = user.plan || 'tracking';
 
-  // For now, we don't use real sessions; we just redirect with plan info
   res.redirect(`/broker-dashboard.html?plan=${encodeURIComponent(plan)}`);
 });
 
-// Start the server
+//
+// ----------------------
+//  START SERVER
+// ----------------------
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
