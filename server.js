@@ -32,7 +32,7 @@ if (
   mailTransport = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT),
-    secure: false, // Only true if using port 465
+    secure: false, // true only if using port 465
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
@@ -61,21 +61,47 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ----------------------
 //  BROKER ACCOUNTS
 // ----------------------
-// Now includes isPaid for paywall
+// isPaid is still for the login paywall (separate from credits)
 const BROKER_USERS = [
   {
     email: 'broker@test.com',
     password: 'password123',
     plan: 'tracking',
-    isPaid: false // ❌ hits paywall
+    isPaid: false
   },
   {
     email: 'tms@test.com',
     password: 'password123',
     plan: 'tms',
-    isPaid: true // ✅ allowed to log in
+    isPaid: true
   }
 ];
+
+//
+// ----------------------
+//  PRICING & CREDIT WALLETS
+// ----------------------
+// Plan pricing
+const PRICING = {
+  tracking: {
+    ratePerLoad: 2.0 // $2.00 per load
+  },
+  tms: {
+    monthlyFee: 75,  // $75 per month
+    ratePerLoad: 1.25 // $1.25 per load
+  }
+};
+
+// Simple in-memory credits per plan
+// You can change these starting values any time.
+const CREDIT_WALLETS = {
+  tracking: {
+    credits: 20 // e.g. $20 wallet → 10 loads at $2.00
+  },
+  tms: {
+    credits: 50 // e.g. $50 wallet → 40 loads at $1.25
+  }
+};
 
 //
 // ----------------------
@@ -106,9 +132,17 @@ app.get('/api', (req, res) => {
   res.json({ message: 'MyFreightTracker API is running' });
 });
 
+// Optional: expose current credit balances for debugging / future UI
+app.get('/api/billing', (req, res) => {
+  res.json({
+    pricing: PRICING,
+    wallets: CREDIT_WALLETS
+  });
+});
+
 //
 // ----------------------
-//  LOAD CREATION
+//  LOAD CREATION (with credit wallet)
 // ----------------------
 app.post('/api/loads', (req, res) => {
   const {
@@ -121,7 +155,8 @@ app.post('/api/loads', (req, res) => {
     pickupAddress,
     deliveryAddress,
     rate,
-    notes
+    notes,
+    plan: bodyPlan
   } = req.body;
 
   if (!reference || !driverPhone) {
@@ -129,6 +164,35 @@ app.post('/api/loads', (req, res) => {
       error: 'reference and driverPhone are required'
     });
   }
+
+  // Determine plan for this load.
+  // For now we trust the body parameter if present, otherwise default to 'tracking'.
+  const plan = bodyPlan === 'tms' ? 'tms' : 'tracking';
+
+  // Get pricing and wallet for that plan
+  const pricing = plan === 'tms' ? PRICING.tms : PRICING.tracking;
+  const wallet = CREDIT_WALLETS[plan];
+
+  if (!pricing || !wallet) {
+    return res.status(500).json({
+      error: 'Billing configuration error for plan: ' + plan
+    });
+  }
+
+  const ratePerLoad = pricing.ratePerLoad;
+
+  // Check credits
+  if (typeof wallet.credits !== 'number' || wallet.credits < ratePerLoad) {
+    return res.status(402).json({
+      error: `Not enough credits for plan "${plan}". Please top up your wallet or upgrade via pricing page.`,
+      plan,
+      requiredCredits: ratePerLoad,
+      currentCredits: wallet.credits
+    });
+  }
+
+  // Deduct credits
+  wallet.credits -= ratePerLoad;
 
   const token = makeToken();
   const newLoad = {
@@ -144,7 +208,9 @@ app.post('/api/loads', (req, res) => {
     rate: rate || '',
     notes: notes || '',
     sessionToken: token,
-    status: 'invited'
+    status: 'invited',
+    billingPlan: plan,
+    billingRatePerLoad: ratePerLoad
   };
 
   loads.push(newLoad);
@@ -155,7 +221,13 @@ app.post('/api/loads', (req, res) => {
   res.json({
     message: 'Load created',
     load: newLoad,
-    driverLink
+    driverLink,
+    billing: {
+      plan,
+      ratePerLoad,
+      debited: ratePerLoad,
+      remainingCredits: wallet.credits
+    }
   });
 });
 
@@ -415,11 +487,11 @@ This is an automated message from MyFreightTracker.
 
   try {
     await mailTransport.sendMail({
-      from: fromEmail,
-      to: carrier.email,
-      replyTo: brokerEmail,  // replies go to broker
-      subject,
-      text: textBody
+    from: fromEmail,
+    to: carrier.email,
+    replyTo: brokerEmail,
+    subject,
+    text: textBody
     });
 
     res.json({
@@ -435,7 +507,7 @@ This is an automated message from MyFreightTracker.
 
 //
 // ----------------------
-//  BROKER REGISTRATION (with paywall)
+//  BROKER REGISTRATION (paywall)
 // ----------------------
 app.post('/broker-register', (req, res) => {
   const { email, password } = req.body;
@@ -447,7 +519,6 @@ app.post('/broker-register', (req, res) => {
   if (exists)
     return res.status(400).send('Account already exists.');
 
-  // New users start on tracking plan and NOT paid yet
   BROKER_USERS.push({
     email,
     password,
@@ -466,7 +537,7 @@ app.post('/broker-register', (req, res) => {
 
 //
 // ----------------------
-//  BROKER LOGIN (with paywall)
+//  BROKER LOGIN (paywall)
 // ----------------------
 app.post('/broker-login', (req, res) => {
   const { email, password } = req.body;
@@ -483,7 +554,6 @@ app.post('/broker-login', (req, res) => {
     `);
   }
 
-  // 🔒 PAYWALL CHECK
   if (!user.isPaid) {
     return res.status(402).send(`
       <h1>Account not active</h1>
