@@ -5,9 +5,6 @@
   <title>Broker Dashboard – MyFreightTracker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    /* ---------------------------------------
-       GLOBAL STYLES
-    ---------------------------------------- */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -46,7 +43,7 @@
     }
 
     main {
-      max-width: 1300px;
+      max-width: 1200px;
       margin: 24px auto;
       padding: 0 16px 32px;
     }
@@ -64,7 +61,7 @@
 
     .grid {
       display: grid;
-      grid-template-columns: 380px 1fr;
+      grid-template-columns: minmax(280px, 360px) 1fr;
       gap: 24px;
       align-items: flex-start;
     }
@@ -74,7 +71,6 @@
       border-radius: 14px;
       padding: 16px 18px;
       box-shadow: 0 4px 14px rgba(15, 23, 42, 0.1);
-      margin-bottom: 24px;
     }
 
     .card h2 {
@@ -171,9 +167,26 @@
       color: #374151;
     }
 
-    .status-invited { background: #fef3c7; color: #92400e; }
-    .status-tracking { background: #bbf7d0; color: #166534; }
-    .status-completed { background: #e5e7eb; color: #111827; }
+    .status-invited {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-tracking {
+      background: #bbf7d0;
+      color: #166534;
+    }
+
+    .status-completed {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .no-loads {
+      font-size: 0.85rem;
+      color: #9ca3af;
+      margin-top: 8px;
+    }
 
     #map {
       width: 100%;
@@ -183,31 +196,116 @@
       border: 1px solid #e5e7eb;
     }
 
-    /* -------------------------
-       SMART QUOTE SECTION
-    -------------------------- */
-    .quote-result-box {
-      margin-top: 10px;
-      padding: 10px;
-      background: #f9fafb;
+    /* TMS panel */
+    .tms-card {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px dashed #e5e7eb;
+      position: relative;
+    }
+
+    .tms-card.tms-disabled {
+      opacity: 0.6;
+    }
+
+    .tms-card.tms-disabled::after {
+      content: "Upgrade to the TMS plan to unlock these tools.";
+      position: absolute;
+      inset: 0;
+      background: rgba(249, 250, 251, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: #6b7280;
+      padding: 0 12px;
+      text-align: center;
       border-radius: 10px;
-      border: 1px solid #e5e7eb;
     }
 
-    .quote-tier {
-      padding: 6px 0;
-      font-size: 0.9rem;
+    .tms-card.tms-disabled * {
+      pointer-events: none;
     }
 
-    .quote-tier strong {
-      color: #0f172a;
+    .tms-tabs {
+      margin-top: 10px;
+      display: inline-flex;
+      border-radius: 999px;
+      background: #f3f4f6;
+      padding: 2px;
+      gap: 4px;
     }
 
+    .tms-tab-button {
+      border-radius: 999px;
+      border: none;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      background: transparent;
+      cursor: pointer;
+      color: #4b5563;
+    }
+
+    .tms-tab-button.active {
+      background: #ffffff;
+      color: #111827;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+    }
+
+    .tms-content {
+      margin-top: 10px;
+      font-size: 0.8rem;
+    }
+
+    .tms-list-empty {
+      color: #9ca3af;
+      font-size: 0.8rem;
+      margin-top: 6px;
+    }
+
+    .tms-table th,
+    .tms-table td {
+      font-size: 0.78rem;
+    }
+
+    /* FMCSA status badge */
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: #e5e7eb;
+      color: #374151;
+      margin-top: 2px;
+    }
+
+    .status-ok {
+      background: #bbf7d0;
+      color: #166534;
+    }
+
+    .status-oos {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .status-unknown {
+      background: #e5e7eb;
+      color: #4b5563;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
   <header>
-    <div class="logo">MyFreight<span>Tracker</span></div>
+    <div class="logo">
+      MyFreight<span>Tracker</span>
+    </div>
     <div class="header-right">
       <a href="/index.html">← Back to Landing</a>
     </div>
@@ -216,135 +314,153 @@
   <main>
     <h1>Broker Dashboard</h1>
     <p class="subtitle">
-      Originate loads, get quotes, generate tracking links, and manage your freight.
+      Originate loads, get driver tracking links, and see last known locations on a map.
     </p>
 
     <div class="grid">
+      <!-- Left: Smart Quote + Create Load -->
+      <section class="card">
+        <!-- SMART QUOTE -->
+        <h2>Smart Spot Quote Calculator</h2>
+        <p class="small">
+          Use AI-style logic + live miles to price lanes fast. Then push the quote into the load form below.
+        </p>
 
-      <!-- LEFT SIDE -------------------------------------------------------- -->
-      <section>
+        <label for="quote-origin">Pickup City / State</label>
+        <input id="quote-origin" placeholder="e.g. Louisville, KY" />
 
-        <!-- Smart Spot Quote Calculator -->
-        <div class="card">
-          <h2>⚡ Smart Spot Quote Calculator</h2>
+        <label for="quote-destination">Delivery City / State</label>
+        <input id="quote-destination" placeholder="e.g. Atlanta, GA" />
 
-          <label>Pickup City/State</label>
-          <input id="quote-origin" placeholder="e.g. Louisville, KY" />
+        <label for="quote-equipment">Equipment type</label>
+        <select id="quote-equipment">
+          <option value="van">Dry Van</option>
+          <option value="reefer">Reefer</option>
+          <option value="flatbed">Flatbed</option>
+          <option value="hotshot">Hotshot</option>
+        </select>
 
-          <label>Delivery City/State</label>
-          <input id="quote-destination" placeholder="e.g. Atlanta, GA" />
+        <label for="quote-weight">Weight (lbs)</label>
+        <input id="quote-weight" placeholder="e.g. 42000" />
 
-          <label>Equipment Type</label>
-          <select id="quote-equipment">
-            <option value="van">Dry Van</option>
-            <option value="reefer">Reefer</option>
-            <option value="flatbed">Flatbed</option>
-            <option value="hotshot">Hotshot</option>
-          </select>
+        <label for="quote-margin">Target margin (%)</label>
+        <input id="quote-margin" placeholder="e.g. 15" />
 
-          <label>Weight (lbs)</label>
-          <input id="quote-weight" placeholder="e.g. 38000" />
+        <label for="quote-direction">Lane type</label>
+        <select id="quote-direction">
+          <option value="balanced">Balanced</option>
+          <option value="headhaul">Headhaul (hard trucks)</option>
+          <option value="backhaul">Backhaul (easy trucks)</option>
+        </select>
 
-          <label>Your Target Margin (%)</label>
-          <input id="quote-margin" placeholder="e.g. 15" />
+        <label for="quote-urgency">Urgency</label>
+        <select id="quote-urgency">
+          <option value="standard">Standard</option>
+          <option value="rush">Rush / ASAP</option>
+        </select>
 
-          <label>Truck Direction</label>
-          <select id="quote-direction">
-            <option value="balanced">Balanced Lane</option>
-            <option value="headhaul">Headhaul (hard trucks)</option>
-            <option value="backhaul">Backhaul (easy trucks)</option>
-          </select>
+        <label for="quote-weekend">Weekend / holiday?</label>
+        <select id="quote-weekend">
+          <option value="false">No</option>
+          <option value="true">Yes</option>
+        </select>
 
-          <label>Urgency</label>
-          <select id="quote-urgency">
-            <option value="standard">Standard</option>
-            <option value="rush">Rush / ASAP</option>
-          </select>
+        <label for="quote-fuel">Fuel surcharge ($/mile)</label>
+        <input id="quote-fuel" placeholder="e.g. 0.45" />
 
-          <label>Weekend / Holiday?</label>
-          <select id="quote-weekend">
-            <option value="false">No</option>
-            <option value="true">Yes</option>
-          </select>
+        <button type="button" id="run-quote-btn">Calculate quote</button>
 
-          <label>Fuel Surcharge ($ per mile)</label>
-          <input id="quote-fuel" placeholder="e.g. 0.45" />
+        <div id="quote-results" class="driver-link-box" style="display:none; margin-top:10px;"></div>
 
-          <button id="btn-run-quote">Calculate Quote</button>
+        <hr style="margin:16px 0;">
 
-          <div id="quote-results" class="quote-result-box" style="display:none;"></div>
-        </div>
+        <!-- CREATE LOAD -->
+        <h2>Create a new load</h2>
+        <form id="create-load-form">
+          <label for="reference">Load reference (PO, BOL, etc.)</label>
+          <input id="reference" name="reference" required placeholder="e.g. PO-12345" />
 
-        <!-- Create Load Card -->
-        <div class="card">
-          <h2>Create a new load</h2>
+          <label for="driverName">Driver name</label>
+          <input id="driverName" name="driverName" placeholder="e.g. John Doe" />
 
-          <form id="create-load-form">
-            <label>Load reference</label>
-            <input id="reference" required placeholder="e.g. PO-12345" />
+          <label for="driverPhone">Driver phone</label>
+          <input id="driverPhone" name="driverPhone" required placeholder="e.g. +15551234567" />
 
-            <label>Driver name</label>
-            <input id="driverName" placeholder="e.g. John Doe" />
+          <label for="tractorNumber">Tractor #</label>
+          <input id="tractorNumber" name="tractorNumber" placeholder="e.g. 101" />
 
-            <label>Driver phone</label>
-            <input id="driverPhone" placeholder="e.g. +15551234567" required />
+          <label for="trailerNumber">Trailer #</label>
+          <input id="trailerNumber" name="trailerNumber" placeholder="e.g. 53-12" />
 
-            <label>Tractor #</label>
-            <input id="tractorNumber" placeholder="101" />
+          <label for="equipmentType">Equipment type</label>
+          <input id="equipmentType" name="equipmentType" placeholder="e.g. Van, Flatbed" />
 
-            <label>Trailer #</label>
-            <input id="trailerNumber" placeholder="53-12" />
+          <label for="pickupAddress">Pickup address</label>
+          <input id="pickupAddress" name="pickupAddress" placeholder="City / State or full address" />
 
-            <label>Equipment type</label>
-            <input id="equipmentType" placeholder="Van, Flatbed, etc." />
+          <label for="deliveryAddress">Delivery address</label>
+          <input id="deliveryAddress" name="deliveryAddress" placeholder="City / State or full address" />
 
-            <label>Pickup address</label>
-            <input id="pickupAddress" placeholder="City / State or full address" />
+          <label for="rate">Rate</label>
+          <input id="rate" name="rate" placeholder="e.g. 1500.00" />
 
-            <label>Delivery address</label>
-            <input id="deliveryAddress" placeholder="City / State or full address" />
+          <label for="notes">Notes</label>
+          <textarea id="notes" name="notes" rows="2" placeholder="Any special instructions"></textarea>
 
-            <label>Rate</label>
-            <input id="rate" placeholder="1500.00" />
+          <button type="submit">Create Load</button>
 
-            <label>Notes</label>
-            <textarea id="notes" rows="2"></textarea>
+          <p class="small">
+            After creating a load, you'll get a driver link. You can text it manually or use the SMS button in the table.
+          </p>
+        </form>
 
-            <button type="submit">Create Load</button>
-          </form>
-
-          <div id="driver-link-container" class="driver-link-box" style="display:none;"></div>
-        </div>
-
+        <div id="driver-link-container" class="driver-link-box" style="display:none;"></div>
       </section>
 
-      <!-- RIGHT SIDE -------------------------------------------------------- -->
-      <section>
+      <!-- Right: Loads List & Map & TMS -->
+      <section class="card">
+        <h2>Active & recent loads</h2>
+        <button id="refresh-loads-btn" type="button">Refresh loads</button>
+        <p class="small">Shows status, details, and last known location (if tracking).</p>
 
-        <!-- Loads / Map Card -->
-        <div class="card">
-          <h2>Active & Recent Loads</h2>
-          <button id="refresh-loads-btn">Refresh loads</button>
+        <div id="loads-container">
+          <p class="no-loads">No loads yet. Create one on the left to get started.</p>
+        </div>
 
-          <div id="loads-container">
-            <p class="small">No loads yet.</p>
+        <div id="map"></div>
+
+        <div id="tms-card" class="tms-card">
+          <h3 style="font-size:0.95rem; margin-bottom:6px;">TMS tools</h3>
+          <p class="small" id="tms-plan-label">
+            TMS features are active for this broker.
+          </p>
+
+          <div class="tms-tabs">
+            <button type="button" class="tms-tab-button active" data-tab="customers">Customers</button>
+            <button type="button" class="tms-tab-button" data-tab="carriers">Carriers</button>
+            <button type="button" class="tms-tab-button" data-tab="documents">Docs (RC / BOL / Packets)</button>
           </div>
 
-          <div id="map"></div>
+          <div id="tms-content" class="tms-content">
+            <!-- Filled in by JS -->
+          </div>
         </div>
-
       </section>
-
     </div>
   </main>
 
-  <!-- JS ------------------------------------------------------------ -->
   <script>
-    let map, markers = [];
+    let map;
+    let markers = [];
+
+    // Read plan from query string: ?plan=tracking or ?plan=tms
+    const urlParams = new URLSearchParams(window.location.search);
+    const plan = urlParams.get('plan') || 'tracking';
+    const tmsEnabled = plan === 'tms';
 
     function initMap() {
-      map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 39.82, lng: -98.57 },
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: 39.8283, lng: -98.5795 }, // USA center-ish
         zoom: 4
       });
     }
@@ -356,226 +472,816 @@
 
     function updateMap(loads) {
       if (!map) return;
-
       clearMarkers();
+
       const bounds = new google.maps.LatLngBounds();
       let hasPoints = false;
 
       loads.forEach(load => {
         if (load.lastLocation) {
-          const pos = { lat: load.lastLocation.lat, lng: load.lastLocation.lng };
-          const marker = new google.maps.Marker({ map, position: pos });
+          const pos = {
+            lat: load.lastLocation.lat,
+            lng: load.lastLocation.lng
+          };
+          const marker = new google.maps.Marker({
+            position: pos,
+            map,
+            title: `${load.reference} (${load.driverName || load.driverPhone || 'Driver'})`
+          });
           markers.push(marker);
           bounds.extend(pos);
           hasPoints = true;
         }
       });
 
-      if (hasPoints) map.fitBounds(bounds);
+      if (hasPoints) {
+        map.fitBounds(bounds);
+      }
     }
 
-    // ---------------------------------------------------------
-    // LOADS - Fetch and render
-    // ---------------------------------------------------------
-    async function loadLoads() {
-      const resp = await fetch("/api/loads");
-      const loads = await resp.json();
+    const createForm = document.getElementById('create-load-form');
+    const driverLinkBox = document.getElementById('driver-link-container');
+    const loadsContainer = document.getElementById('loads-container');
+    const refreshBtn = document.getElementById('refresh-loads-btn');
+    const tmsCard = document.getElementById('tms-card');
+    const tmsPlanLabel = document.getElementById('tms-plan-label');
+    const tmsTabs = document.querySelectorAll('.tms-tab-button');
+    const tmsContent = document.getElementById('tms-content');
 
-      const container = document.getElementById("loads-container");
+    // SMART QUOTE DOM
+    const quoteOriginInput = document.getElementById('quote-origin');
+    const quoteDestinationInput = document.getElementById('quote-destination');
+    const quoteEquipmentInput = document.getElementById('quote-equipment');
+    const quoteWeightInput = document.getElementById('quote-weight');
+    const quoteMarginInput = document.getElementById('quote-margin');
+    const quoteDirectionInput = document.getElementById('quote-direction');
+    const quoteUrgencyInput = document.getElementById('quote-urgency');
+    const quoteWeekendInput = document.getElementById('quote-weekend');
+    const quoteFuelInput = document.getElementById('quote-fuel');
+    const runQuoteBtn = document.getElementById('run-quote-btn');
+    const quoteResultsBox = document.getElementById('quote-results');
 
-      if (!loads.length) {
-        container.innerHTML = "<p class='small'>No loads yet.</p>";
-        updateMap([]);
-        return;
+    // Toggle TMS card based on plan
+    if (tmsCard && tmsPlanLabel) {
+      if (tmsEnabled) {
+        tmsCard.classList.remove('tms-disabled');
+        tmsPlanLabel.textContent = 'TMS features are active for this broker.';
+      } else {
+        tmsCard.classList.add('tms-disabled');
+        tmsPlanLabel.textContent = 'You are on the tracking-only plan.';
       }
+    }
 
-      let html = `
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Ref / Driver</th>
-              <th>Equip</th>
-              <th>Route</th>
-              <th>Status</th>
-              <th>Last location</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+    // --- TMS rendering helpers ---
+
+    async function loadCustomers() {
+      const resp = await fetch('/api/customers');
+      if (!resp.ok) throw new Error('Failed to load customers');
+      return resp.json();
+    }
+
+    async function loadCarriers() {
+      const resp = await fetch('/api/carriers');
+      if (!resp.ok) throw new Error('Failed to load carriers');
+      return resp.json();
+    }
+
+    async function loadDocuments() {
+      const resp = await fetch('/api/documents');
+      if (!resp.ok) throw new Error('Failed to load documents');
+      return resp.json();
+    }
+
+    async function renderCustomersTab() {
+      tmsContent.innerHTML = `
+        <form id="customer-form">
+          <label>Customer name</label>
+          <input id="cust-name" placeholder="e.g. ACME Manufacturing" required />
+
+          <label>Contact name</label>
+          <input id="cust-contact" placeholder="e.g. Jane Smith" />
+
+          <label>Phone</label>
+          <input id="cust-phone" placeholder="e.g. 555-123-4567" />
+
+          <label>Email</label>
+          <input id="cust-email" placeholder="e.g. dispatch@example.com" />
+
+          <label>MC # (optional)</label>
+          <input id="cust-mc" placeholder="e.g. 123456" />
+
+          <label>Notes</label>
+          <textarea id="cust-notes" rows="2" placeholder="Any special info about this customer"></textarea>
+
+          <button type="submit">Add customer</button>
+        </form>
+        <div id="customer-list"></div>
       `;
 
-      loads.forEach(load => {
-        let statusClass = "status-pill";
-        if (load.status === "invited") statusClass += " status-invited";
-        if (load.status === "tracking") statusClass += " status-tracking";
-        if (load.status === "completed") statusClass += " status-completed";
+      const listEl = document.getElementById('customer-list');
 
-        let last = load.lastLocation
-          ? `${load.lastLocation.lat.toFixed(4)}, ${load.lastLocation.lng.toFixed(4)}`
-          : "—";
+      async function refresh() {
+        try {
+          const customers = await loadCustomers();
+          if (!customers.length) {
+            listEl.innerHTML = '<p class="tms-list-empty">No customers yet.</p>';
+            return;
+          }
+          let html = `
+            <table class="tms-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Contact</th>
+                  <th>Phone / Email</th>
+                  <th>MC #</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+          for (const c of customers) {
+            html += `
+              <tr>
+                <td>${c.name}</td>
+                <td>${c.contactName || '-'}</td>
+                <td>
+                  ${c.phone || '-'}
+                  ${c.email ? '<br>' + c.email : ''}
+                </td>
+                <td>${c.mcNumber || '-'}</td>
+                <td>${c.notes || '-'}</td>
+              </tr>
+            `;
+          }
+          html += '</tbody></table>';
+          listEl.innerHTML = html;
+        } catch (e) {
+          console.error(e);
+          listEl.innerHTML = '<p class="tms-list-empty">Error loading customers.</p>';
+        }
+      }
 
-        html += `
-          <tr>
-            <td>${load.id}</td>
-            <td>
-              <strong>${load.reference}</strong><br>
-              ${load.driverName || ""}<br>${load.driverPhone}
-            </td>
-            <td>${load.equipmentType || "-"}</td>
-            <td>${load.pickupAddress || "-"} → ${load.deliveryAddress || "-"}</td>
-            <td><span class="${statusClass}">${load.status}</span></td>
-            <td>${last}</td>
-            <td>
-              <button onclick="sendSms(${load.id})">SMS link</button>
-              <button class="btn-secondary" onclick="markComplete(${load.id})">Complete</button>
-            </td>
-          </tr>
-        `;
+      const form = document.getElementById('customer-form');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const body = {
+          name: document.getElementById('cust-name').value.trim(),
+          contactName: document.getElementById('cust-contact').value.trim(),
+          phone: document.getElementById('cust-phone').value.trim(),
+          email: document.getElementById('cust-email').value.trim(),
+          mcNumber: document.getElementById('cust-mc').value.trim(),
+          notes: document.getElementById('cust-notes').value.trim()
+        };
+        if (!body.name) {
+          alert('Customer name is required.');
+          return;
+        }
+        try {
+          const resp = await fetch('/api/customers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+          if (!resp.ok) {
+            const data = await resp.json().catch(() => ({}));
+            alert('Error adding customer: ' + (data.error || resp.statusText));
+            return;
+          }
+          form.reset();
+          await refresh();
+        } catch (err) {
+          console.error(err);
+          alert('Error adding customer.');
+        }
       });
 
-      html += "</tbody></table>";
-
-      container.innerHTML = html;
-      updateMap(loads);
+      refresh();
     }
 
-    // ---------------------------------------------------------
-    // Create Load
-    // ---------------------------------------------------------
-    document.getElementById("create-load-form").addEventListener("submit", async (e) => {
+    async function renderCarriersTab() {
+      tmsContent.innerHTML = `
+        <form id="carrier-form">
+          <label>Carrier name</label>
+          <input id="car-name" placeholder="e.g. Leatherneck Trucking LLC" required />
+
+          <label>MC #</label>
+          <div style="display:flex; gap:4px; align-items:center; margin-bottom:10px;">
+            <input id="car-mc" placeholder="e.g. 654321" style="flex:1;" />
+            <button type="button" id="car-verify-fmcsa" style="white-space:nowrap;">Verify via FMCSA</button>
+          </div>
+
+          <label>Phone</label>
+          <input id="car-phone" placeholder="e.g. 555-987-6543" />
+
+          <label>Email</label>
+          <input id="car-email" placeholder="e.g. safety@example.com" />
+
+          <label>Truckstop ID (optional)</label>
+          <input id="car-truckstop" placeholder="Truckstop.com ID" />
+
+          <label>DAT ID (optional)</label>
+          <input id="car-dat" placeholder="DAT ID" />
+
+          <label>Notes</label>
+          <textarea id="car-notes" rows="2" placeholder="Insurance info, lanes, etc."></textarea>
+
+          <button type="submit">Add carrier</button>
+        </form>
+        <div id="carrier-list"></div>
+      `;
+
+      const listEl = document.getElementById('carrier-list');
+
+      async function refresh() {
+        try {
+          const carriers = await loadCarriers();
+          if (!carriers.length) {
+            listEl.innerHTML = '<p class="tms-list-empty">No carriers yet.</p>';
+            return;
+          }
+          let html = `
+            <table class="tms-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>MC #</th>
+                  <th>Phone / Email</th>
+                  <th>TS / DAT</th>
+                  <th>FMCSA status</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+          for (const c of carriers) {
+            // Figure out FMCSA status badge based on notes text
+            let statusBadge = '<span class="status-badge status-unknown">Not verified</span>';
+            const notesText = (c.notes || '').toLowerCase();
+            if (notesText.includes('allowed to operate: y')) {
+              statusBadge = '<span class="status-badge status-ok">FMCSA: Allowed</span>';
+            } else if (
+              notesText.includes('allowed to operate: n') ||
+              notesText.includes('out-of-service') ||
+              notesText.includes('out of service')
+            ) {
+              statusBadge = '<span class="status-badge status-oos">FMCSA: Check status</span>';
+            }
+
+            html += `
+              <tr>
+                <td>${c.name}</td>
+                <td>${c.mcNumber || '-'}</td>
+                <td>
+                  ${c.phone || '-'}
+                  ${c.email ? '<br>' + c.email : ''}
+                </td>
+                <td>
+                  ${c.truckstopId ? 'TS: ' + c.truckstopId + '<br>' : ''}
+                  ${c.datId ? 'DAT: ' + c.datId : (!c.truckstopId ? '-' : '')}
+                </td>
+                <td>${statusBadge}</td>
+                <td>${c.notes || '-'}</td>
+              </tr>
+            `;
+          }
+          html += '</tbody></table>';
+          listEl.innerHTML = html;
+        } catch (e) {
+          console.error(e);
+          listEl.innerHTML = '<p class="tms-list-empty">Error loading carriers.</p>';
+        }
+      }
+
+      const form = document.getElementById('carrier-form');
+
+      // Verify via FMCSA button logic
+      const verifyBtn = document.getElementById('car-verify-fmcsa');
+      if (verifyBtn) {
+        verifyBtn.addEventListener('click', async () => {
+          const mc = document.getElementById('car-mc').value.trim();
+          const name = document.getElementById('car-name').value.trim();
+
+          if (!mc && !name) {
+            alert('Enter MC # or Carrier name first.');
+            return;
+          }
+
+          const query = mc
+            ? `mc=${encodeURIComponent(mc)}`
+            : `name=${encodeURIComponent(name)}`;
+
+          try {
+            const resp = await fetch(`/api/fmcsa/carrier?${query}`);
+            const data = await resp.json();
+
+            if (!resp.ok) {
+              alert('FMCSA lookup failed: ' + (data.error || resp.statusText));
+              return;
+            }
+
+            // Fill fields from FMCSA result
+            if (data.legalName) {
+              document.getElementById('car-name').value = data.legalName;
+            }
+            if (data.telephone) {
+              document.getElementById('car-phone').value = data.telephone;
+            }
+            if (data.mcNumber && !mc) {
+              document.getElementById('car-mc').value = data.mcNumber;
+            }
+
+            // Add a note line about allowedToOperate / outOfServiceDate
+            const notesEl = document.getElementById('car-notes');
+            let noteBits = [];
+            if (data.allowedToOperate) {
+              noteBits.push('Allowed to operate: ' + data.allowedToOperate);
+            }
+            if (data.outOfServiceDate) {
+              noteBits.push('Out-of-service date: ' + data.outOfServiceDate);
+            }
+            if (noteBits.length) {
+              const fmLine = 'FMCSA: ' + noteBits.join(' | ');
+              const existing = notesEl.value.trim();
+              notesEl.value = existing ? (existing + '\n' + fmLine) : fmLine;
+            }
+
+            alert('FMCSA data loaded for this carrier.');
+          } catch (err) {
+            console.error(err);
+            alert('Error contacting FMCSA verification endpoint.');
+          }
+        });
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const body = {
+          name: document.getElementById('car-name').value.trim(),
+          mcNumber: document.getElementById('car-mc').value.trim(),
+          phone: document.getElementById('car-phone').value.trim(),
+          email: document.getElementById('car-email').value.trim(),
+          truckstopId: document.getElementById('car-truckstop').value.trim(),
+          datId: document.getElementById('car-dat').value.trim(),
+          notes: document.getElementById('car-notes').value.trim()
+        };
+        if (!body.name) {
+          alert('Carrier name is required.');
+          return;
+        }
+        try {
+          const resp = await fetch('/api/carriers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+          if (!resp.ok) {
+            const data = await resp.json().catch(() => ({}));
+            alert('Error adding carrier: ' + (data.error || resp.statusText));
+            return;
+          }
+          form.reset();
+          await refresh();
+        } catch (err) {
+          console.error(err);
+          alert('Error adding carrier.');
+        }
+      });
+
+      refresh();
+    }
+
+    async function renderDocumentsTab() {
+      tmsContent.innerHTML = `
+        <form id="doc-form">
+          <label>Document type</label>
+          <select id="doc-type">
+            <option value="rate-confirmation">Rate confirmation</option>
+            <option value="bol">Bill of lading</option>
+            <option value="carrier-packet">Carrier packet</option>
+          </select>
+
+          <label>Reference #</label>
+          <input id="doc-ref" placeholder="e.g. RC-12345 or BOL-98765" required />
+
+          <label>Load ID (optional)</label>
+          <input id="doc-load-id" placeholder="e.g. 12" />
+
+          <label>Customer name (optional)</label>
+          <input id="doc-customer" placeholder="Customer on this doc" />
+
+          <label>Carrier name (optional)</label>
+          <input id="doc-carrier" placeholder="Carrier on this doc" />
+
+          <label>Notes</label>
+          <textarea id="doc-notes" rows="2" placeholder="Where the doc is stored, quick notes, etc."></textarea>
+
+          <button type="submit">Add document record</button>
+        </form>
+        <div id="doc-list"></div>
+      `;
+
+      const listEl = document.getElementById('doc-list');
+
+      function formatType(t) {
+        if (t === 'rate-confirmation') return 'Rate confirmation';
+        if (t === 'bol') return 'Bill of lading';
+        if (t === 'carrier-packet') return 'Carrier packet';
+        return t;
+      }
+
+      async function refresh() {
+        try {
+          const docs = await loadDocuments();
+          if (!docs.length) {
+            listEl.innerHTML = '<p class="tms-list-empty">No documents yet.</p>';
+            return;
+          }
+          let html = `
+            <table class="tms-table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Reference</th>
+                  <th>Load / Parties</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+          for (const d of docs) {
+            html += `
+              <tr>
+                <td>${formatType(d.type)}</td>
+                <td>${d.reference}</td>
+                <td>
+                  ${d.loadId ? 'Load #' + d.loadId + '<br>' : ''}
+                  ${d.customerName ? 'Cust: ' + d.customerName + '<br>' : ''}
+                  ${d.carrierName ? 'Carr: ' + d.carrierName : ''}
+                </td>
+                <td>${d.notes || '-'}</td>
+              </tr>
+            `;
+          }
+          html += '</tbody></table>';
+          listEl.innerHTML = html;
+        } catch (e) {
+          console.error(e);
+          listEl.innerHTML = '<p class="tms-list-empty">Error loading documents.</p>';
+        }
+      }
+
+      const form = document.getElementById('doc-form');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const body = {
+          type: document.getElementById('doc-type').value,
+          reference: document.getElementById('doc-ref').value.trim(),
+          loadId: document.getElementById('doc-load-id').value.trim(),
+          customerName: document.getElementById('doc-customer').value.trim(),
+          carrierName: document.getElementById('doc-carrier').value.trim(),
+          notes: document.getElementById('doc-notes').value.trim()
+        };
+        if (!body.type || !body.reference) {
+          alert('Document type and reference are required.');
+          return;
+        }
+        try {
+          const resp = await fetch('/api/documents', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+          if (!resp.ok) {
+            const data = await resp.json().catch(() => ({}));
+            alert('Error adding document: ' + (data.error || resp.statusText));
+            return;
+          }
+          form.reset();
+          await refresh();
+        } catch (err) {
+          console.error(err);
+          alert('Error adding document.');
+        }
+      });
+
+      refresh();
+    }
+
+    function setActiveTab(tabName) {
+      tmsTabs.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+      });
+      if (tabName === 'customers') {
+        renderCustomersTab();
+      } else if (tabName === 'carriers') {
+        renderCarriersTab();
+      } else if (tabName === 'documents') {
+        renderDocumentsTab();
+      }
+    }
+
+    tmsTabs.forEach(btn => {
+      btn.addEventListener('click', () => {
+        setActiveTab(btn.dataset.tab);
+      });
+    });
+
+    // init default tab
+    setActiveTab('customers');
+
+    // --- Load / tracking logic ---
+
+    // Create new load
+    createForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const body = {
-        reference: reference.value.trim(),
-        driverName: driverName.value.trim(),
-        driverPhone: driverPhone.value.trim(),
-        tractorNumber: tractorNumber.value.trim(),
-        trailerNumber: trailerNumber.value.trim(),
-        equipmentType: equipmentType.value.trim(),
-        pickupAddress: pickupAddress.value.trim(),
-        deliveryAddress: deliveryAddress.value.trim(),
-        rate: rate.value.trim(),
-        notes: notes.value.trim(),
-        plan: "tms"
+        reference: document.getElementById('reference').value.trim(),
+        driverName: document.getElementById('driverName').value.trim(),
+        driverPhone: document.getElementById('driverPhone').value.trim(),
+        tractorNumber: document.getElementById('tractorNumber').value.trim(),
+        trailerNumber: document.getElementById('trailerNumber').value.trim(),
+        equipmentType: document.getElementById('equipmentType').value.trim(),
+        pickupAddress: document.getElementById('pickupAddress').value.trim(),
+        deliveryAddress: document.getElementById('deliveryAddress').value.trim(),
+        rate: document.getElementById('rate').value.trim(),
+        notes: document.getElementById('notes').value.trim(),
+        plan // pass tracking vs tms to the API
       };
 
-      const resp = await fetch("/api/loads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
+      if (!body.reference || !body.driverPhone) {
+        alert('Please fill out at least reference and driver phone.');
+        return;
+      }
 
-      const data = await resp.json();
-      if (!resp.ok) return alert(data.error || "Error creating load");
+      try {
+        const resp = await fetch('/api/loads', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(body)
+        });
 
-      const box = document.getElementById("driver-link-container");
-      box.style.display = "block";
-      box.innerHTML = `
-        <strong>Driver link:</strong><br>
-        <span>${data.driverLink}</span>
-      `;
+        const data = await resp.json().catch(() => ({}));
 
-      loadLoads();
+        if (!resp.ok) {
+          alert('Error creating load: ' + (data.error || resp.statusText));
+          return;
+        }
+
+        driverLinkBox.style.display = 'block';
+        driverLinkBox.innerHTML = `
+          <strong>Driver link:</strong><br>
+          <span>${data.driverLink}</span><br><br>
+          <span class="small">
+            Text this link to your driver. When they open it and share location,
+            the load will move to "tracking".
+          </span>
+          ${data.billing ? `<br><br><span class="small">
+            Plan: ${data.billing.plan}, debited $${data.billing.debited.toFixed(2)}.
+            Remaining credits: $${data.billing.remainingCredits.toFixed(2)}.
+          </span>` : ''}
+        `;
+
+        createForm.reset();
+        await loadLoads();
+      } catch (err) {
+        console.error(err);
+        alert('Something went wrong creating the load.');
+      }
     });
 
-    // ---------------------------------------------------------
-    // SMS + Complete
-    // ---------------------------------------------------------
+    // Load loads from API
+    async function loadLoads() {
+      try {
+        const resp = await fetch('/api/loads');
+        if (!resp.ok) {
+          loadsContainer.innerHTML = '<p class="no-loads">Error loading loads.</p>';
+          return;
+        }
+
+        const loads = await resp.json();
+
+        if (!loads.length) {
+          loadsContainer.innerHTML = '<p class="no-loads">No loads yet.</p>';
+          updateMap([]);
+          return;
+        }
+
+        let html = `
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Ref / Driver</th>
+                <th>Equip</th>
+                <th>Route</th>
+                <th>Status</th>
+                <th>Last location</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        for (const load of loads) {
+          let statusClass = 'status-pill';
+          if (load.status === 'invited') statusClass += ' status-invited';
+          if (load.status === 'tracking') statusClass += ' status-tracking';
+          if (load.status === 'completed') statusClass += ' status-completed';
+
+          let lastLocText = '—';
+          if (load.lastLocation) {
+            lastLocText = `${load.lastLocation.lat.toFixed(5)}, ${load.lastLocation.lng.toFixed(5)}\n(${load.lastLocation.recordedAt})`;
+          }
+
+          const routeText = `${load.pickupAddress || '-'} → ${load.deliveryAddress || '-'}`;
+
+          html += `
+            <tr>
+              <td>${load.id}</td>
+              <td>
+                <strong>${load.reference}</strong><br>
+                ${(load.driverName || '')} ${load.driverPhone ? `<br>${load.driverPhone}` : ''}
+                ${load.tractorNumber || load.trailerNumber || load.rate
+                  ? `<br><span class="small">
+                      ${load.tractorNumber ? 'Tractor ' + load.tractorNumber + ' ' : ''}
+                      ${load.trailerNumber ? 'Trailer ' + load.trailerNumber + ' ' : ''}
+                      ${load.rate ? 'Rate $' + load.rate : ''}
+                    </span>`
+                  : ''}
+              </td>
+              <td>${load.equipmentType || '-'}</td>
+              <td style="white-space: pre-line;">${routeText}</td>
+              <td><span class="${statusClass}">${load.status}</span></td>
+              <td style="white-space: pre-line;">${lastLocText}</td>
+              <td>
+                <button type="button" onclick="sendSms(${load.id})">SMS link</button>
+                <button type="button" class="btn-secondary" onclick="markComplete(${load.id})">Complete</button>
+              </td>
+            </tr>
+          `;
+        }
+
+        html += '</tbody></table>';
+        loadsContainer.innerHTML = html;
+
+        updateMap(loads);
+      } catch (err) {
+        console.error(err);
+        loadsContainer.innerHTML = '<p class="no-loads">Error loading loads.</p>';
+        updateMap([]);
+      }
+    }
+
+    // Send SMS with driver link
     async function sendSms(id) {
-      const resp = await fetch(`/api/loads/${id}/send-link`, { method: "POST" });
-      const data = await resp.json();
-      alert(data.error || "SMS sent (if Twilio configured)");
+      if (!confirm('Send driver link via SMS for load #' + id + '?')) return;
+      try {
+        const resp = await fetch(`/api/loads/${id}/send-link`, {
+          method: 'POST'
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          alert('Error sending SMS: ' + (data.error || resp.statusText));
+          return;
+        }
+        alert('SMS sent (if Twilio is configured).');
+      } catch (err) {
+        console.error(err);
+        alert('Error sending SMS.');
+      }
     }
 
+    // Mark load completed
     async function markComplete(id) {
-      await fetch(`/api/loads/${id}/complete`, { method: "POST" });
-      loadLoads();
+      if (!confirm('Mark load #' + id + ' as completed?')) return;
+      try {
+        const resp = await fetch(`/api/loads/${id}/complete`, {
+          method: 'POST'
+        });
+        if (!resp.ok) {
+          const data = await resp.json().catch(() => ({}));
+          alert('Error completing load: ' + (data.error || resp.statusText));
+          return;
+        }
+        await loadLoads();
+      } catch (err) {
+        console.error(err);
+        alert('Error completing load.');
+      }
     }
 
+    // Expose some functions globally
     window.sendSms = sendSms;
     window.markComplete = markComplete;
 
-    // ---------------------------------------------------------
-    // Smart Quote Calculator
-    // ---------------------------------------------------------
-    document.getElementById("btn-run-quote").addEventListener("click", async () => {
-      const origin = quote-origin.value.trim();
-      const destination = quote-destination.value.trim();
+    // Refresh button
+    refreshBtn.addEventListener('click', loadLoads);
 
-      if (!origin || !destination)
-        return alert("Enter pickup and delivery locations.");
+    // Smart Quote click handler
+    if (runQuoteBtn) {
+      runQuoteBtn.addEventListener('click', () => {
+        const origin = quoteOriginInput.value.trim();
+        const destination = quoteDestinationInput.value.trim();
 
-      // Get auto miles using Google Maps
-      const service = new google.maps.DistanceMatrixService();
-
-      service.getDistanceMatrix(
-        {
-          origins: [origin],
-          destinations: [destination],
-          travelMode: "DRIVING"
-        },
-        async (res, status) => {
-          if (status !== "OK") return alert("Distance lookup failed.");
-
-          const miles = res.rows[0].elements[0].distance.value / 1609.34;
-
-          const payload = {
-            origin,
-            destination,
-            miles,
-            equipment: quote-equipment.value,
-            weight: quote-weight.value,
-            margin: quote-margin.value,
-            direction: quote-direction.value,
-            urgency: quote-urgency.value,
-            weekend: quote-weekend.value === "true",
-            fuelPerMile: quote-fuel.value
-          };
-
-          const resp = await fetch("/api/quote", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-          });
-
-          const data = await resp.json();
-          if (!resp.ok) return alert(data.error);
-
-          const div = document.getElementById("quote-results");
-          div.style.display = "block";
-          div.innerHTML = `
-            <div class="quote-tier"><strong>Miles:</strong> ${data.miles.toFixed(1)}</div>
-            <div class="quote-tier"><strong>Cost per Mile:</strong> $${data.costPerMile.toFixed(2)}</div>
-            <div class="quote-tier"><strong>Carrier Pay:</strong> $${data.totalCost.toFixed(2)}</div>
-
-            <hr style="margin: 10px 0;">
-
-            <div class="quote-tier"><strong>AGGRESSIVE:</strong> $${data.sellRateAggressive.toFixed(2)}</div>
-            <div class="quote-tier"><strong>MARKET:</strong> $${data.sellRateMarket.toFixed(2)}</div>
-            <div class="quote-tier"><strong>PREMIUM:</strong> $${data.sellRatePremium.toFixed(2)}</div>
-
-            <button id="btn-apply-quote" style="margin-top:10px;">Apply Quote to Load Form</button>
-          `;
-
-          document.getElementById("btn-apply-quote").addEventListener("click", () => {
-            pickupAddress.value = origin;
-            deliveryAddress.value = destination;
-            rate.value = data.sellRateMarket.toFixed(2);
-            window.scrollTo(0, 0);
-          });
+        if (!origin || !destination) {
+          alert('Enter pickup and delivery first.');
+          return;
         }
-      );
-    });
 
-    // Load data on startup
+        if (!window.google || !google.maps || !google.maps.DistanceMatrixService) {
+          alert('Maps not loaded yet.');
+          return;
+        }
+
+        const service = new google.maps.DistanceMatrixService();
+        service.getDistanceMatrix(
+          {
+            origins: [origin],
+            destinations: [destination],
+            travelMode: google.maps.TravelMode.DRIVING
+          },
+          async (response, status) => {
+            if (status !== 'OK') {
+              console.error('DistanceMatrix error:', status, response);
+              alert('Unable to calculate miles for that lane.');
+              return;
+            }
+
+            const row = response.rows[0];
+            if (!row || !row.elements || !row.elements[0] || row.elements[0].status !== 'OK') {
+              alert('No route found between those points.');
+              return;
+            }
+
+            const meters = row.elements[0].distance.value;
+            const miles = meters / 1609.34;
+
+            const payload = {
+              origin,
+              destination,
+              miles,
+              equipment: quoteEquipmentInput.value,
+              weight: quoteWeightInput.value,
+              margin: quoteMarginInput.value,
+              direction: quoteDirectionInput.value,
+              urgency: quoteUrgencyInput.value,
+              weekend: quoteWeekendInput.value === 'true',
+              fuelPerMile: quoteFuelInput.value
+            };
+
+            try {
+              const resp = await fetch('/api/quote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              });
+              const data = await resp.json();
+              if (!resp.ok) {
+                alert(data.error || 'Error calculating quote');
+                return;
+              }
+
+              quoteResultsBox.style.display = 'block';
+              quoteResultsBox.innerHTML = `
+                <strong>${origin} → ${destination}</strong><br>
+                Miles: ${data.miles.toFixed(1)}<br>
+                Carrier pay (est.): $${data.totalCost.toFixed(2)}<br>
+                CPM: $${data.costPerMile.toFixed(2)}<br><br>
+                <strong>AGGRESSIVE:</strong> $${data.sellRateAggressive.toFixed(2)}<br>
+                <strong>MARKET:</strong> $${data.sellRateMarket.toFixed(2)}<br>
+                <strong>PREMIUM:</strong> $${data.sellRatePremium.toFixed(2)}<br><br>
+                <button type="button" id="apply-quote-btn">Apply MARKET quote to load form</button>
+              `;
+
+              const applyBtn = document.getElementById('apply-quote-btn');
+              if (applyBtn) {
+                applyBtn.addEventListener('click', () => {
+                  document.getElementById('pickupAddress').value = origin;
+                  document.getElementById('deliveryAddress').value = destination;
+                  document.getElementById('rate').value = data.sellRateMarket.toFixed(2);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+              }
+            } catch (err) {
+              console.error(err);
+              alert('Server error calculating quote.');
+            }
+          }
+        );
+      });
+    }
+
+    // Load loads on page load
     loadLoads();
-
   </script>
 
-  <!-- GOOGLE MAPS -------------------------------------------- -->
+  <!-- Put your real Maps API key in place of YOUR_API_KEY_HERE -->
   <script async
-    src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE&libraries=places&callback=initMap">
+    src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE&callback=initMap">
   </script>
 </body>
 </html>
