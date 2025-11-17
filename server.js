@@ -188,6 +188,136 @@ app.get('/api', (req, res) => {
 
 //
 // ----------------------
+//  SPOT QUOTE / PRICING ENGINE
+// ----------------------
+//
+// This powers the Smart Spot Quote on broker-dashboard.html.
+// It expects: origin, destination, miles, equipment, weight, margin,
+// direction (headhaul/backhaul/balanced), urgency (standard/rush),
+// weekend (boolean), fuelPerMile.
+//
+app.post('/api/quote', (req, res) => {
+  try {
+    const {
+      origin,
+      destination,
+      miles,
+      equipment,
+      weight,
+      margin,
+      direction,   // 'headhaul' | 'balanced' | 'backhaul'
+      urgency,     // 'standard' | 'rush'
+      weekend,     // boolean
+      fuelPerMile  // number
+    } = req.body;
+
+    const dist = Number(miles) || 0;
+    const wt = Number(weight) || 0;
+    const mg = Number(margin) || 0;
+    const fuel = Number(fuelPerMile) || 0;
+
+    if (!origin || !destination || dist <= 0) {
+      return res.status(400).json({ error: 'Invalid quote data' });
+    }
+
+    // --- Base CPM by equipment type ---
+    let baseCpm;
+    switch (equipment) {
+      case 'reefer':
+        baseCpm = 2.85;
+        break;
+      case 'flatbed':
+        baseCpm = 2.45;
+        break;
+      case 'hotshot':
+        baseCpm = 2.15;
+        break;
+      case 'van':
+      default:
+        baseCpm = 2.30;
+        break;
+    }
+
+    // --- Distance band adjustments ---
+    if (dist < 150) {
+      baseCpm += 0.40; // short-haul premium
+    } else if (dist > 750) {
+      baseCpm -= 0.15; // long-haul discount
+    }
+
+    // --- Weight adjustments (rough heuristic) ---
+    if (wt > 42000) {
+      baseCpm += 0.12;
+    } else if (wt < 15000 && wt > 0) {
+      baseCpm -= 0.05;
+    }
+
+    // --- Lane direction adjustments ---
+    if (direction === 'headhaul') {
+      baseCpm += 0.12; // harder trucks
+    } else if (direction === 'backhaul') {
+      baseCpm -= 0.10; // easier trucks
+    }
+
+    // --- Urgency adjustments ---
+    if (urgency === 'rush') {
+      baseCpm += 0.15;
+    }
+
+    // --- Weekend / holiday adjustment ---
+    if (weekend) {
+      baseCpm += 0.05;
+    }
+
+    // Guard against ridiculous negatives
+    if (baseCpm < 1.0) baseCpm = 1.0;
+
+    const totalCost = baseCpm * dist;
+    const fuelTotal = fuel > 0 ? fuel * dist : 0;
+
+    // margin is applied on top of cost + fuel
+    const costPlusFuel = totalCost + fuelTotal;
+    const marginMultiplier = 1 + (mg / 100 || 0);
+
+    // Market (target margin)
+    const sellRateMarket = costPlusFuel * marginMultiplier;
+
+    // Aggressive (volume play) ~3% below market
+    const sellRateAggressive = sellRateMarket * 0.97;
+
+    // Premium (priority / guaranteed) ~5% above market
+    const sellRatePremium = sellRateMarket * 1.05;
+
+    const effectiveMarginMarket =
+      ((sellRateMarket - costPlusFuel) / sellRateMarket) * 100;
+
+    res.json({
+      origin,
+      destination,
+      miles: dist,
+      equipment,
+      weight: wt,
+      margin: mg,
+      direction: direction || 'balanced',
+      urgency: urgency || 'standard',
+      weekend: !!weekend,
+      fuelPerMile: fuel,
+      fuelTotal,
+      costPerMile: baseCpm,
+      totalCost,
+      sellRateAggressive,
+      sellRateMarket,
+      sellRatePremium,
+      effectiveMarginMarket
+    });
+  } catch (err) {
+    console.error('Error in /api/quote:', err);
+    res.status(500).json({ error: 'Server error calculating quote' });
+  }
+});
+
+//
+// ----------------------
 //  LOAD CREATION (with billing)
 // ----------------------
 app.post('/api/loads', (req, res) => {
@@ -653,4 +783,3 @@ app.post('/broker-login', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
