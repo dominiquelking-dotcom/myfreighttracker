@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Plans & Pricing – MyFreightTracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f6fb;
+      color: #111827;
+      margin: 0;
+    }
+    header {
+      background: #0f172a;
+      color: #fff;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    .logo span {
+      color: #22c55e;
+    }
+    .header-right a {
+      color: #e5e7eb;
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-left: 16px;
+    }
+    main {
+      max-width: 900px;
+      margin: 32px auto;
+      padding: 0 16px 40px;
+    }
+    h1 {
+      margin-bottom: 8px;
+    }
+    p.subtitle {
+      color: #6b7280;
+      margin-bottom: 24px;
+      font-size: 0.95rem;
+    }
+    .plans {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+    .plan-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 4px 14px rgba(15,23,42,0.08);
+    }
+    .plan-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .plan-price {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin: 8px 0;
+    }
+    .plan-desc {
+      font-size: 0.9rem;
+      color: #4b5563;
+      margin-bottom: 10px;
+    }
+    ul {
+      margin: 0 0 10px 18px;
+      padding: 0;
+      font-size: 0.9rem;
+      color: #374151;
+    }
+    li {
+      margin-bottom: 4px;
+    }
+    .btn {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: #22c55e;
+      color: #0f172a;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .note {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">MyFreight<span>Tracker</span></div>
+    <div class="header-right">
+      <a href="/broker-login.html">Broker login</a>
+      <a href="/index.html">Back to landing</a>
+    </div>
+  </header>
+
+  <main>
+    <h1>Plans & pricing</h1>
+    <p class="subtitle">
+      Choose a plan that fits your brokerage. You can start on tracking-only and upgrade to full TMS later.
+    </p>
+
+    <div class="plans">
+      <div class="plan-card">
+        <div class="plan-name">Tracking-only</div>
+        <div class="plan-price">$X / month</div>
+        <p class="plan-desc">
+          Perfect if you just need to text drivers a link and see them on a live map.
+        </p>
+        <ul>
+          <li>Driver GPS tracking</li>
+          <li>Broker dashboard</li>
+          <li>SMS driver links (via Twilio)</li>
+        </ul>
+        <a class="btn" href="mailto:youremail@example.com?subject=MyFreightTracker Tracking Plan">
+          Start tracking plan
+        </a>
+      </div>
+
+      <div class="plan-card">
+        <div class="plan-name">Full TMS (Tracking + Tools)</div>
+        <div class="plan-price">$Y / month</div>
+        <p class="plan-desc">
+          Includes tracking, plus basic TMS tools for customers, carriers, and documents.
+        </p>
+        <ul>
+          <li>Everything in Tracking-only</li>
+          <li>Customer list</li>
+          <li>Carrier list (with Truckstop/DAT IDs)</li>
+          <li>Docs for RC, BOL, carrier packets</li>
+          <li>Email docs to carriers (via SMTP)</li>
+        </ul>
+        <a class="btn" href="mailto:youremail@example.com?subject=MyFreightTracker TMS Plan">
+          Start TMS plan
+        </a>
+      </div>
+    </div>
+
+    <p class="note">
+      Note: Payment integration (Stripe, etc.) can be wired in later. For now, new accounts are activated manually after payment.
+    </p>
+  </main>
+</body>
+</html>
