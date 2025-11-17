@@ -2,37 +2,42 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>MyFreightTracker – Broker Portal</title>
+  <title>MyFreightTracker – Real-Time Freight Tracking & TMS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
       font-family: Arial, Helvetica, sans-serif;
     }
 
     body {
       background: #f4f6fb;
       color: #1f2933;
+      line-height: 1.5;
     }
 
+    /* HEADER */
     header {
       background: #0f172a;
       color: #ffffff;
       padding: 16px 32px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
     .logo-block {
       display: flex;
       flex-direction: column;
+      line-height: 1.1;
     }
 
     .logo {
-      font-size: 1.4rem;
+      font-size: 1.45rem;
       font-weight: bold;
     }
 
@@ -40,19 +45,18 @@
       color: #22c55e;
     }
 
-    .logo-subline {
-      font-size: 0.75rem;
+    .subsidiary-header {
+      font-size: 0.8rem;
       color: #9ca3af;
-      margin-top: 2px;
     }
 
-    .logo-subline span {
+    .subsidiary-header span {
       font-weight: 600;
     }
 
     nav a {
-      margin-left: 18px;
       color: #e5e7eb;
+      margin-left: 18px;
       text-decoration: none;
       font-size: 0.95rem;
     }
@@ -64,23 +68,18 @@
     .btn-header {
       padding: 8px 16px;
       border-radius: 999px;
-      border: 1px solid #22c55e;
       background: #22c55e;
       color: #0f172a;
       font-weight: 600;
-      text-decoration: none;
       margin-left: 16px;
+      text-decoration: none;
     }
 
-    .btn-header.outline {
-      background: transparent;
-      color: #22c55e;
-    }
-
+    /* HERO SECTION */
     main {
       max-width: 1100px;
       margin: 32px auto;
-      padding: 0 16px 40px;
+      padding: 0 16px;
     }
 
     .hero {
@@ -88,299 +87,201 @@
       flex-wrap: wrap;
       gap: 32px;
       align-items: center;
-      margin-bottom: 40px;
+      margin-bottom: 48px;
     }
 
     .hero-text {
-      flex: 1 1 320px;
+      flex: 1 1 400px;
     }
 
     .hero-title {
-      font-size: 2.2rem;
-      margin-bottom: 12px;
+      font-size: 2.4rem;
       font-weight: 700;
-      color: #111827;
+      margin-bottom: 12px;
     }
 
     .hero-subtitle {
       font-size: 1rem;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
       color: #4b5563;
-      line-height: 1.5;
-    }
-
-    .hero-badges {
-      margin-bottom: 18px;
-      font-size: 0.9rem;
-      color: #6b7280;
     }
 
     .hero-actions a {
       display: inline-block;
       margin-right: 12px;
-      margin-top: 6px;
       padding: 10px 18px;
       border-radius: 999px;
-      font-size: 0.95rem;
-      text-decoration: none;
       font-weight: 600;
+      text-decoration: none;
     }
 
     .btn-primary {
       background: #22c55e;
       color: #0f172a;
-      border: none;
     }
 
     .btn-secondary {
-      background: transparent;
-      border: 1px solid #9ca3af;
-      color: #374151;
-    }
-
-    .hero-side-card {
-      flex: 1 1 280px;
       background: #ffffff;
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
-    }
-
-    .hero-side-card h3 {
-      font-size: 1.1rem;
-      margin-bottom: 10px;
-      font-weight: 600;
-    }
-
-    .hero-stat {
-      margin-bottom: 10px;
-      font-size: 0.95rem;
-      color: #4b5563;
-    }
-
-    .hero-stat strong {
+      border: 1px solid #9ca3af;
       color: #111827;
     }
 
-    .subnote {
-      font-size: 0.8rem;
-      color: #9ca3af;
-      margin-top: 6px;
+    /* PRICING SECTION */
+    #pricing {
+      margin-top: 60px;
     }
 
     .section-title {
-      font-size: 1.3rem;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: #111827;
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      font-weight: 700;
+      text-align: center;
     }
 
     .section-subtitle {
-      font-size: 0.95rem;
-      margin-bottom: 20px;
+      text-align: center;
       color: #6b7280;
+      margin-bottom: 28px;
     }
 
-    .features {
+    .pricing-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 20px;
-      margin-bottom: 40px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+      margin-top: 20px;
     }
 
-    .feature-card {
+    .price-card {
       background: #ffffff;
-      border-radius: 14px;
-      padding: 16px;
-      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
+      border: 1px solid #e5e7eb;
+      text-align: center;
     }
 
-    .feature-title {
-      font-size: 1rem;
+    .price-title {
+      font-size: 1.3rem;
       font-weight: 600;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+    }
+
+    .price-amount {
+      font-size: 2rem;
+      margin: 12px 0;
       color: #111827;
     }
 
-    .feature-text {
-      font-size: 0.9rem;
+    .price-features {
+      font-size: 0.95rem;
       color: #4b5563;
-      line-height: 1.4;
+      margin-bottom: 20px;
     }
 
-    .tag {
+    .price-btn {
       display: inline-block;
-      font-size: 0.7rem;
-      padding: 3px 8px;
+      background: #22c55e;
+      color: #0f172a;
+      padding: 10px 20px;
       border-radius: 999px;
-      background: #ecfdf5;
-      color: #166534;
-      margin-bottom: 6px;
+      font-weight: 600;
+      text-decoration: none;
     }
 
-    .sidebar-note {
-      font-size: 0.85rem;
-      color: #6b7280;
-    }
-
-    .footer-note {
+    /* FOOTER */
+    footer {
+      margin-top: 40px;
+      padding: 20px;
+      text-align: center;
       font-size: 0.8rem;
       color: #9ca3af;
-      text-align: center;
-      margin-top: 16px;
-    }
-
-    @media (max-width: 700px) {
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-
-      nav {
-        width: 100%;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 6px;
-      }
-
-      .hero {
-        flex-direction: column;
-      }
     }
   </style>
 </head>
+
 <body>
 
-  <header>
-    <div class="logo-block">
-      <div class="logo">
-        MyFreight<span>Tracker</span>
-      </div>
-      <div class="logo-subline">
-        A subsidiary company of <span>Leatherneck Trucking LLC</span>
+<header>
+  <div class="logo-block">
+    <div class="logo">MyFreight<span>Tracker</span></div>
+    <div class="subsidiary-header">A subsidiary of <span>Leatherneck Trucking LLC</span></div>
+  </div>
+
+  <nav>
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#support">Support</a>
+    <a href="broker-login.html" class="btn-header">Broker Login</a>
+  </nav>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-text">
+      <h1 class="hero-title">Simple, Real-Time Freight Tracking.</h1>
+      <p class="hero-subtitle">
+        Track drivers on a live map, manage loads, customers, carriers, documents, and move freight stress-free.
+      </p>
+
+      <div class="hero-actions">
+        <a href="broker-login.html" class="btn-primary">Login</a>
+        <a href="#pricing" class="btn-secondary">View Pricing</a>
       </div>
     </div>
+  </section>
 
-    <nav>
-      <a href="#features">Features</a>
-      <a href="#how-it-works">How it works</a>
-      <a href="#support">Support</a>
-      <a class="btn-header outline" href="broker-login.html">Broker Login</a>
-    </nav>
-  </header>
+  <!-- PRICING -->
+  <section id="pricing">
+    <h2 class="section-title">Pricing</h2>
+    <p class="section-subtitle">Simple. Transparent. Built for real brokers.</p>
 
-  <main>
-    <section class="hero">
-      <div class="hero-text">
-        <h1 class="hero-title">Real-time freight tracking for busy brokers.</h1>
-        <p class="hero-subtitle">
-          View your loads on a live map, share links with shippers, and keep
-          everything organized in one simple broker portal—built for speed, not confusion.
-        </p>
-        <p class="hero-badges">
-          ✅ Live driver location &nbsp; • &nbsp; ✅ Simple load tracking links &nbsp; • &nbsp; ✅ Built for small brokerages
-        </p>
-        <div class="hero-actions">
-          <a href="broker-login.html" class="btn-primary">Go to Broker Login</a>
-          <a href="#features" class="btn-secondary">See what it does</a>
+    <div class="pricing-grid">
+
+      <!-- TRACKING PLAN -->
+      <div class="price-card">
+        <div class="price-title">GPS Tracking Only</div>
+        <div class="price-amount">$1.75 <span style="font-size:1rem;">per load</span></div>
+        <div class="price-features">
+          Live driver sharing<br>
+          Real-time map updates<br>
+          One-click SMS driver link<br>
+          Load list + statuses
         </div>
+        <a href="broker-login.html?plan=tracking" class="price-btn">
+          Choose Tracking Plan
+        </a>
       </div>
 
-      <div class="hero-side-card">
-        <h3>At a glance</h3>
-        <p class="hero-stat">
-          <strong>Track drivers on a live map</strong><br />
-          View current locations and ETAs in seconds.
-        </p>
-        <p class="hero-stat">
-          <strong>Share tracking links</strong><br />
-          Send a simple link so shippers can watch their freight.
-        </p>
-        <p class="hero-stat">
-          <strong>Broker–first workflow</strong><br />
-          Designed around how you actually move loads.
-        </p>
-        <p class="subnote">
-          Login required. If you don’t have an account yet, contact your
-          MyFreightTracker admin to get set up.
-        </p>
+      <!-- TMS PLAN -->
+      <div class="price-card">
+        <div class="price-title">Full TMS System</div>
+        <div class="price-amount">$75 <span style="font-size:1rem;">per month</span></div>
+        <div class="price-features">
+          Includes GPS tracking<br>
+          Customer management<br>
+          Carrier management<br>
+          Document library (RC / BOL / Packets)<br>
+          Email forwarding tools
+        </div>
+        <a href="broker-login.html?plan=tms" class="price-btn">
+          Choose TMS Plan
+        </a>
       </div>
-    </section>
 
-    <section id="features">
-      <h2 class="section-title">Broker tools that just make sense</h2>
-      <p class="section-subtitle">
-        No clutter. No “enterprise” nonsense. Just the tools you need to keep loads moving.
-      </p>
+    </div>
+  </section>
 
-      <div class="features">
-        <div class="feature-card">
-          <span class="tag">Tracking</span>
-          <h3 class="feature-title">Live map for every load</h3>
-          <p class="feature-text">
-            See all active loads on one map. Click a load to view driver details,
-            last update time, and basic load info.
-          </p>
-        </div>
+  <footer>
+    © <span id="year"></span> MyFreightTracker – All rights reserved.
+  </footer>
 
-        <div class="feature-card">
-          <span class="tag">Communication</span>
-          <h3 class="feature-title">Simple shipper view</h3>
-          <p class="feature-text">
-            Generate a unique link for each load so shippers can track their
-            freight without calling you every hour.
-          </p>
-        </div>
+</main>
 
-        <div class="feature-card">
-          <span class="tag">Organization</span>
-          <h3 class="feature-title">Basic TMS-style layout</h3>
-          <p class="feature-text">
-            Keep loads, drivers, and status updates in one place. Built to grow
-            into a full TMS as your brokerage grows.
-          </p>
-        </div>
-
-        <div class="feature-card">
-          <span class="tag">Reliability</span>
-          <h3 class="feature-title">Backed by Leatherneck Trucking LLC</h3>
-          <p class="feature-text">
-            Built by people who actually run trucks and manage freight, not just write software.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <section id="how-it-works">
-      <h2 class="section-title">How it works (simple version)</h2>
-      <p class="section-subtitle">
-        1) Drivers share their location. 2) You track loads on your broker map.
-        3) You share a tracking link with your customer. That’s it.
-      </p>
-    </section>
-
-    <section id="support">
-      <h2 class="section-title">Need help logging in?</h2>
-      <p class="section-subtitle">
-        If you’re a broker and can’t access your account, please contact your
-        system admin or MyFreightTracker support.
-      </p>
-      <p class="sidebar-note">
-        Placeholder: Replace this text with your real support email or phone number later.
-      </p>
-    </section>
-
-    <p class="footer-note">
-      © <span id="year"></span> MyFreightTracker – All rights reserved.
-    </p>
-  </main>
-
-  <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
-  </script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
 
 </body>
 </html>
-
