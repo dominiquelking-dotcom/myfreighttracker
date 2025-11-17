@@ -125,6 +125,25 @@
       margin-bottom: 4px;
     }
 
+    .credit-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 0.85rem;
+    }
+
+    .credit-table th,
+    .credit-table td {
+      border: 1px solid #e5e7eb;
+      padding: 6px 8px;
+      text-align: left;
+    }
+
+    .credit-table th {
+      background: #f3f4f6;
+      font-weight: 600;
+    }
+
     .btn {
       display: inline-block;
       margin-top: 8px;
@@ -172,18 +191,19 @@
   <main>
     <h1>Plans & Pricing</h1>
     <p class="subtitle">
-      Simple pricing built for small and growing brokerages. Start with GPS tracking only or unlock the full TMS.
+      Two simple options: pay per load for GPS tracking, or unlock the full TMS and discounted tracking.
     </p>
 
     <div class="plans">
-      <!-- Tracking-only plan -->
+      <!-- GPS Tracking-only plan -->
       <div class="plan-card">
         <div class="plan-name">GPS Tracking Only</div>
         <div class="plan-price">
-          $1.75 <span>per load</span>
+          $2.00 <span>per load</span>
         </div>
         <p class="plan-desc">
-          Ideal if you just want to share a tracking link with drivers and shippers without a full TMS.
+          Perfect if you just need to text drivers a tracking link and watch them on the map.
+          You pre-load a small credit balance and each new load debits your wallet.
         </p>
         <ul>
           <li>Real-time GPS driver tracking</li>
@@ -191,27 +211,84 @@
           <li>SMS driver tracking link (via Twilio)</li>
           <li>Basic load list & statuses</li>
         </ul>
+
+        <table class="credit-table">
+          <thead>
+            <tr>
+              <th>Credit Pack</th>
+              <th>Approx. Loads</th>
+              <th>Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>$20 wallet</td>
+              <td>10 loads</td>
+              <td>$2.00 / load</td>
+            </tr>
+            <tr>
+              <td>$50 wallet</td>
+              <td>25 loads</td>
+              <td>$2.00 / load</td>
+            </tr>
+            <tr>
+              <td>$100 wallet</td>
+              <td>50 loads</td>
+              <td>$2.00 / load</td>
+            </tr>
+          </tbody>
+        </table>
+
         <a class="btn" href="/broker-login.html?plan=tracking">
-          Choose Tracking Plan
+          Choose Tracking-Only Plan
         </a>
       </div>
 
-      <!-- TMS plan -->
+      <!-- Full TMS plan -->
       <div class="plan-card">
         <div class="plan-name">Full TMS (Tracking + Tools)</div>
         <div class="plan-price">
-          $75 <span>per month</span>
+          $75 <span>per month + $1.25 per load</span>
         </div>
         <p class="plan-desc">
-          Includes GPS tracking plus core TMS tools so you can manage customers, carriers, and documents in one place.
+          Includes GPS tracking plus core TMS tools, and a discounted per-load tracking rate.
+          Ideal if you’re managing multiple customers and carriers every day.
         </p>
         <ul>
           <li>Everything in GPS Tracking plan</li>
           <li>Customer list & contacts</li>
-          <li>Carrier list (with Truckstop/DAT IDs)</li>
+          <li>Carrier list (with Truckstop / DAT IDs)</li>
           <li>Document records for RC, BOL, carrier packets</li>
           <li>Email docs to carriers (via your SMTP email)</li>
         </ul>
+
+        <table class="credit-table">
+          <thead>
+            <tr>
+              <th>Credit Pack</th>
+              <th>Approx. Loads</th>
+              <th>Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>$20 wallet</td>
+              <td>16 loads</td>
+              <td>$1.25 / load</td>
+            </tr>
+            <tr>
+              <td>$50 wallet</td>
+              <td>40 loads</td>
+              <td>$1.25 / load</td>
+            </tr>
+            <tr>
+              <td>$100 wallet</td>
+              <td>80 loads</td>
+              <td>$1.25 / load</td>
+            </tr>
+          </tbody>
+        </table>
+
         <a class="btn" href="/broker-login.html?plan=tms">
           Choose TMS Plan
         </a>
@@ -219,10 +296,10 @@
     </div>
 
     <p class="note">
-      Note: Payment processing (Stripe, etc.) can be integrated later. For now, plan activation is handled manually after payment.
+      Note: Payment processing (Stripe, etc.) can be integrated later. For now, plan selection and credit balances
+      can be activated manually on your account after payment.
     </p>
   </main>
 </body>
 </html>
-
 
