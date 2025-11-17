@@ -32,10 +32,17 @@ app.use(express.urlencoded({ extended: true })); // for form posts
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Simple broker accounts (in-memory for now)
+// plan: "tracking" = GPS only, "tms" = GPS + TMS tools
 const BROKER_USERS = [
   {
     email: 'broker@test.com',
-    password: 'password123' // demo only
+    password: 'password123', // demo only
+    plan: 'tracking'
+  },
+  {
+    email: 'tms@test.com',
+    password: 'password123', // demo only
+    plan: 'tms'
   }
 ];
 
@@ -219,7 +226,8 @@ app.post('/broker-register', (req, res) => {
     return res.status(400).send('Account already exists. Try logging in.');
   }
 
-  BROKER_USERS.push({ email, password });
+  // New accounts default to tracking-only plan
+  BROKER_USERS.push({ email, password, plan: 'tracking' });
   res.send(`
     <h1>Account created</h1>
     <p>You can now <a href="/broker-login.html">log in</a> as ${email}.</p>
@@ -242,8 +250,10 @@ app.post('/broker-login', (req, res) => {
     `);
   }
 
-  // For now, we don't use real sessions; we just redirect.
-  res.redirect('/broker-dashboard.html');
+  const plan = user.plan || 'tracking';
+
+  // For now, we don't use real sessions; we just redirect with plan info
+  res.redirect(`/broker-dashboard.html?plan=${encodeURIComponent(plan)}`);
 });
 
 // Start the server
