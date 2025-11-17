@@ -1,119 +1,581 @@
-app.post('/api/quote', (req, res) => {
-  try {
-    const {
-      origin,
-      destination,
-      miles,
-      equipment,
-      weight,
-      margin,
-      direction,   // 'headhaul' | 'balanced' | 'backhaul'
-      urgency,     // 'standard' | 'rush'
-      weekend,     // boolean
-      fuelPerMile  // number
-    } = req.body;
-
-    const dist = Number(miles) || 0;
-    const wt = Number(weight) || 0;
-    const mg = Number(margin) || 0;
-    const fuel = Number(fuelPerMile) || 0;
-
-    if (!origin || !destination || dist <= 0) {
-      return res.status(400).json({ error: 'Invalid quote data' });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Broker Dashboard – MyFreightTracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* ---------------------------------------
+       GLOBAL STYLES
+    ---------------------------------------- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
     }
 
-    // --- Base CPM by equipment type ---
-    let baseCpm;
-    switch (equipment) {
-      case 'reefer':
-        baseCpm = 2.85;
-        break;
-      case 'flatbed':
-        baseCpm = 2.45;
-        break;
-      case 'hotshot':
-        baseCpm = 2.15;
-        break;
-      case 'van':
-      default:
-        baseCpm = 2.30;
-        break;
+    body {
+      background: #f4f6fb;
+      color: #111827;
     }
 
-    // --- Distance band adjustments ---
-    if (dist < 150) {
-      baseCpm += 0.40; // short-haul premium
-    } else if (dist > 750) {
-      baseCpm -= 0.15; // long-haul discount
+    header {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
-    // --- Weight adjustments (rough heuristic) ---
-    if (wt > 42000) {
-      baseCpm += 0.12;
-    } else if (wt < 15000 && wt > 0) {
-      baseCpm -= 0.05;
+    .logo {
+      font-size: 1.2rem;
+      font-weight: bold;
     }
 
-    // --- Lane direction adjustments ---
-    if (direction === 'headhaul') {
-      baseCpm += 0.12; // harder trucks
-    } else if (direction === 'backhaul') {
-      baseCpm -= 0.10; // easier trucks
+    .logo span {
+      color: #22c55e;
     }
 
-    // --- Urgency adjustments ---
-    if (urgency === 'rush') {
-      baseCpm += 0.15;
+    .header-right a {
+      color: #e5e7eb;
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-left: 16px;
     }
 
-    // --- Weekend / holiday adjustment ---
-    if (weekend) {
-      baseCpm += 0.05;
+    main {
+      max-width: 1300px;
+      margin: 24px auto;
+      padding: 0 16px 32px;
     }
 
-    // Guard against ridiculous negatives
-    if (baseCpm < 1.0) baseCpm = 1.0;
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 4px;
+    }
 
-    const totalCost = baseCpm * dist;
-    const fuelTotal = fuel > 0 ? fuel * dist : 0;
+    .subtitle {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-bottom: 20px;
+    }
 
-    // margin is applied on top of cost + fuel
-    const costPlusFuel = totalCost + fuelTotal;
-    const marginMultiplier = 1 + (mg / 100 || 0);
+    .grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+      align-items: flex-start;
+    }
 
-    // Market (target margin)
-    const sellRateMarket = costPlusFuel * marginMultiplier;
+    .card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 16px 18px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.1);
+      margin-bottom: 24px;
+    }
 
-    // Aggressive (volume play) ~3% below market
-    const sellRateAggressive = sellRateMarket * 0.97;
+    .card h2 {
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
 
-    // Premium (priority / guaranteed) ~5% above market
-    const sellRatePremium = sellRateMarket * 1.05;
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+      color: #374151;
+    }
 
-    const effectiveMarginMarket =
-      ((sellRateMarket - costPlusFuel) / sellRateMarket) * 100;
+    input, textarea, select {
+      width: 100%;
+      padding: 8px 9px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      font-size: 0.9rem;
+      outline: none;
+      resize: vertical;
+    }
 
-    res.json({
-      origin,
-      destination,
-      miles: dist,
-      equipment,
-      weight: wt,
-      margin: mg,
-      direction: direction || 'balanced',
-      urgency: urgency || 'standard',
-      weekend: !!weekend,
-      fuelPerMile: fuel,
-      fuelTotal,
-      costPerMile: baseCpm,
-      totalCost,
-      sellRateAggressive,
-      sellRateMarket,
-      sellRatePremium,
-      effectiveMarginMarket
+    input:focus, textarea:focus, select:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 1px #22c55e33;
+    }
+
+    button {
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: none;
+      background: #22c55e;
+      color: #0f172a;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    button:hover {
+      filter: brightness(1.05);
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+      margin-left: 4px;
+    }
+
+    .small {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .driver-link-box {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      background: #f9fafb;
+      border-radius: 10px;
+      padding: 8px;
+      border: 1px dashed #d1d5db;
+      word-break: break-all;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.8rem;
+    }
+
+    th, td {
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      padding: 6px 4px;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f3f4f6;
+      font-weight: 600;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .status-invited { background: #fef3c7; color: #92400e; }
+    .status-tracking { background: #bbf7d0; color: #166534; }
+    .status-completed { background: #e5e7eb; color: #111827; }
+
+    #map {
+      width: 100%;
+      height: 300px;
+      margin-top: 16px;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+    }
+
+    /* -------------------------
+       SMART QUOTE SECTION
+    -------------------------- */
+    .quote-result-box {
+      margin-top: 10px;
+      padding: 10px;
+      background: #f9fafb;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .quote-tier {
+      padding: 6px 0;
+      font-size: 0.9rem;
+    }
+
+    .quote-tier strong {
+      color: #0f172a;
+    }
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">MyFreight<span>Tracker</span></div>
+    <div class="header-right">
+      <a href="/index.html">← Back to Landing</a>
+    </div>
+  </header>
+
+  <main>
+    <h1>Broker Dashboard</h1>
+    <p class="subtitle">
+      Originate loads, get quotes, generate tracking links, and manage your freight.
+    </p>
+
+    <div class="grid">
+
+      <!-- LEFT SIDE -------------------------------------------------------- -->
+      <section>
+
+        <!-- Smart Spot Quote Calculator -->
+        <div class="card">
+          <h2>⚡ Smart Spot Quote Calculator</h2>
+
+          <label>Pickup City/State</label>
+          <input id="quote-origin" placeholder="e.g. Louisville, KY" />
+
+          <label>Delivery City/State</label>
+          <input id="quote-destination" placeholder="e.g. Atlanta, GA" />
+
+          <label>Equipment Type</label>
+          <select id="quote-equipment">
+            <option value="van">Dry Van</option>
+            <option value="reefer">Reefer</option>
+            <option value="flatbed">Flatbed</option>
+            <option value="hotshot">Hotshot</option>
+          </select>
+
+          <label>Weight (lbs)</label>
+          <input id="quote-weight" placeholder="e.g. 38000" />
+
+          <label>Your Target Margin (%)</label>
+          <input id="quote-margin" placeholder="e.g. 15" />
+
+          <label>Truck Direction</label>
+          <select id="quote-direction">
+            <option value="balanced">Balanced Lane</option>
+            <option value="headhaul">Headhaul (hard trucks)</option>
+            <option value="backhaul">Backhaul (easy trucks)</option>
+          </select>
+
+          <label>Urgency</label>
+          <select id="quote-urgency">
+            <option value="standard">Standard</option>
+            <option value="rush">Rush / ASAP</option>
+          </select>
+
+          <label>Weekend / Holiday?</label>
+          <select id="quote-weekend">
+            <option value="false">No</option>
+            <option value="true">Yes</option>
+          </select>
+
+          <label>Fuel Surcharge ($ per mile)</label>
+          <input id="quote-fuel" placeholder="e.g. 0.45" />
+
+          <button id="btn-run-quote">Calculate Quote</button>
+
+          <div id="quote-results" class="quote-result-box" style="display:none;"></div>
+        </div>
+
+        <!-- Create Load Card -->
+        <div class="card">
+          <h2>Create a new load</h2>
+
+          <form id="create-load-form">
+            <label>Load reference</label>
+            <input id="reference" required placeholder="e.g. PO-12345" />
+
+            <label>Driver name</label>
+            <input id="driverName" placeholder="e.g. John Doe" />
+
+            <label>Driver phone</label>
+            <input id="driverPhone" placeholder="e.g. +15551234567" required />
+
+            <label>Tractor #</label>
+            <input id="tractorNumber" placeholder="101" />
+
+            <label>Trailer #</label>
+            <input id="trailerNumber" placeholder="53-12" />
+
+            <label>Equipment type</label>
+            <input id="equipmentType" placeholder="Van, Flatbed, etc." />
+
+            <label>Pickup address</label>
+            <input id="pickupAddress" placeholder="City / State or full address" />
+
+            <label>Delivery address</label>
+            <input id="deliveryAddress" placeholder="City / State or full address" />
+
+            <label>Rate</label>
+            <input id="rate" placeholder="1500.00" />
+
+            <label>Notes</label>
+            <textarea id="notes" rows="2"></textarea>
+
+            <button type="submit">Create Load</button>
+          </form>
+
+          <div id="driver-link-container" class="driver-link-box" style="display:none;"></div>
+        </div>
+
+      </section>
+
+      <!-- RIGHT SIDE -------------------------------------------------------- -->
+      <section>
+
+        <!-- Loads / Map Card -->
+        <div class="card">
+          <h2>Active & Recent Loads</h2>
+          <button id="refresh-loads-btn">Refresh loads</button>
+
+          <div id="loads-container">
+            <p class="small">No loads yet.</p>
+          </div>
+
+          <div id="map"></div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- JS ------------------------------------------------------------ -->
+  <script>
+    let map, markers = [];
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 39.82, lng: -98.57 },
+        zoom: 4
+      });
+    }
+
+    function clearMarkers() {
+      markers.forEach(m => m.setMap(null));
+      markers = [];
+    }
+
+    function updateMap(loads) {
+      if (!map) return;
+
+      clearMarkers();
+      const bounds = new google.maps.LatLngBounds();
+      let hasPoints = false;
+
+      loads.forEach(load => {
+        if (load.lastLocation) {
+          const pos = { lat: load.lastLocation.lat, lng: load.lastLocation.lng };
+          const marker = new google.maps.Marker({ map, position: pos });
+          markers.push(marker);
+          bounds.extend(pos);
+          hasPoints = true;
+        }
+      });
+
+      if (hasPoints) map.fitBounds(bounds);
+    }
+
+    // ---------------------------------------------------------
+    // LOADS - Fetch and render
+    // ---------------------------------------------------------
+    async function loadLoads() {
+      const resp = await fetch("/api/loads");
+      const loads = await resp.json();
+
+      const container = document.getElementById("loads-container");
+
+      if (!loads.length) {
+        container.innerHTML = "<p class='small'>No loads yet.</p>";
+        updateMap([]);
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Ref / Driver</th>
+              <th>Equip</th>
+              <th>Route</th>
+              <th>Status</th>
+              <th>Last location</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      loads.forEach(load => {
+        let statusClass = "status-pill";
+        if (load.status === "invited") statusClass += " status-invited";
+        if (load.status === "tracking") statusClass += " status-tracking";
+        if (load.status === "completed") statusClass += " status-completed";
+
+        let last = load.lastLocation
+          ? `${load.lastLocation.lat.toFixed(4)}, ${load.lastLocation.lng.toFixed(4)}`
+          : "—";
+
+        html += `
+          <tr>
+            <td>${load.id}</td>
+            <td>
+              <strong>${load.reference}</strong><br>
+              ${load.driverName || ""}<br>${load.driverPhone}
+            </td>
+            <td>${load.equipmentType || "-"}</td>
+            <td>${load.pickupAddress || "-"} → ${load.deliveryAddress || "-"}</td>
+            <td><span class="${statusClass}">${load.status}</span></td>
+            <td>${last}</td>
+            <td>
+              <button onclick="sendSms(${load.id})">SMS link</button>
+              <button class="btn-secondary" onclick="markComplete(${load.id})">Complete</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += "</tbody></table>";
+
+      container.innerHTML = html;
+      updateMap(loads);
+    }
+
+    // ---------------------------------------------------------
+    // Create Load
+    // ---------------------------------------------------------
+    document.getElementById("create-load-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const body = {
+        reference: reference.value.trim(),
+        driverName: driverName.value.trim(),
+        driverPhone: driverPhone.value.trim(),
+        tractorNumber: tractorNumber.value.trim(),
+        trailerNumber: trailerNumber.value.trim(),
+        equipmentType: equipmentType.value.trim(),
+        pickupAddress: pickupAddress.value.trim(),
+        deliveryAddress: deliveryAddress.value.trim(),
+        rate: rate.value.trim(),
+        notes: notes.value.trim(),
+        plan: "tms"
+      };
+
+      const resp = await fetch("/api/loads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+
+      const data = await resp.json();
+      if (!resp.ok) return alert(data.error || "Error creating load");
+
+      const box = document.getElementById("driver-link-container");
+      box.style.display = "block";
+      box.innerHTML = `
+        <strong>Driver link:</strong><br>
+        <span>${data.driverLink}</span>
+      `;
+
+      loadLoads();
     });
-  } catch (err) {
-    console.error('Error in /api/quote:', err);
-    res.status(500).json({ error: 'Server error calculating quote' });
-  }
-});
+
+    // ---------------------------------------------------------
+    // SMS + Complete
+    // ---------------------------------------------------------
+    async function sendSms(id) {
+      const resp = await fetch(`/api/loads/${id}/send-link`, { method: "POST" });
+      const data = await resp.json();
+      alert(data.error || "SMS sent (if Twilio configured)");
+    }
+
+    async function markComplete(id) {
+      await fetch(`/api/loads/${id}/complete`, { method: "POST" });
+      loadLoads();
+    }
+
+    window.sendSms = sendSms;
+    window.markComplete = markComplete;
+
+    // ---------------------------------------------------------
+    // Smart Quote Calculator
+    // ---------------------------------------------------------
+    document.getElementById("btn-run-quote").addEventListener("click", async () => {
+      const origin = quote-origin.value.trim();
+      const destination = quote-destination.value.trim();
+
+      if (!origin || !destination)
+        return alert("Enter pickup and delivery locations.");
+
+      // Get auto miles using Google Maps
+      const service = new google.maps.DistanceMatrixService();
+
+      service.getDistanceMatrix(
+        {
+          origins: [origin],
+          destinations: [destination],
+          travelMode: "DRIVING"
+        },
+        async (res, status) => {
+          if (status !== "OK") return alert("Distance lookup failed.");
+
+          const miles = res.rows[0].elements[0].distance.value / 1609.34;
+
+          const payload = {
+            origin,
+            destination,
+            miles,
+            equipment: quote-equipment.value,
+            weight: quote-weight.value,
+            margin: quote-margin.value,
+            direction: quote-direction.value,
+            urgency: quote-urgency.value,
+            weekend: quote-weekend.value === "true",
+            fuelPerMile: quote-fuel.value
+          };
+
+          const resp = await fetch("/api/quote", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await resp.json();
+          if (!resp.ok) return alert(data.error);
+
+          const div = document.getElementById("quote-results");
+          div.style.display = "block";
+          div.innerHTML = `
+            <div class="quote-tier"><strong>Miles:</strong> ${data.miles.toFixed(1)}</div>
+            <div class="quote-tier"><strong>Cost per Mile:</strong> $${data.costPerMile.toFixed(2)}</div>
+            <div class="quote-tier"><strong>Carrier Pay:</strong> $${data.totalCost.toFixed(2)}</div>
+
+            <hr style="margin: 10px 0;">
+
+            <div class="quote-tier"><strong>AGGRESSIVE:</strong> $${data.sellRateAggressive.toFixed(2)}</div>
+            <div class="quote-tier"><strong>MARKET:</strong> $${data.sellRateMarket.toFixed(2)}</div>
+            <div class="quote-tier"><strong>PREMIUM:</strong> $${data.sellRatePremium.toFixed(2)}</div>
+
+            <button id="btn-apply-quote" style="margin-top:10px;">Apply Quote to Load Form</button>
+          `;
+
+          document.getElementById("btn-apply-quote").addEventListener("click", () => {
+            pickupAddress.value = origin;
+            deliveryAddress.value = destination;
+            rate.value = data.sellRateMarket.toFixed(2);
+            window.scrollTo(0, 0);
+          });
+        }
+      );
+    });
+
+    // Load data on startup
+    loadLoads();
+
+  </script>
+
+  <!-- GOOGLE MAPS -------------------------------------------- -->
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE&libraries=places&callback=initMap">
+  </script>
+</body>
+</html>
