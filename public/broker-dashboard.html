@@ -732,7 +732,7 @@
                   <th>Type</th>
                   <th>Reference</th>
                   <th>Load / Parties</th>
-                  <th>Notes</th>
+                  <th>Notes / Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -747,7 +747,13 @@
                   ${d.customerName ? 'Cust: ' + d.customerName + '<br>' : ''}
                   ${d.carrierName ? 'Carr: ' + d.carrierName : ''}
                 </td>
-                <td>${d.notes || '-'}</td>
+                <td>
+                  ${d.notes || '-'}
+                  <br>
+                  <button type="button" style="margin-top:4px;" onclick="sendDocToCarrier(${d.id})">
+                    Email carrier
+                  </button>
+                </td>
               </tr>
             `;
           }
@@ -998,9 +1004,29 @@
       }
     }
 
+    // Email document details to the carrier
+    async function sendDocToCarrier(id) {
+      if (!confirm('Email this document to the carrier?')) return;
+      try {
+        const resp = await fetch(`/api/documents/${id}/send-to-carrier`, {
+          method: 'POST'
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          alert('Error sending email: ' + (data.error || resp.statusText));
+          return;
+        }
+        alert(`Email sent to ${data.to || 'carrier'}.`);
+      } catch (err) {
+        console.error(err);
+        alert('Error sending email.');
+      }
+    }
+
     // Expose some functions globally
     window.sendSms = sendSms;
     window.markComplete = markComplete;
+    window.sendDocToCarrier = sendDocToCarrier;
 
     // Refresh button
     refreshBtn.addEventListener('click', loadLoads);
