@@ -5,81 +5,126 @@
   <title>Plans & Pricing – MyFreightTracker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body {
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
       font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
       background: #f4f6fb;
       color: #111827;
-      margin: 0;
     }
+
     header {
       background: #0f172a;
-      color: #fff;
+      color: #ffffff;
       padding: 14px 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
     }
+
+    .logo-block {
+      display: flex;
+      flex-direction: column;
+    }
+
     .logo {
       font-size: 1.2rem;
       font-weight: bold;
     }
+
     .logo span {
       color: #22c55e;
     }
+
+    .subsidiary-header {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    .subsidiary-header span {
+      font-weight: 600;
+    }
+
     .header-right a {
       color: #e5e7eb;
       text-decoration: none;
       font-size: 0.9rem;
       margin-left: 16px;
     }
+
     main {
       max-width: 900px;
       margin: 32px auto;
       padding: 0 16px 40px;
     }
+
     h1 {
+      font-size: 1.8rem;
       margin-bottom: 8px;
     }
-    p.subtitle {
+
+    .subtitle {
+      font-size: 0.95rem;
       color: #6b7280;
       margin-bottom: 24px;
-      font-size: 0.95rem;
     }
+
     .plans {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 20px;
     }
+
     .plan-card {
-      background: #fff;
+      background: #ffffff;
       border-radius: 14px;
       padding: 18px;
-      box-shadow: 0 4px 14px rgba(15,23,42,0.08);
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+      border: 1px solid #e5e7eb;
     }
+
     .plan-name {
       font-size: 1.1rem;
       font-weight: 600;
       margin-bottom: 4px;
     }
+
     .plan-price {
-      font-size: 1.4rem;
+      font-size: 1.6rem;
       font-weight: 700;
-      margin: 8px 0;
+      margin: 8px 0 4px;
     }
+
+    .plan-price span {
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: #6b7280;
+    }
+
     .plan-desc {
       font-size: 0.9rem;
       color: #4b5563;
       margin-bottom: 10px;
     }
+
     ul {
       margin: 0 0 10px 18px;
       padding: 0;
       font-size: 0.9rem;
       color: #374151;
     }
+
     li {
       margin-bottom: 4px;
     }
+
     .btn {
       display: inline-block;
       margin-top: 8px;
@@ -91,67 +136,93 @@
       text-decoration: none;
       font-size: 0.9rem;
     }
+
     .note {
       font-size: 0.8rem;
       color: #6b7280;
-      margin-top: 12px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 700px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .header-right {
+        margin-top: 6px;
+      }
     }
   </style>
 </head>
 <body>
   <header>
-    <div class="logo">MyFreight<span>Tracker</span></div>
+    <div class="logo-block">
+      <div class="logo">MyFreight<span>Tracker</span></div>
+      <div class="subsidiary-header">
+        A subsidiary company of <span>Leatherneck Trucking LLC</span>
+      </div>
+    </div>
     <div class="header-right">
-      <a href="/broker-login.html">Broker login</a>
-      <a href="/index.html">Back to landing</a>
+      <a href="/index.html">← Back to Landing</a>
+      <a href="/broker-login.html">Broker Login</a>
     </div>
   </header>
 
   <main>
-    <h1>Plans & pricing</h1>
+    <h1>Plans & Pricing</h1>
     <p class="subtitle">
-      Choose a plan that fits your brokerage. You can start on tracking-only and upgrade to full TMS later.
+      Simple pricing built for small and growing brokerages. Start with GPS tracking only or unlock the full TMS.
     </p>
 
     <div class="plans">
+      <!-- Tracking-only plan -->
       <div class="plan-card">
-        <div class="plan-name">Tracking-only</div>
-        <div class="plan-price">$X / month</div>
+        <div class="plan-name">GPS Tracking Only</div>
+        <div class="plan-price">
+          $1.75 <span>per load</span>
+        </div>
         <p class="plan-desc">
-          Perfect if you just need to text drivers a link and see them on a live map.
+          Ideal if you just want to share a tracking link with drivers and shippers without a full TMS.
         </p>
         <ul>
-          <li>Driver GPS tracking</li>
-          <li>Broker dashboard</li>
-          <li>SMS driver links (via Twilio)</li>
+          <li>Real-time GPS driver tracking</li>
+          <li>Live broker dashboard map</li>
+          <li>SMS driver tracking link (via Twilio)</li>
+          <li>Basic load list & statuses</li>
         </ul>
-        <a class="btn" href="mailto:youremail@example.com?subject=MyFreightTracker Tracking Plan">
-          Start tracking plan
+        <a class="btn" href="/broker-login.html?plan=tracking">
+          Choose Tracking Plan
         </a>
       </div>
 
+      <!-- TMS plan -->
       <div class="plan-card">
         <div class="plan-name">Full TMS (Tracking + Tools)</div>
-        <div class="plan-price">$Y / month</div>
+        <div class="plan-price">
+          $75 <span>per month</span>
+        </div>
         <p class="plan-desc">
-          Includes tracking, plus basic TMS tools for customers, carriers, and documents.
+          Includes GPS tracking plus core TMS tools so you can manage customers, carriers, and documents in one place.
         </p>
         <ul>
-          <li>Everything in Tracking-only</li>
-          <li>Customer list</li>
+          <li>Everything in GPS Tracking plan</li>
+          <li>Customer list & contacts</li>
           <li>Carrier list (with Truckstop/DAT IDs)</li>
-          <li>Docs for RC, BOL, carrier packets</li>
-          <li>Email docs to carriers (via SMTP)</li>
+          <li>Document records for RC, BOL, carrier packets</li>
+          <li>Email docs to carriers (via your SMTP email)</li>
         </ul>
-        <a class="btn" href="mailto:youremail@example.com?subject=MyFreightTracker TMS Plan">
-          Start TMS plan
+        <a class="btn" href="/broker-login.html?plan=tms">
+          Choose TMS Plan
         </a>
       </div>
     </div>
 
     <p class="note">
-      Note: Payment integration (Stripe, etc.) can be wired in later. For now, new accounts are activated manually after payment.
+      Note: Payment processing (Stripe, etc.) can be integrated later. For now, plan activation is handled manually after payment.
     </p>
   </main>
 </body>
 </html>
+
+
