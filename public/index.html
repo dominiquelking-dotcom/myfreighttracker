@@ -26,6 +26,11 @@
       justify-content: space-between;
     }
 
+    .logo-block {
+      display: flex;
+      flex-direction: column;
+    }
+
     .logo {
       font-size: 1.4rem;
       font-weight: bold;
@@ -33,6 +38,16 @@
 
     .logo span {
       color: #22c55e;
+    }
+
+    .logo-subline {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    .logo-subline span {
+      font-weight: 600;
     }
 
     nav a {
@@ -215,17 +230,6 @@
       margin-top: 16px;
     }
 
-    .subsidiary {
-      text-align: center;
-      font-size: 0.8rem;
-      color: #6b7280;
-      margin-top: 4px;
-    }
-
-    .subsidiary span {
-      font-weight: 600;
-    }
-
     @media (max-width: 700px) {
       header {
         flex-direction: column;
@@ -248,10 +252,17 @@
   </style>
 </head>
 <body>
+
   <header>
-    <div class="logo">
-      MyFreight<span>Tracker</span>
+    <div class="logo-block">
+      <div class="logo">
+        MyFreight<span>Tracker</span>
+      </div>
+      <div class="logo-subline">
+        A subsidiary company of <span>Leatherneck Trucking LLC</span>
+      </div>
     </div>
+
     <nav>
       <a href="#features">Features</a>
       <a href="#how-it-works">How it works</a>
@@ -275,9 +286,6 @@
           <a href="broker-login.html" class="btn-primary">Go to Broker Login</a>
           <a href="#features" class="btn-secondary">See what it does</a>
         </div>
-        <p class="subsidiary">
-          A subsidiary company of <span>Leatherneck Trucking LLC</span>
-        </p>
       </div>
 
       <div class="hero-side-card">
@@ -370,9 +378,9 @@
   </main>
 
   <script>
-    // Set current year in footer
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
+
 </body>
 </html>
 
