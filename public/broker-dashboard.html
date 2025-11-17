@@ -268,6 +268,32 @@
       font-size: 0.78rem;
     }
 
+    /* FMCSA status badge */
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: #e5e7eb;
+      color: #374151;
+      margin-top: 2px;
+    }
+
+    .status-ok {
+      background: #bbf7d0;
+      color: #166534;
+    }
+
+    .status-oos {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .status-unknown {
+      background: #e5e7eb;
+      color: #4b5563;
+    }
+
     @media (max-width: 900px) {
       .grid {
         grid-template-columns: 1fr;
@@ -572,7 +598,10 @@
           <input id="car-name" placeholder="e.g. Leatherneck Trucking LLC" required />
 
           <label>MC #</label>
-          <input id="car-mc" placeholder="e.g. 654321" />
+          <div style="display:flex; gap:4px; align-items:center; margin-bottom:10px;">
+            <input id="car-mc" placeholder="e.g. 654321" style="flex:1;" />
+            <button type="button" id="car-verify-fmcsa" style="white-space:nowrap;">Verify via FMCSA</button>
+          </div>
 
           <label>Phone</label>
           <input id="car-phone" placeholder="e.g. 555-987-6543" />
@@ -611,12 +640,26 @@
                   <th>MC #</th>
                   <th>Phone / Email</th>
                   <th>TS / DAT</th>
+                  <th>FMCSA status</th>
                   <th>Notes</th>
                 </tr>
               </thead>
               <tbody>
           `;
           for (const c of carriers) {
+            // Figure out FMCSA status badge based on notes text
+            let statusBadge = '<span class="status-badge status-unknown">Not verified</span>';
+            const notesText = (c.notes || '').toLowerCase();
+            if (notesText.includes('allowed to operate: y')) {
+              statusBadge = '<span class="status-badge status-ok">FMCSA: Allowed</span>';
+            } else if (
+              notesText.includes('allowed to operate: n') ||
+              notesText.includes('out-of-service') ||
+              notesText.includes('out of service')
+            ) {
+              statusBadge = '<span class="status-badge status-oos">FMCSA: Check status</span>';
+            }
+
             html += `
               <tr>
                 <td>${c.name}</td>
@@ -629,6 +672,7 @@
                   ${c.truckstopId ? 'TS: ' + c.truckstopId + '<br>' : ''}
                   ${c.datId ? 'DAT: ' + c.datId : (!c.truckstopId ? '-' : '')}
                 </td>
+                <td>${statusBadge}</td>
                 <td>${c.notes || '-'}</td>
               </tr>
             `;
@@ -642,6 +686,66 @@
       }
 
       const form = document.getElementById('carrier-form');
+
+      // Verify via FMCSA button logic
+      const verifyBtn = document.getElementById('car-verify-fmcsa');
+      if (verifyBtn) {
+        verifyBtn.addEventListener('click', async () => {
+          const mc = document.getElementById('car-mc').value.trim();
+          const name = document.getElementById('car-name').value.trim();
+
+          if (!mc && !name) {
+            alert('Enter MC # or Carrier name first.');
+            return;
+          }
+
+          const query = mc
+            ? `mc=${encodeURIComponent(mc)}`
+            : `name=${encodeURIComponent(name)}`;
+
+          try {
+            const resp = await fetch(`/api/fmcsa/carrier?${query}`);
+            const data = await resp.json();
+
+            if (!resp.ok) {
+              alert('FMCSA lookup failed: ' + (data.error || resp.statusText));
+              return;
+            }
+
+            // Fill fields from FMCSA result
+            if (data.legalName) {
+              document.getElementById('car-name').value = data.legalName;
+            }
+            if (data.telephone) {
+              document.getElementById('car-phone').value = data.telephone;
+            }
+            if (data.mcNumber && !mc) {
+              document.getElementById('car-mc').value = data.mcNumber;
+            }
+
+            // Add a note line about allowedToOperate / outOfServiceDate
+            const notesEl = document.getElementById('car-notes');
+            let noteBits = [];
+            if (data.allowedToOperate) {
+              noteBits.push('Allowed to operate: ' + data.allowedToOperate);
+            }
+            if (data.outOfServiceDate) {
+              noteBits.push('Out-of-service date: ' + data.outOfServiceDate);
+            }
+            if (noteBits.length) {
+              const fmLine = 'FMCSA: ' + noteBits.join(' | ');
+              const existing = notesEl.value.trim();
+              notesEl.value = existing ? (existing + '\n' + fmLine) : fmLine;
+            }
+
+            alert('FMCSA data loaded for this carrier.');
+          } catch (err) {
+            console.error(err);
+            alert('Error contacting FMCSA verification endpoint.');
+          }
+        });
+      }
+
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const body = {
@@ -733,7 +837,6 @@
                   <th>Reference</th>
                   <th>Load / Parties</th>
                   <th>Notes</th>
-                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -749,9 +852,6 @@
                   ${d.carrierName ? 'Carr: ' + d.carrierName : ''}
                 </td>
                 <td>${d.notes || '-'}</td>
-                <td>
-                  <button type="button" onclick="emailDocToCarrier(${d.id})">Email to carrier</button>
-                </td>
               </tr>
             `;
           }
@@ -839,8 +939,7 @@
         deliveryAddress: document.getElementById('deliveryAddress').value.trim(),
         rate: document.getElementById('rate').value.trim(),
         notes: document.getElementById('notes').value.trim(),
-        // 🔥 Send the plan to the API so it can bill correctly
-        plan: plan   // 'tracking' or 'tms'
+        plan // pass tracking vs tms to the API
       };
 
       if (!body.reference || !body.driverPhone) {
@@ -857,24 +956,12 @@
           body: JSON.stringify(body)
         });
 
-        if (!resp.ok) {
-          const errData = await resp.json().catch(() => ({}));
+        const data = await resp.json().catch(() => ({}));
 
-          if (resp.status === 402) {
-            alert(
-              (errData.error || 'Not enough credits.') +
-              '\n\nPlan: ' + (errData.plan || plan) +
-              '\nRequired credits: ' + (errData.requiredCredits ?? '?') +
-              '\nCurrent credits: ' + (errData.currentCredits ?? '?') +
-              '\n\nPlease top up your wallet on the pricing/subscription side.'
-            );
-          } else {
-            alert('Error creating load: ' + (errData.error || resp.statusText));
-          }
+        if (!resp.ok) {
+          alert('Error creating load: ' + (data.error || resp.statusText));
           return;
         }
-
-        const data = await resp.json();
 
         driverLinkBox.style.display = 'block';
         driverLinkBox.innerHTML = `
@@ -884,13 +971,10 @@
             Text this link to your driver. When they open it and share location,
             the load will move to "tracking".
           </span>
-          ${
-            data.billing
-              ? `<br><br><span class="small">
-                   Billed plan: ${data.billing.plan} • Debited: ${data.billing.debited} credits • Remaining: ${data.billing.remainingCredits}
-                 </span>`
-              : ''
-          }
+          ${data.billing ? `<br><br><span class="small">
+            Plan: ${data.billing.plan}, debited $${data.billing.debited.toFixed(2)}.
+            Remaining credits: $${data.billing.remainingCredits.toFixed(2)}.
+          </span>` : ''}
         `;
 
         createForm.reset();
@@ -1022,29 +1106,9 @@
       }
     }
 
-    // Email document to carrier
-    async function emailDocToCarrier(id) {
-      if (!confirm('Email this document to the carrier on file?')) return;
-      try {
-        const resp = await fetch(`/api/documents/${id}/send-to-carrier`, {
-          method: 'POST'
-        });
-        const data = await resp.json();
-        if (!resp.ok) {
-          alert('Error sending email: ' + (data.error || resp.statusText));
-          return;
-        }
-        alert('Email sent to carrier: ' + data.to);
-      } catch (err) {
-        console.error(err);
-        alert('Error sending email.');
-      }
-    }
-
     // Expose some functions globally
     window.sendSms = sendSms;
     window.markComplete = markComplete;
-    window.emailDocToCarrier = emailDocToCarrier;
 
     // Refresh button
     refreshBtn.addEventListener('click', loadLoads);
