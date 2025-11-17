@@ -732,7 +732,8 @@
                   <th>Type</th>
                   <th>Reference</th>
                   <th>Load / Parties</th>
-                  <th>Notes / Actions</th>
+                  <th>Notes</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -747,12 +748,9 @@
                   ${d.customerName ? 'Cust: ' + d.customerName + '<br>' : ''}
                   ${d.carrierName ? 'Carr: ' + d.carrierName : ''}
                 </td>
+                <td>${d.notes || '-'}</td>
                 <td>
-                  ${d.notes || '-'}
-                  <br>
-                  <button type="button" style="margin-top:4px;" onclick="sendDocToCarrier(${d.id})">
-                    Email carrier
-                  </button>
+                  <button type="button" onclick="emailDocToCarrier(${d.id})">Email to carrier</button>
                 </td>
               </tr>
             `;
@@ -840,7 +838,9 @@
         pickupAddress: document.getElementById('pickupAddress').value.trim(),
         deliveryAddress: document.getElementById('deliveryAddress').value.trim(),
         rate: document.getElementById('rate').value.trim(),
-        notes: document.getElementById('notes').value.trim()
+        notes: document.getElementById('notes').value.trim(),
+        // 🔥 Send the plan to the API so it can bill correctly
+        plan: plan   // 'tracking' or 'tms'
       };
 
       if (!body.reference || !body.driverPhone) {
@@ -859,7 +859,18 @@
 
         if (!resp.ok) {
           const errData = await resp.json().catch(() => ({}));
-          alert('Error creating load: ' + (errData.error || resp.statusText));
+
+          if (resp.status === 402) {
+            alert(
+              (errData.error || 'Not enough credits.') +
+              '\n\nPlan: ' + (errData.plan || plan) +
+              '\nRequired credits: ' + (errData.requiredCredits ?? '?') +
+              '\nCurrent credits: ' + (errData.currentCredits ?? '?') +
+              '\n\nPlease top up your wallet on the pricing/subscription side.'
+            );
+          } else {
+            alert('Error creating load: ' + (errData.error || resp.statusText));
+          }
           return;
         }
 
@@ -873,6 +884,13 @@
             Text this link to your driver. When they open it and share location,
             the load will move to "tracking".
           </span>
+          ${
+            data.billing
+              ? `<br><br><span class="small">
+                   Billed plan: ${data.billing.plan} • Debited: ${data.billing.debited} credits • Remaining: ${data.billing.remainingCredits}
+                 </span>`
+              : ''
+          }
         `;
 
         createForm.reset();
@@ -1004,9 +1022,9 @@
       }
     }
 
-    // Email document details to the carrier
-    async function sendDocToCarrier(id) {
-      if (!confirm('Email this document to the carrier?')) return;
+    // Email document to carrier
+    async function emailDocToCarrier(id) {
+      if (!confirm('Email this document to the carrier on file?')) return;
       try {
         const resp = await fetch(`/api/documents/${id}/send-to-carrier`, {
           method: 'POST'
@@ -1016,7 +1034,7 @@
           alert('Error sending email: ' + (data.error || resp.statusText));
           return;
         }
-        alert(`Email sent to ${data.to || 'carrier'}.`);
+        alert('Email sent to carrier: ' + data.to);
       } catch (err) {
         console.error(err);
         alert('Error sending email.');
@@ -1026,7 +1044,7 @@
     // Expose some functions globally
     window.sendSms = sendSms;
     window.markComplete = markComplete;
-    window.sendDocToCarrier = sendDocToCarrier;
+    window.emailDocToCarrier = emailDocToCarrier;
 
     // Refresh button
     refreshBtn.addEventListener('click', loadLoads);
