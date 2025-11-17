@@ -32,13 +32,96 @@ if (
   mailTransport = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT),
-    secure: false, // true only if using port 465
+    secure: false, // Only true if using port 465
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
     }
   });
 }
+
+//
+// ----------------------
+//  FMCSA (QCMobile API)
+// ----------------------
+const FMCSA_BASE_URL = 'https://mobile.fmcsa.dot.gov/qc/services';
+const hasFmcsa = !!process.env.FMCSA_WEBKEY;
+
+// Helper to call FMCSA QCMobile API
+async function fetchFmcsaCarrier({ dotNumber, docketNumber, name }) {
+  if (!hasFmcsa) {
+    throw new Error('FMCSA_WEBKEY is not configured');
+  }
+
+  let path;
+
+  if (dotNumber) {
+    // Lookup by DOT #
+    path = `/carriers/${encodeURIComponent(dotNumber)}`;
+  } else if (docketNumber) {
+    // Lookup by MC/docket #
+    path = `/carriers/docket-number/${encodeURIComponent(docketNumber)}/`;
+  } else if (name) {
+    // Lookup by carrier name (takes first result)
+    path = `/carriers/name/${encodeURIComponent(name)}?size=1`;
+  } else {
+    throw new Error('No identifier provided for FMCSA lookup');
+  }
+
+  const webKeyParam = path.includes('?') ? '&' : '?';
+  const url = `${FMCSA_BASE_URL}${path}${webKeyParam}webKey=${encodeURIComponent(
+    process.env.FMCSA_WEBKEY
+  )}`;
+
+  // Uses global fetch (Node 18+); if needed we can swap to node-fetch later
+  const resp = await fetch(url);
+  if (!resp.ok) {
+    throw new Error(`FMCSA API error: ${resp.status}`);
+  }
+
+  const data = await resp.json();
+
+  // QCMobile wraps results in data.content[0].carrier
+  const first = data && data.content && data.content[0];
+  if (!first || !first.carrier) {
+    throw new Error('No carrier data found in FMCSA response');
+  }
+
+  const carrier = first.carrier;
+
+  return {
+    dotNumber: carrier.dotNumber || null,
+    mcNumber: carrier.mcNumber || null,
+    legalName: carrier.legalName || null,
+    dbaName: carrier.dbaName || null,
+    allowedToOperate: carrier.allowedToOperate || null, // "Y" / "N"
+    outOfServiceDate: carrier.outOfServiceDate || null,
+    phyStreet: carrier.phyStreet || null,
+    phyCity: carrier.phyCity || null,
+    phyState: carrier.phyState || null,
+    phyZipcode: carrier.phyZipcode || null,
+    telephone: carrier.telephone || null,
+    raw: carrier // full raw FMCSA record if you want it
+  };
+}
+
+//
+// ----------------------
+//  CREDIT WALLET / PRICING
+// ----------------------
+//
+// Simple global wallet for now (no real auth yet).
+// You can top this up manually or later via Stripe/etc.
+//
+const WALLET = {
+  trackingCredits: 20.0, // e.g. $20 worth of tracking-only
+  tmsCredits: 75.0       // e.g. $75 worth of TMS plan funds
+};
+
+const PRICING = {
+  trackingPerLoad: 2.0,   // $2 per load (tracking-only plan)
+  tmsPerLoad: 1.25        // $1.25 per load (TMS plan)
+};
 
 //
 // ----------------------
@@ -61,54 +144,25 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ----------------------
 //  BROKER ACCOUNTS
 // ----------------------
-// isPaid is still for the login paywall (separate from credits)
 const BROKER_USERS = [
   {
     email: 'broker@test.com',
     password: 'password123',
-    plan: 'tracking',
-    isPaid: false
+    plan: 'tracking'
   },
   {
     email: 'tms@test.com',
     password: 'password123',
-    plan: 'tms',
-    isPaid: true
+    plan: 'tms'
   }
 ];
 
 //
 // ----------------------
-//  PRICING & CREDIT WALLETS
-// ----------------------
-// Plan pricing
-const PRICING = {
-  tracking: {
-    ratePerLoad: 2.0 // $2.00 per load
-  },
-  tms: {
-    monthlyFee: 75,  // $75 per month
-    ratePerLoad: 1.25 // $1.25 per load
-  }
-};
-
-// Simple in-memory credits per plan
-// You can change these starting values any time.
-const CREDIT_WALLETS = {
-  tracking: {
-    credits: 20 // e.g. $20 wallet → 10 loads at $2.00
-  },
-  tms: {
-    credits: 50 // e.g. $50 wallet → 40 loads at $1.25
-  }
-};
-
-//
-// ----------------------
 //  IN-MEMORY DATA
 // ----------------------
-let loads = [];
-let trackingPoints = [];
+let loads = [];          // load records
+let trackingPoints = []; // GPS pings
 
 let customers = [];
 let carriers = [];
@@ -132,17 +186,9 @@ app.get('/api', (req, res) => {
   res.json({ message: 'MyFreightTracker API is running' });
 });
 
-// Optional: expose current credit balances for debugging / future UI
-app.get('/api/billing', (req, res) => {
-  res.json({
-    pricing: PRICING,
-    wallets: CREDIT_WALLETS
-  });
-});
-
 //
 // ----------------------
-//  LOAD CREATION (with credit wallet)
+//  LOAD CREATION (with billing)
 // ----------------------
 app.post('/api/loads', (req, res) => {
   const {
@@ -156,7 +202,7 @@ app.post('/api/loads', (req, res) => {
     deliveryAddress,
     rate,
     notes,
-    plan: bodyPlan
+    plan // 'tracking' or 'tms' from the dashboard
   } = req.body;
 
   if (!reference || !driverPhone) {
@@ -165,34 +211,32 @@ app.post('/api/loads', (req, res) => {
     });
   }
 
-  // Determine plan for this load.
-  // For now we trust the body parameter if present, otherwise default to 'tracking'.
-  const plan = bodyPlan === 'tms' ? 'tms' : 'tracking';
+  // Determine which plan & wallet to charge
+  const effectivePlan = plan === 'tms' ? 'tms' : 'tracking';
+  let costPerLoad, walletKey;
 
-  // Get pricing and wallet for that plan
-  const pricing = plan === 'tms' ? PRICING.tms : PRICING.tracking;
-  const wallet = CREDIT_WALLETS[plan];
-
-  if (!pricing || !wallet) {
-    return res.status(500).json({
-      error: 'Billing configuration error for plan: ' + plan
-    });
+  if (effectivePlan === 'tms') {
+    costPerLoad = PRICING.tmsPerLoad;
+    walletKey = 'tmsCredits';
+  } else {
+    costPerLoad = PRICING.trackingPerLoad;
+    walletKey = 'trackingCredits';
   }
 
-  const ratePerLoad = pricing.ratePerLoad;
+  const currentCredits = WALLET[walletKey] ?? 0;
 
-  // Check credits
-  if (typeof wallet.credits !== 'number' || wallet.credits < ratePerLoad) {
+  if (currentCredits < costPerLoad) {
+    // Not enough funds
     return res.status(402).json({
-      error: `Not enough credits for plan "${plan}". Please top up your wallet or upgrade via pricing page.`,
-      plan,
-      requiredCredits: ratePerLoad,
-      currentCredits: wallet.credits
+      error: 'Insufficient credits to create a new load.',
+      plan: effectivePlan,
+      requiredCredits: costPerLoad,
+      currentCredits
     });
   }
 
-  // Deduct credits
-  wallet.credits -= ratePerLoad;
+  // Debit the wallet
+  WALLET[walletKey] = currentCredits - costPerLoad;
 
   const token = makeToken();
   const newLoad = {
@@ -208,9 +252,7 @@ app.post('/api/loads', (req, res) => {
     rate: rate || '',
     notes: notes || '',
     sessionToken: token,
-    status: 'invited',
-    billingPlan: plan,
-    billingRatePerLoad: ratePerLoad
+    status: 'invited'
   };
 
   loads.push(newLoad);
@@ -223,10 +265,9 @@ app.post('/api/loads', (req, res) => {
     load: newLoad,
     driverLink,
     billing: {
-      plan,
-      ratePerLoad,
-      debited: ratePerLoad,
-      remainingCredits: wallet.credits
+      plan: effectivePlan,
+      debited: costPerLoad,
+      remainingCredits: WALLET[walletKey]
     }
   });
 });
@@ -487,11 +528,11 @@ This is an automated message from MyFreightTracker.
 
   try {
     await mailTransport.sendMail({
-    from: fromEmail,
-    to: carrier.email,
-    replyTo: brokerEmail,
-    subject,
-    text: textBody
+      from: fromEmail,
+      to: carrier.email,
+      replyTo: brokerEmail,  // replies go to broker
+      subject,
+      text: textBody
     });
 
     res.json({
@@ -507,7 +548,59 @@ This is an automated message from MyFreightTracker.
 
 //
 // ----------------------
-//  BROKER REGISTRATION (paywall)
+//  BILLING / WALLET INFO
+// ----------------------
+app.get('/api/billing', (req, res) => {
+  res.json({
+    wallet: WALLET,
+    pricing: PRICING
+  });
+});
+
+//
+// ----------------------
+//  FMCSA VERIFY ENDPOINT
+// ----------------------
+//
+//  GET /api/fmcsa/carrier?dot=123456
+//  GET /api/fmcsa/carrier?mc=654321
+//  GET /api/fmcsa/carrier?name=LEATHERNECK%20TRUCKING
+//
+app.get('/api/fmcsa/carrier', async (req, res) => {
+  if (!hasFmcsa) {
+    return res.status(500).json({
+      error: 'FMCSA_WEBKEY not configured on server'
+    });
+  }
+
+  const { dot, mc, name } = req.query;
+
+  if (!dot && !mc && !name) {
+    return res.status(400).json({
+      error: 'Provide ?dot=, ?mc=, or ?name= query parameter'
+    });
+  }
+
+  try {
+    const result = await fetchFmcsaCarrier({
+      dotNumber: dot,
+      docketNumber: mc,
+      name
+    });
+
+    res.json(result);
+  } catch (err) {
+    console.error('FMCSA lookup error:', err.message || err);
+    res.status(500).json({
+      error: 'FMCSA lookup failed',
+      details: err.message || String(err)
+    });
+  }
+});
+
+//
+// ----------------------
+//  BROKER REGISTRATION
 // ----------------------
 app.post('/broker-register', (req, res) => {
   const { email, password } = req.body;
@@ -519,25 +612,18 @@ app.post('/broker-register', (req, res) => {
   if (exists)
     return res.status(400).send('Account already exists.');
 
-  BROKER_USERS.push({
-    email,
-    password,
-    plan: 'tracking',
-    isPaid: false
-  });
+  // New accounts default to tracking-only plan for now
+  BROKER_USERS.push({ email, password, plan: 'tracking' });
 
   res.send(`
     <h1>Account created</h1>
-    <p>Your account was created, but your subscription is not active yet.</p>
-    <p>Please <a href="/pricing.html">view plans and subscribe</a>.</p>
-    <p>Once payment is complete, your login will be activated.</p>
-    <p><a href="/broker-login.html">Back to login</a></p>
+    <p>Login at <a href="/broker-login.html">Broker Login</a></p>
   `);
 });
 
 //
 // ----------------------
-//  BROKER LOGIN (paywall)
+//  BROKER LOGIN
 // ----------------------
 app.post('/broker-login', (req, res) => {
   const { email, password } = req.body;
@@ -554,18 +640,9 @@ app.post('/broker-login', (req, res) => {
     `);
   }
 
-  if (!user.isPaid) {
-    return res.status(402).send(`
-      <h1>Account not active</h1>
-      <p>Your MyFreightTracker subscription is not active yet.</p>
-      <p>Please complete payment to unlock broker login.</p>
-      <p><a href="/pricing.html">View plans & pricing</a></p>
-      <p><a href="/broker-login.html">Back to login</a></p>
-    `);
-  }
-
   const plan = user.plan || 'tracking';
 
+  // Later you can include broker identity in a real session/token
   res.redirect(`/broker-dashboard.html?plan=${encodeURIComponent(plan)}`);
 });
 
@@ -576,3 +653,4 @@ app.post('/broker-login', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
