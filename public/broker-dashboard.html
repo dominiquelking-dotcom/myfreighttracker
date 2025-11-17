@@ -196,6 +196,37 @@
       border: 1px solid #e5e7eb;
     }
 
+    /* TMS panel */
+    .tms-card {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px dashed #e5e7eb;
+      position: relative;
+    }
+
+    .tms-card.tms-disabled {
+      opacity: 0.6;
+    }
+
+    .tms-card.tms-disabled::after {
+      content: "Upgrade to the TMS plan to unlock these tools.";
+      position: absolute;
+      inset: 0;
+      background: rgba(249, 250, 251, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: #6b7280;
+      padding: 0 12px;
+      text-align: center;
+      border-radius: 10px;
+    }
+
+    .tms-card.tms-disabled * {
+      pointer-events: none;
+    }
+
     @media (max-width: 900px) {
       .grid {
         grid-template-columns: 1fr;
@@ -264,7 +295,7 @@
         <div id="driver-link-container" class="driver-link-box" style="display:none;"></div>
       </section>
 
-      <!-- Right: Loads List & Map -->
+      <!-- Right: Loads List & Map & TMS -->
       <section class="card">
         <h2>Active & recent loads</h2>
         <button id="refresh-loads-btn" type="button">Refresh loads</button>
@@ -275,6 +306,18 @@
         </div>
 
         <div id="map"></div>
+
+        <div id="tms-card" class="tms-card">
+          <h3 style="font-size:0.95rem; margin-bottom:6px;">TMS tools</h3>
+          <p class="small" id="tms-plan-label">
+            TMS features are active for this broker.
+          </p>
+          <ul style="margin-top:8px; font-size:0.8rem; color:#4b5563; padding-left:16px;">
+            <li>View and search past loads.</li>
+            <li>Maintain basic customer &amp; carrier records.</li>
+            <li>Track internal notes and simple invoicing status.</li>
+          </ul>
+        </div>
       </section>
     </div>
   </main>
@@ -282,6 +325,11 @@
   <script>
     let map;
     let markers = [];
+
+    // Read plan from query string: ?plan=tracking or ?plan=tms
+    const urlParams = new URLSearchParams(window.location.search);
+    const plan = urlParams.get('plan') || 'tracking';
+    const tmsEnabled = plan === 'tms';
 
     function initMap() {
       map = new google.maps.Map(document.getElementById('map'), {
@@ -328,6 +376,19 @@
     const driverLinkBox = document.getElementById('driver-link-container');
     const loadsContainer = document.getElementById('loads-container');
     const refreshBtn = document.getElementById('refresh-loads-btn');
+    const tmsCard = document.getElementById('tms-card');
+    const tmsPlanLabel = document.getElementById('tms-plan-label');
+
+    // Toggle TMS card based on plan
+    if (tmsCard && tmsPlanLabel) {
+      if (tmsEnabled) {
+        tmsCard.classList.remove('tms-disabled');
+        tmsPlanLabel.textContent = 'TMS features are active for this broker.';
+      } else {
+        tmsCard.classList.add('tms-disabled');
+        tmsPlanLabel.textContent = 'You are on the tracking-only plan.';
+      }
+    }
 
     // Create new load
     createForm.addEventListener('submit', async (e) => {
@@ -424,103 +485,3 @@
           if (load.status === 'invited') statusClass += ' status-invited';
           if (load.status === 'tracking') statusClass += ' status-tracking';
           if (load.status === 'completed') statusClass += ' status-completed';
-
-          let lastLocText = '—';
-          if (load.lastLocation) {
-            lastLocText = `${load.lastLocation.lat.toFixed(5)}, ${load.lastLocation.lng.toFixed(5)}\n(${load.lastLocation.recordedAt})`;
-          }
-
-          const routeText = `${load.pickupAddress || '-'} → ${load.deliveryAddress || '-'}`;
-
-          html += `
-            <tr>
-              <td>${load.id}</td>
-              <td>
-                <strong>${load.reference}</strong><br>
-                ${(load.driverName || '')} ${load.driverPhone ? `<br>${load.driverPhone}` : ''}
-                ${load.tractorNumber || load.trailerNumber || load.rate
-                  ? `<br><span class="small">
-                      ${load.tractorNumber ? 'Tractor ' + load.tractorNumber + ' ' : ''}
-                      ${load.trailerNumber ? 'Trailer ' + load.trailerNumber + ' ' : ''}
-                      ${load.rate ? 'Rate $' + load.rate : ''}
-                    </span>`
-                  : ''}
-              </td>
-              <td>${load.equipmentType || '-'}</td>
-              <td style="white-space: pre-line;">${routeText}</td>
-              <td><span class="${statusClass}">${load.status}</span></td>
-              <td style="white-space: pre-line;">${lastLocText}</td>
-              <td>
-                <button type="button" onclick="sendSms(${load.id})">SMS link</button>
-                <button type="button" class="btn-secondary" onclick="markComplete(${load.id})">Complete</button>
-              </td>
-            </tr>
-          `;
-        }
-
-        html += '</tbody></table>';
-        loadsContainer.innerHTML = html;
-
-        updateMap(loads);
-      } catch (err) {
-        console.error(err);
-        loadsContainer.innerHTML = '<p class="no-loads">Error loading loads.</p>';
-        updateMap([]);
-      }
-    }
-
-    // Send SMS with driver link
-    async function sendSms(id) {
-      if (!confirm('Send driver link via SMS for load #' + id + '?')) return;
-      try {
-        const resp = await fetch(`/api/loads/${id}/send-link`, {
-          method: 'POST'
-        });
-        const data = await resp.json();
-        if (!resp.ok) {
-          alert('Error sending SMS: ' + (data.error || resp.statusText));
-          return;
-        }
-        alert('SMS sent (if Twilio is configured).');
-      } catch (err) {
-        console.error(err);
-        alert('Error sending SMS.');
-      }
-    }
-
-    // Mark load completed
-    async function markComplete(id) {
-      if (!confirm('Mark load #' + id + ' as completed?')) return;
-      try {
-        const resp = await fetch(`/api/loads/${id}/complete`, {
-          method: 'POST'
-        });
-        if (!resp.ok) {
-          const data = await resp.json().catch(() => ({}));
-          alert('Error completing load: ' + (data.error || resp.statusText));
-          return;
-        }
-        await loadLoads();
-      } catch (err) {
-        console.error(err);
-        alert('Error completing load.');
-      }
-    }
-
-    // Expose some functions globally
-    window.sendSms = sendSms;
-    window.markComplete = markComplete;
-
-    // Refresh button
-    refreshBtn.addEventListener('click', loadLoads);
-
-    // Load loads on page load
-    loadLoads();
-  </script>
-
-  <!-- 🔑 Replace YOUR_API_KEY_HERE with your actual Google Maps JS API key -->
-  <script async
-    src="https://maps.googleapis.com/maps/api/js?key==AIzaSyCU-hXnGUEhJSp5kuo7ZM0XFsisuXJkR2E&callback=initMap">
-  </script>
-</body>
-</html>
