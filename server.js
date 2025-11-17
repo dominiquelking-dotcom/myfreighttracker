@@ -61,16 +61,19 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ----------------------
 //  BROKER ACCOUNTS
 // ----------------------
+// Now includes isPaid for paywall
 const BROKER_USERS = [
   {
     email: 'broker@test.com',
     password: 'password123',
-    plan: 'tracking'
+    plan: 'tracking',
+    isPaid: false // ❌ hits paywall
   },
   {
     email: 'tms@test.com',
     password: 'password123',
-    plan: 'tms'
+    plan: 'tms',
+    isPaid: true // ✅ allowed to log in
   }
 ];
 
@@ -432,7 +435,7 @@ This is an automated message from MyFreightTracker.
 
 //
 // ----------------------
-//  BROKER REGISTRATION
+//  BROKER REGISTRATION (with paywall)
 // ----------------------
 app.post('/broker-register', (req, res) => {
   const { email, password } = req.body;
@@ -444,17 +447,26 @@ app.post('/broker-register', (req, res) => {
   if (exists)
     return res.status(400).send('Account already exists.');
 
-  BROKER_USERS.push({ email, password, plan: 'tracking' });
+  // New users start on tracking plan and NOT paid yet
+  BROKER_USERS.push({
+    email,
+    password,
+    plan: 'tracking',
+    isPaid: false
+  });
 
   res.send(`
     <h1>Account created</h1>
-    <p>Login at <a href="/broker-login.html">Broker Login</a></p>
+    <p>Your account was created, but your subscription is not active yet.</p>
+    <p>Please <a href="/pricing.html">view plans and subscribe</a>.</p>
+    <p>Once payment is complete, your login will be activated.</p>
+    <p><a href="/broker-login.html">Back to login</a></p>
   `);
 });
 
 //
 // ----------------------
-//  BROKER LOGIN
+//  BROKER LOGIN (with paywall)
 // ----------------------
 app.post('/broker-login', (req, res) => {
   const { email, password } = req.body;
@@ -468,6 +480,17 @@ app.post('/broker-login', (req, res) => {
       <h1>Login failed</h1>
       <p>Invalid email or password.</p>
       <a href="/broker-login.html">Back to login</a>
+    `);
+  }
+
+  // 🔒 PAYWALL CHECK
+  if (!user.isPaid) {
+    return res.status(402).send(`
+      <h1>Account not active</h1>
+      <p>Your MyFreightTracker subscription is not active yet.</p>
+      <p>Please complete payment to unlock broker login.</p>
+      <p><a href="/pricing.html">View plans & pricing</a></p>
+      <p><a href="/broker-login.html">Back to login</a></p>
     `);
   }
 
