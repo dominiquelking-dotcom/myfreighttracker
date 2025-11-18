@@ -2,553 +2,130 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>MyFreightTracker – Modern Freight OS</title>
+  <title>MyFreightTracker – Simplify Logistics</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-
     body {
-      background: #020617;
-      color: #e5e7eb;
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f6fb;
+      color: #111827;
     }
 
     header {
-      background: #020617;
-      border-bottom: 1px solid #111827;
-      padding: 14px 24px;
+      background: #0f172a;
+      color: white;
+      padding: 16px 28px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 10;
     }
 
     .logo {
-      font-size: 1.2rem;
+      font-size: 1.4rem;
       font-weight: bold;
-      color: #f9fafb;
     }
 
     .logo span {
       color: #22c55e;
     }
 
+    .nav-links {
+      display: flex;
+      gap: 18px;
+    }
+
     .nav-links a {
-      color: #9ca3af;
+      color: #e5e7eb;
       text-decoration: none;
       font-size: 0.9rem;
-      margin-left: 18px;
+      transition: 0.2s;
     }
 
     .nav-links a:hover {
-      color: #e5e7eb;
-    }
-
-    .nav-cta {
-      padding: 7px 14px;
-      border-radius: 999px;
-      background: #22c55e;
-      color: #020617 !important;
-      font-weight: 600;
-      margin-left: 24px;
-    }
-
-    main {
-      max-width: 1100px;
-      margin: 24px auto 48px;
-      padding: 0 16px;
+      color: #ffffff;
     }
 
     .hero {
-      display: grid;
-      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-      gap: 28px;
-      align-items: center;
-      margin-bottom: 36px;
-    }
-
-    .hero-title {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #f9fafb;
-      margin-bottom: 8px;
-    }
-
-    .hero-title span {
-      color: #22c55e;
-    }
-
-    .hero-subtitle {
-      font-size: 0.95rem;
-      color: #9ca3af;
-      margin-bottom: 18px;
-    }
-
-    .hero-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 18px;
-    }
-
-    .badge {
-      font-size: 0.75rem;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid #1f2937;
-      background: #020617;
-      color: #9ca3af;
-    }
-
-    .badge-cta {
-      border-color: #22c55e;
-      color: #bbf7d0;
-    }
-
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .btn-primary {
-      padding: 9px 18px;
-      border-radius: 999px;
-      border: none;
-      background: #22c55e;
-      color: #020617;
-      font-size: 0.9rem;
-      font-weight: 600;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .btn-primary:hover {
-      filter: brightness(1.05);
-    }
-
-    .btn-ghost {
-      padding: 9px 16px;
-      border-radius: 999px;
-      border: 1px solid #374151;
-      background: transparent;
-      color: #e5e7eb;
-      font-size: 0.9rem;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .btn-ghost:hover {
-      border-color: #9ca3af;
-    }
-
-    .hero-footnote {
-      font-size: 0.8rem;
-      color: #6b7280;
-      margin-top: 6px;
-    }
-
-    .hero-card {
-      background: radial-gradient(circle at top left, #22c55e22, #020617 60%);
-      border-radius: 16px;
-      border: 1px solid #1f2937;
-      padding: 16px 18px;
-      color: #e5e7eb;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
-    }
-
-    .hero-card-title {
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #9ca3af;
-      margin-bottom: 8px;
-    }
-
-    .hero-metric-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.8rem;
-      margin-bottom: 4px;
-      color: #9ca3af;
-    }
-
-    .hero-metric-row span:last-child {
-      color: #e5e7eb;
-      font-weight: 600;
-    }
-
-    .hero-card-divider {
-      border: none;
-      border-top: 1px solid #1f2937;
-      margin: 10px 0;
-    }
-
-    .hero-metric-big {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: #22c55e;
-    }
-
-    .hero-metric-label {
-      font-size: 0.8rem;
-      color: #9ca3af;
-    }
-
-    .hero-tagline {
-      font-size: 0.8rem;
-      color: #9ca3af;
-      margin-top: 12px;
-    }
-
-    .role-section-title {
-      font-size: 1.1rem;
-      margin: 12px 0 8px;
-      color: #e5e7eb;
-    }
-
-    .role-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
-      margin-bottom: 32px;
-    }
-
-    .role-card {
-      background: #020617;
-      border-radius: 14px;
-      border: 1px solid #1f2937;
-      padding: 14px 12px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 150px;
-    }
-
-    .role-badge {
-      display: inline-block;
-      font-size: 0.75rem;
-      padding: 2px 8px;
-      border-radius: 999px;
-      border: 1px solid #1f2937;
-      color: #9ca3af;
-      margin-bottom: 6px;
-    }
-
-    .role-title {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #f9fafb;
-      margin-bottom: 4px;
-    }
-
-    .role-desc {
-      font-size: 0.78rem;
-      color: #9ca3af;
-      margin-bottom: 8px;
-      min-height: 40px;
-    }
-
-    .role-tagline {
-      font-size: 0.75rem;
-      color: #6b7280;
-      margin-bottom: 8px;
-    }
-
-    .role-btn {
-      width: 100%;
       text-align: center;
-      font-size: 0.8rem;
-      padding: 7px 10px;
+      padding: 80px 20px;
+    }
+
+    .hero h1 {
+      font-size: 2.2rem;
+      color: #0f172a;
+      margin-bottom: 10px;
+    }
+
+    .hero p {
+      color: #6b7280;
+      font-size: 1.1rem;
+      max-width: 650px;
+      margin: 0 auto;
+      margin-bottom: 24px;
+    }
+
+    .cta-buttons {
+      margin-top: 28px;
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .cta-buttons a {
+      padding: 12px 22px;
       border-radius: 999px;
-      border: none;
-      text-decoration: none;
-      cursor: pointer;
       background: #22c55e;
-      color: #020617;
+      color: #0f172a;
+      text-decoration: none;
       font-weight: 600;
-      margin-top: auto;
+      font-size: 0.95rem;
     }
 
-    .role-btn:hover {
+    .cta-buttons a:hover {
       filter: brightness(1.05);
-    }
-
-    .role-pill {
-      font-size: 0.7rem;
-      color: #22c55e;
-    }
-
-    .pill-muted {
-      color: #9ca3af;
-    }
-
-    .feature-strip {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-      margin-bottom: 32px;
-    }
-
-    .feature-card {
-      background: #020617;
-      border-radius: 14px;
-      border: 1px solid #111827;
-      padding: 12px 12px;
-      font-size: 0.8rem;
-      color: #9ca3af;
-    }
-
-    .feature-title {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #e5e7eb;
-      margin-bottom: 4px;
     }
 
     footer {
-      max-width: 1100px;
-      margin: 0 auto 18px;
-      padding: 0 16px;
-      font-size: 0.75rem;
+      margin-top: 80px;
+      text-align: center;
       color: #6b7280;
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    @media (max-width: 900px) {
-      .hero {
-        grid-template-columns: 1fr;
-      }
-      .role-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      .feature-strip {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 600px) {
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-      }
-      .nav-links {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 4px;
-      }
-      .nav-cta {
-        margin-left: 0;
-      }
-      .role-grid {
-        grid-template-columns: 1fr;
-      }
+      font-size: 0.8rem;
+      padding-bottom: 20px;
     }
   </style>
 </head>
+
 <body>
+  <!-- HEADER -->
   <header>
-    <div class="logo">
-      MyFreight<span>Tracker</span>
-    </div>
+    <div class="logo">MyFreight<span>Tracker</span></div>
+
     <nav class="nav-links">
-      <a href="#roles">Products</a>
-      <a href="#features">Features</a>
-      <a href="/broker-login.html" class="nav-cta">Broker Login</a>
+      <a href="/broker-login.html">Broker Login</a>
+      <a href="/trucker-login.html">Trucker Login</a>
+      <a href="/shipper-login.html">Shipper Login</a>
+      <a href="/dispatcher-login.html">Dispatcher Login</a>
     </nav>
   </header>
 
-  <main>
-    <!-- HERO -->
-    <section class="hero">
-      <div>
-        <h1 class="hero-title">
-          One Freight OS for <span>Brokers, Shippers & Carriers</span>.
-        </h1>
-        <p class="hero-subtitle">
-          Quote spot freight in seconds, invite drivers with a single link,
-          track trucks live, and keep all your RCs, BOLs, and carrier packets in one place.
-        </p>
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <h1>Smart. Simple. Powerful Logistics Software.</h1>
+    <p>
+      A unified freight ecosystem for brokers, truckers, shippers, and dispatchers.
+      Create loads, track drivers, store documents, verify carriers, and quote lanes
+      with AI — all in one place.
+    </p>
 
-        <div class="hero-badges">
-          <span class="badge badge-cta">Built by a working broker</span>
-          <span class="badge">AI-powered spot quote engine</span>
-          <span class="badge">Integrated FMCSA checks</span>
-          <span class="badge">Driver GPS tracking links</span>
-        </div>
-
-        <div class="hero-actions">
-          <a href="/broker-login.html" class="btn-primary">Log in as Broker</a>
-          <a href="#roles" class="btn-ghost">Choose your portal</a>
-        </div>
-
-        <p class="hero-footnote">
-          Coming soon: full portals for shippers, truckers, and dispatchers – all tied into the same TMS.
-        </p>
-      </div>
-
-      <!-- Hero "live dashboard" card -->
-      <div class="hero-card">
-        <div class="hero-card-title">Live lane snapshot (demo)</div>
-        <div class="hero-metric-row">
-          <span>LOU, KY → ATL, GA</span>
-          <span>$1,925 MARKET</span>
-        </div>
-        <div class="hero-metric-row">
-          <span>Carrier pay</span>
-          <span>$1,625</span>
-        </div>
-        <div class="hero-metric-row">
-          <span>Effective margin</span>
-          <span>15.6%</span>
-        </div>
-
-        <hr class="hero-card-divider" />
-
-        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 8px;">
-          <div>
-            <div class="hero-metric-big">812</div>
-            <div class="hero-metric-label">miles (auto from Maps)</div>
-          </div>
-          <div style="text-align:right;">
-            <div class="hero-metric-label">
-              Equipment: Dry Van • Weight: 41,500 lbs
-            </div>
-            <div class="hero-metric-label">
-              Lane: Balanced • Urgency: Rush
-            </div>
-          </div>
-        </div>
-
-        <p class="hero-tagline">
-          Build a quote. Push it into a load. Text the tracking link to your driver – all inside MyFreightTracker.
-        </p>
-      </div>
-    </section>
-
-    <!-- ROLES / PORTALS -->
-    <section id="roles">
-      <h2 class="role-section-title">Choose your portal</h2>
-      <p class="hero-footnote" style="margin-bottom:10px;">
-        Each login is a tailored workspace. Start with Broker today – Shipper, Trucker, and Dispatcher portals are being wired in next.
-      </p>
-
-      <div class="role-grid">
-        <!-- Shipper -->
-        <div class="role-card">
-          <div>
-            <div class="role-badge">For Shippers</div>
-            <div class="role-title">Shipper Portal</div>
-            <p class="role-desc">
-              Create loads under our broker authority, request quotes, and see real-time tracking updates on your freight.
-            </p>
-            <p class="role-tagline">
-              <span class="role-pill pill-muted">Status: Coming online soon</span>
-            </p>
-          </div>
-          <a href="/shipper-login.html" class="role-btn">Shipper Login</a>
-        </div>
-
-        <!-- Trucker -->
-        <div class="role-card">
-          <div>
-            <div class="role-badge">For Truckers / Carriers</div>
-            <div class="role-title">Trucker Portal</div>
-            <p class="role-desc">
-              Upload rate cons & BOLs, track IFTA miles, log maintenance, and see your profits after fuel and expenses.
-            </p>
-            <p class="role-tagline">
-              <span class="role-pill pill-muted">Status: Building now</span>
-            </p>
-          </div>
-          <a href="/trucker-login.html" class="role-btn">Trucker Login</a>
-        </div>
-
-        <!-- Dispatcher -->
-        <div class="role-card">
-          <div>
-            <div class="role-badge">For Dispatchers</div>
-            <div class="role-title">Dispatcher Portal</div>
-            <p class="role-desc">
-              Manage multiple trucks, assign loads, and monitor live GPS positions from one simple control panel.
-            </p>
-            <p class="role-tagline">
-              <span class="role-pill pill-muted">Status: Roadmap – 2025</span>
-            </p>
-          </div>
-          <a href="/dispatcher-login.html" class="role-btn">Dispatcher Login</a>
-        </div>
-
-        <!-- Broker -->
-        <div class="role-card">
-          <div>
-            <div class="role-badge">For Freight Brokers</div>
-            <div class="role-title">Broker TMS</div>
-            <p class="role-desc">
-              Originate loads, run smart spot quotes, verify carriers with FMCSA, and invite drivers via tracking links.
-            </p>
-            <p class="role-tagline">
-              <span class="role-pill">Status: Live • MVP ready</span>
-            </p>
-          </div>
-          <a href="/broker-login.html" class="role-btn">Broker Login</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- FEATURE STRIP -->
-    <section id="features">
-      <div class="feature-strip">
-        <div class="feature-card">
-          <div class="feature-title">AI-assisted spot quoting</div>
-          <p>
-            Use lane distance, weight, equipment type, urgency, and lane balance
-            to generate aggressive, market, and premium bids in seconds. No more guessing CPM.
-          </p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-title">Driver tracking made simple</div>
-          <p>
-            Create a load, send one link. Drivers share their GPS from the browser –
-            you see their last ping and route on the map without forcing an app install.
-          </p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-title">Documents in one place</div>
-          <p>
-            Keep a clean record of rate cons, BOLs, and carrier packets tied to each load.
-            Email documents directly to carriers and shippers from inside the system (SMTP-ready).
-          </p>
-        </div>
-      </div>
-    </section>
-  </main>
+    <div class="cta-buttons">
+      <a href="/broker-login.html">Get Started</a>
+      <a href="/broker-register.html" style="background:#e5e7eb;color:#111827;">Create Broker Account</a>
+    </div>
+  </section>
 
   <footer>
-    <span>© <span id="year"></span> MyFreightTracker. A subsidiary of Leatherneck Trucking LLC.</span>
-    <span>Broker • Shipper • Trucker • Dispatcher – one connected freight stack.</span>
+    © 2025 MyFreightTracker — A subsidiary of Leatherneck Trucking LLC
   </footer>
-
-  <script>
-    // Simple year in footer
-    document.getElementById('year').textContent = new Date().getFullYear();
-  </script>
 </body>
 </html>
-
