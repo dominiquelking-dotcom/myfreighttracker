@@ -4,6 +4,11 @@ const path = require('path');
 
 const app = express();
 
+// ----------------------
+//  POSTGRES (db.js)
+// ----------------------
+const db = require('./db');
+
 //
 // ----------------------
 //  TWILIO (OPTIONAL)
@@ -190,12 +195,6 @@ app.get('/api', (req, res) => {
 // ----------------------
 //  SPOT QUOTE / PRICING ENGINE
 // ----------------------
-//
-// This powers the Smart Spot Quote on broker-dashboard.html.
-// It expects: origin, destination, miles, equipment, weight, margin,
-// direction (headhaul/backhaul/balanced), urgency (standard/rush),
-// weekend (boolean), fuelPerMile.
-//
 app.post('/api/quote', (req, res) => {
   try {
     const {
@@ -774,6 +773,20 @@ app.post('/broker-login', (req, res) => {
 
   // Later you can include broker identity in a real session/token
   res.redirect(`/broker-dashboard.html?plan=${encodeURIComponent(plan)}`);
+});
+
+//
+// ----------------------
+//  TEST DB ENDPOINT
+// ----------------------
+app.get('/test-db', async (req, res) => {
+  try {
+    const result = await db.query('SELECT NOW()');
+    res.send('Database connected! Time: ' + result.rows[0].now);
+  } catch (err) {
+    console.error('DB test error:', err);
+    res.status(500).send('Database error: ' + (err.message || String(err)));
+  }
 });
 
 //
