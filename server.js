@@ -59,15 +59,11 @@ async function fetchFmcsaCarrier({ dotNumber, docketNumber, name }) {
   }
 
   let path;
-
   if (dotNumber) {
-    // Lookup by DOT #
     path = `/carriers/${encodeURIComponent(dotNumber)}`;
   } else if (docketNumber) {
-    // Lookup by MC/docket #
     path = `/carriers/docket-number/${encodeURIComponent(docketNumber)}/`;
   } else if (name) {
-    // Lookup by carrier name (takes first result)
     path = `/carriers/name/${encodeURIComponent(name)}?size=1`;
   } else {
     throw new Error('No identifier provided for FMCSA lookup');
@@ -84,42 +80,40 @@ async function fetchFmcsaCarrier({ dotNumber, docketNumber, name }) {
   }
 
   const data = await resp.json();
-
   const first = data && data.content && data.content[0];
   if (!first || !first.carrier) {
     throw new Error('No carrier data found in FMCSA response');
   }
 
   const carrier = first.carrier;
-
   return {
     dotNumber: carrier.dotNumber || null,
     mcNumber: carrier.mcNumber || null,
     legalName: carrier.legalName || null,
     dbaName: carrier.dbaName || null,
-    allowedToOperate: carrier.allowedToOperate || null, // "Y" / "N"
+    allowedToOperate: carrier.allowedToOperate || null,
     outOfServiceDate: carrier.outOfServiceDate || null,
     phyStreet: carrier.phyStreet || null,
     phyCity: carrier.phyCity || null,
     phyState: carrier.phyState || null,
     phyZipcode: carrier.phyZipcode || null,
     telephone: carrier.telephone || null,
-    raw: carrier // full raw FMCSA record if you want it
+    raw: carrier
   };
 }
 
 //
 // ----------------------
-//  CREDIT WALLET / PRICING
+//  CREDIT WALLET / PRICING (still in-memory for now)
 // ----------------------
 const WALLET = {
-  trackingCredits: 20.0, // e.g. $20 worth of tracking-only
-  tmsCredits: 75.0       // e.g. $75 worth of TMS plan funds
+  trackingCredits: 20.0,
+  tmsCredits: 75.0
 };
 
 const PRICING = {
-  trackingPerLoad: 2.0,   // $2 per load (tracking-only plan)
-  tmsPerLoad: 1.25        // $1.25 per load (TMS plan)
+  trackingPerLoad: 2.0,
+  tmsPerLoad: 1.25
 };
 
 //
@@ -143,8 +137,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ----------------------
 //  BROKER ACCOUNTS (LEGACY FALLBACK)
 // ----------------------
-//
-// Real accounts are in app_users (Postgres), but this keeps old test user working.
+// Real accounts are in app_users (Postgres). This keeps old test users working.
 const BROKER_USERS = [
   {
     email: 'broker@test.com',
@@ -157,14 +150,6 @@ const BROKER_USERS = [
     plan: 'tms'
   }
 ];
-
-//
-// ----------------------
-//  IN-MEMORY TMS ARRAYS (still local for now)
-// ----------------------
-let customers = [];
-let carriers = [];
-let documents = [];
 
 function makeToken(length = 24) {
   const chars =
@@ -197,10 +182,10 @@ app.post('/api/quote', (req, res) => {
       equipment,
       weight,
       margin,
-      direction,   // 'headhaul' | 'balanced' | 'backhaul'
-      urgency,     // 'standard' | 'rush'
-      weekend,     // boolean
-      fuelPerMile  // number
+      direction,
+      urgency,
+      weekend,
+      fuelPerMile
     } = req.body;
 
     const dist = Number(miles) || 0;
@@ -212,7 +197,7 @@ app.post('/api/quote', (req, res) => {
       return res.status(400).json({ error: 'Invalid quote data' });
     }
 
-    // --- Base CPM by equipment type ---
+    // Base CPM by equipment
     let baseCpm;
     switch (equipment) {
       case 'reefer':
@@ -230,33 +215,33 @@ app.post('/api/quote', (req, res) => {
         break;
     }
 
-    // --- Distance band adjustments ---
+    // Distance band
     if (dist < 150) {
-      baseCpm += 0.40; // short-haul premium
+      baseCpm += 0.40;
     } else if (dist > 750) {
-      baseCpm -= 0.15; // long-haul discount
+      baseCpm -= 0.15;
     }
 
-    // --- Weight adjustments ---
+    // Weight
     if (wt > 42000) {
       baseCpm += 0.12;
     } else if (wt < 15000 && wt > 0) {
       baseCpm -= 0.05;
     }
 
-    // --- Lane direction adjustments ---
+    // Lane
     if (direction === 'headhaul') {
       baseCpm += 0.12;
     } else if (direction === 'backhaul') {
       baseCpm -= 0.10;
     }
 
-    // --- Urgency adjustments ---
+    // Urgency
     if (urgency === 'rush') {
       baseCpm += 0.15;
     }
 
-    // --- Weekend / holiday adjustment ---
+    // Weekend
     if (weekend) {
       baseCpm += 0.05;
     }
@@ -370,7 +355,7 @@ app.post('/api/loads', async (req, res) => {
        RETURNING id`,
       [
         reference,
-        1, // TEMP broker id until sessions are added
+        1, // TEMP: broker_id until we add real auth/session
         equipmentType || '',
         driverName || '',
         driverPhone,
@@ -399,8 +384,8 @@ app.post('/api/loads', async (req, res) => {
         tractorNumber: tractorNumber || '',
         trailerNumber: trailerNumber || '',
         equipmentType: equipmentType || '',
-        pickupAddress: pickupAddress || '',
-        deliveryAddress: deliveryAddress || '',
+        pickupAddress,
+        deliveryAddress,
         rate,
         notes,
         status: 'invited',
@@ -492,7 +477,6 @@ app.post('/api/ping', async (req, res) => {
   }
 
   try {
-    // Find load by session token
     const loadResult = await db.query(
       'SELECT id FROM loads WHERE session_token = $1 LIMIT 1',
       [token]
@@ -504,14 +488,12 @@ app.post('/api/ping', async (req, res) => {
 
     const loadId = loadResult.rows[0].id;
 
-    // Insert GPS point
     await db.query(
       `INSERT INTO gps_points (trucker_id, load_id, latitude, longitude, recorded_at, source)
        VALUES (NULL, $1, $2, $3, NOW(), 'mobile_app')`,
       [loadId, lat, lng]
     );
 
-    // Update load status
     await db.query(
       `UPDATE loads
        SET status = 'tracking', updated_at = NOW()
@@ -598,94 +580,244 @@ app.post('/api/loads/:id/send-link', async (req, res) => {
 
 //
 // ======================
-//  TMS FEATURES (still in-memory for now)
+//  TMS FEATURES (NOW POSTGRES)
 // ======================
 //
 
 // CUSTOMERS
-app.get('/api/customers', (req, res) => {
-  res.json(customers);
+app.get('/api/customers', async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT id, name, contact_name, phone, email, mc_number, notes, created_at
+       FROM customers
+       ORDER BY id ASC`
+    );
+
+    const customers = result.rows.map(row => ({
+      id: row.id,
+      name: row.name,
+      contactName: row.contact_name,
+      phone: row.phone,
+      email: row.email,
+      mcNumber: row.mc_number,
+      notes: row.notes,
+      createdAt: row.created_at
+    }));
+
+    res.json(customers);
+  } catch (err) {
+    console.error('Error fetching customers:', err);
+    res.status(500).json({ error: 'Server error fetching customers' });
+  }
 });
 
-app.post('/api/customers', (req, res) => {
+app.post('/api/customers', async (req, res) => {
   const { name, contactName, phone, email, mcNumber, notes } = req.body;
 
-  if (!name)
+  if (!name) {
     return res.status(400).json({ error: 'Customer name is required' });
+  }
 
-  const record = {
-    id: customers.length + 1,
-    name,
-    contactName: contactName || '',
-    phone: phone || '',
-    email: email || '',
-    mcNumber: mcNumber || '',
-    notes: notes || '',
-    createdAt: new Date().toISOString()
-  };
+  try {
+    const insert = await db.query(
+      `INSERT INTO customers (
+         broker_id,
+         name,
+         contact_name,
+         phone,
+         email,
+         mc_number,
+         notes
+       )
+       VALUES ($1,$2,$3,$4,$5,$6,$7)
+       RETURNING id, name, contact_name, phone, email, mc_number, notes, created_at`,
+      [
+        1, // TEMP: broker_id until auth added
+        name,
+        contactName || '',
+        phone || '',
+        email || '',
+        mcNumber || '',
+        notes || ''
+      ]
+    );
 
-  customers.push(record);
-  res.json(record);
+    const row = insert.rows[0];
+    res.json({
+      id: row.id,
+      name: row.name,
+      contactName: row.contact_name,
+      phone: row.phone,
+      email: row.email,
+      mcNumber: row.mc_number,
+      notes: row.notes,
+      createdAt: row.created_at
+    });
+  } catch (err) {
+    console.error('Error creating customer:', err);
+    res.status(500).json({ error: 'Server error creating customer' });
+  }
 });
 
 // CARRIERS
-app.get('/api/carriers', (req, res) => {
-  res.json(carriers);
+app.get('/api/carriers', async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT id, name, mc_number, phone, email, truckstop_id, dat_id, notes, created_at
+       FROM carriers
+       ORDER BY id ASC`
+    );
+
+    const carriers = result.rows.map(row => ({
+      id: row.id,
+      name: row.name,
+      mcNumber: row.mc_number,
+      phone: row.phone,
+      email: row.email,
+      truckstopId: row.truckstop_id,
+      datId: row.dat_id,
+      notes: row.notes,
+      createdAt: row.created_at
+    }));
+
+    res.json(carriers);
+  } catch (err) {
+    console.error('Error fetching carriers:', err);
+    res.status(500).json({ error: 'Server error fetching carriers' });
+  }
 });
 
-app.post('/api/carriers', (req, res) => {
+app.post('/api/carriers', async (req, res) => {
   const { name, mcNumber, phone, email, truckstopId, datId, notes } = req.body;
 
-  if (!name)
+  if (!name) {
     return res.status(400).json({ error: 'Carrier name is required' });
+  }
 
-  const record = {
-    id: carriers.length + 1,
-    name,
-    mcNumber: mcNumber || '',
-    phone: phone || '',
-    email: email || '',
-    truckstopId: truckstopId || '',
-    datId: datId || '',
-    notes: notes || '',
-    createdAt: new Date().toISOString()
-  };
+  try {
+    const insert = await db.query(
+      `INSERT INTO carriers (
+         broker_id,
+         name,
+         mc_number,
+         phone,
+         email,
+         truckstop_id,
+         dat_id,
+         notes
+       )
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+       RETURNING id, name, mc_number, phone, email, truckstop_id, dat_id, notes, created_at`,
+      [
+        1, // TEMP: broker_id until auth added
+        name,
+        mcNumber || '',
+        phone || '',
+        email || '',
+        truckstopId || '',
+        datId || '',
+        notes || ''
+      ]
+    );
 
-  carriers.push(record);
-  res.json(record);
+    const row = insert.rows[0];
+    res.json({
+      id: row.id,
+      name: row.name,
+      mcNumber: row.mc_number,
+      phone: row.phone,
+      email: row.email,
+      truckstopId: row.truckstop_id,
+      datId: row.dat_id,
+      notes: row.notes,
+      createdAt: row.created_at
+    });
+  } catch (err) {
+    console.error('Error creating carrier:', err);
+    res.status(500).json({ error: 'Server error creating carrier' });
+  }
 });
 
 // DOCUMENTS
-app.get('/api/documents', (req, res) => {
-  res.json(documents);
+app.get('/api/documents', async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT id, doc_type, reference, load_id, customer_name, carrier_name, notes, uploaded_at
+       FROM documents
+       ORDER BY id ASC`
+    );
+
+    const docs = result.rows.map(row => ({
+      id: row.id,
+      type: row.doc_type,
+      reference: row.reference,
+      loadId: row.load_id,
+      customerName: row.customer_name,
+      carrierName: row.carrier_name,
+      notes: row.notes,
+      createdAt: row.uploaded_at
+    }));
+
+    res.json(docs);
+  } catch (err) {
+    console.error('Error fetching documents:', err);
+    res.status(500).json({ error: 'Server error fetching documents' });
+  }
 });
 
-app.post('/api/documents', (req, res) => {
+app.post('/api/documents', async (req, res) => {
   const { type, reference, loadId, customerName, carrierName, notes } = req.body;
 
-  if (!type || !reference)
+  if (!type || !reference) {
     return res.status(400).json({
       error: 'type and reference required'
     });
+  }
 
-  const record = {
-    id: documents.length + 1,
-    type,
-    reference,
-    loadId: loadId || null,
-    customerName: customerName || '',
-    carrierName: carrierName || '',
-    notes: notes || '',
-    createdAt: new Date().toISOString()
-  };
+  try {
+    const insert = await db.query(
+      `INSERT INTO documents (
+         load_id,
+         uploaded_by,
+         doc_type,
+         reference,
+         customer_name,
+         carrier_name,
+         notes
+       )
+       VALUES ($1,$2,$3,$4,$5,$6,$7)
+       RETURNING id, doc_type, reference, load_id, customer_name, carrier_name, notes, uploaded_at`,
+      [
+        loadId || null,
+        1, // TEMP: uploaded_by broker id
+        type,
+        reference,
+        customerName || '',
+        carrierName || '',
+        notes || ''
+      ]
+    );
 
-  documents.push(record);
-  res.json(record);
+    const row = insert.rows[0];
+    res.json({
+      id: row.id,
+      type: row.doc_type,
+      reference: row.reference,
+      loadId: row.load_id,
+      customerName: row.customer_name,
+      carrierName: row.carrier_name,
+      notes: row.notes,
+      createdAt: row.uploaded_at
+    });
+  } catch (err) {
+    console.error('Error creating document:', err);
+    res.status(500).json({ error: 'Server error creating document' });
+  }
 });
 
 //
 // ----------------------
-//  EMAIL DOCUMENT TO CARRIER
+//  EMAIL DOCUMENT TO CARRIER (from DB)
 // ----------------------
 app.post('/api/documents/:id/send-to-carrier', async (req, res) => {
   if (!mailTransport) {
@@ -695,64 +827,82 @@ app.post('/api/documents/:id/send-to-carrier', async (req, res) => {
   }
 
   const id = Number(req.params.id);
-  const doc = documents.find(d => d.id === id);
+  if (!id) {
+    return res.status(400).json({ error: 'Invalid document id' });
+  }
 
-  if (!doc) return res.status(404).json({ error: 'Document not found' });
-  if (!doc.carrierName)
-    return res
-      .status(400)
-      .json({ error: 'carrierName not set on document' });
+  try {
+    const docResult = await db.query(
+      `SELECT id, doc_type, reference, load_id, customer_name, carrier_name, notes
+       FROM documents
+       WHERE id = $1`,
+      [id]
+    );
 
-  const carrier = carriers.find(
-    c => c.name.toLowerCase() === doc.carrierName.toLowerCase()
-  );
+    if (docResult.rowCount === 0) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
 
-  if (!carrier)
-    return res.status(404).json({
-      error: `Carrier "${doc.carrierName}" not found`
-    });
+    const doc = docResult.rows[0];
 
-  if (!carrier.email)
-    return res
-      .status(400)
-      .json({ error: 'Carrier has no email address' });
+    if (!doc.carrier_name) {
+      return res.status(400).json({ error: 'carrierName not set on document' });
+    }
 
-  const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
-  const brokerEmail = 'broker@example.com'; // placeholder until real auth system
+    const carrierResult = await db.query(
+      `SELECT email
+       FROM carriers
+       WHERE LOWER(name) = LOWER($1)
+       LIMIT 1`,
+      [doc.carrier_name]
+    );
 
-  const typeLabel =
-    doc.type === 'rate-confirmation'
-      ? 'Rate Confirmation'
-      : doc.type === 'bol'
-      ? 'Bill of Lading'
-      : doc.type === 'carrier-packet'
-      ? 'Carrier Packet'
-      : doc.type;
+    if (carrierResult.rowCount === 0) {
+      return res.status(404).json({
+        error: `Carrier "${doc.carrier_name}" not found`
+      });
+    }
 
-  const subject = `MyFreightTracker: ${typeLabel} ${doc.reference}`;
+    const carrierEmail = carrierResult.rows[0].email;
+    if (!carrierEmail) {
+      return res.status(400).json({ error: 'Carrier has no email address' });
+    }
 
-  const textBody = `
+    const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
+    const brokerEmail = 'broker@example.com'; // placeholder until real auth
+
+    const typeLabel =
+      doc.doc_type === 'rate-confirmation'
+        ? 'Rate Confirmation'
+        : doc.doc_type === 'bol'
+        ? 'Bill of Lading'
+        : doc.doc_type === 'carrier-packet'
+        ? 'Carrier Packet'
+        : doc.doc_type;
+
+    const subject = `MyFreightTracker: ${typeLabel} ${doc.reference || ''}`;
+
+    const textBody = `
 Hello,
 
 Please find the details for the ${typeLabel.toLowerCase()} below:
 
 Type: ${typeLabel}
-Reference: ${doc.reference}
-Load ID: ${doc.loadId || '-'}
-Customer: ${doc.customerName || '-'}
-Carrier: ${doc.carrierName || '-'}
+Reference: ${doc.reference || '-'}
+Load ID: ${doc.load_id || '-'}
+Customer: ${doc.customer_name || '-'}
+Carrier: ${doc.carrier_name || '-'}
 
 Notes:
 ${doc.notes || '-'}
 
 This is an automated message from MyFreightTracker.
 (No PDF attachment yet — coming soon.)
-  `.trim();
+    `.trim();
 
-  try {
     await mailTransport.sendMail({
       from: fromEmail,
-      to: carrier.email,
+      to: carrierEmail,
       replyTo: brokerEmail,
       subject,
       text: textBody
@@ -760,7 +910,7 @@ This is an automated message from MyFreightTracker.
 
     res.json({
       message: 'Email sent to carrier',
-      to: carrier.email,
+      to: carrierEmail,
       subject
     });
   } catch (err) {
@@ -771,7 +921,7 @@ This is an automated message from MyFreightTracker.
 
 //
 // ----------------------
-//  BILLING / WALLET INFO
+//  BILLING / WALLET INFO (still in-memory)
 // ----------------------
 app.get('/api/billing', (req, res) => {
   res.json({
