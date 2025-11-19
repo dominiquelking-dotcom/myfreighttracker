@@ -145,6 +145,10 @@
       background: #4ade80;
     }
 
+    .feature-btn[data-panel="customers"] span.dot {
+      background: #a855f7;
+    }
+
     .card {
       background: #ffffff;
       border-radius: 14px;
@@ -295,6 +299,81 @@
       margin-top: 2px;
     }
 
+    /* Customers subtabs */
+    .subtabs {
+      display: inline-flex;
+      border-radius: 999px;
+      background: #f3f4f6;
+      padding: 2px;
+      gap: 4px;
+      margin-bottom: 10px;
+    }
+
+    .subtab-btn {
+      border-radius: 999px;
+      border: none;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      background: transparent;
+      cursor: pointer;
+      color: #4b5563;
+    }
+
+    .subtab-btn.active {
+      background: #ffffff;
+      color: #111827;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+    }
+
+    .subtab-panel {
+      display: none;
+    }
+
+    .subtab-panel.active {
+      display: block;
+    }
+
+    /* Docs type tabs */
+    .doc-type-tabs {
+      display: inline-flex;
+      border-radius: 999px;
+      background: #f3f4f6;
+      padding: 2px;
+      gap: 4px;
+      margin: 6px 0 10px;
+    }
+
+    .doc-type-btn {
+      border-radius: 999px;
+      border: none;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      background: transparent;
+      cursor: pointer;
+      color: #4b5563;
+    }
+
+    .doc-type-btn.active {
+      background: #ffffff;
+      color: #111827;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+    }
+
+    .doc-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .link-small {
+      font-size: 0.78rem;
+      color: #2563eb;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
     @media (max-width: 900px) {
       header {
         flex-direction: column;
@@ -317,7 +396,7 @@
 <main>
   <h1>Broker Dashboard</h1>
   <p class="subtitle">
-    Press a button to open the tool you need – quotes, tracking, docs, and more.
+    Press a button to open the tool you need – quotes, tracking, docs, customers and more.
   </p>
 
   <div class="top-info-row">
@@ -332,6 +411,9 @@
     </button>
     <button class="feature-btn" data-panel="quote">
       <span class="dot"></span> Quote Calculator
+    </button>
+    <button class="feature-btn" data-panel="customers">
+      <span class="dot"></span> Customers
     </button>
     <button class="feature-btn" data-panel="loadboard">
       <span class="dot"></span> Loadboard Aggregator
@@ -466,6 +548,55 @@
     <div id="quote-results" class="driver-link-box" style="display:none; margin-top:10px;"></div>
   </section>
 
+  <!-- CUSTOMERS PANEL -->
+  <section id="panel-customers" class="feature-panel card">
+    <h2>Customers</h2>
+    <p class="small">
+      Keep your shipper list clean and simple. Create customers and see your master list in one place.
+    </p>
+
+    <div class="subtabs">
+      <button type="button" class="subtab-btn active" data-sub="create">Create customer</button>
+      <button type="button" class="subtab-btn" data-sub="list">Customer list</button>
+    </div>
+
+    <!-- Create customer sub-panel -->
+    <div id="customer-create-panel" class="subtab-panel active">
+      <form id="customer-form">
+        <label>Customer name</label>
+        <input id="cust-name" placeholder="e.g. ACME Manufacturing" required />
+
+        <label>Contact name</label>
+        <input id="cust-contact" placeholder="e.g. Jane Smith" />
+
+        <label>Phone</label>
+        <input id="cust-phone" placeholder="e.g. 555-123-4567" />
+
+        <label>Email</label>
+        <input id="cust-email" placeholder="e.g. dispatch@example.com" />
+
+        <label>MC # (optional)</label>
+        <input id="cust-mc" placeholder="e.g. 123456" />
+
+        <label>Notes</label>
+        <textarea id="cust-notes" rows="2" placeholder="Credit info, lanes, accessorials, etc."></textarea>
+
+        <button type="submit">Add customer</button>
+      </form>
+    </div>
+
+    <!-- Customer list sub-panel -->
+    <div id="customer-list-panel" class="subtab-panel">
+      <div class="doc-list-header">
+        <h3 style="font-size:0.9rem;">Customer list</h3>
+        <span class="link-small" id="refresh-customers-link">Refresh</span>
+      </div>
+      <div id="customer-list" class="small" style="margin-top:4px;">
+        Loading customers…
+      </div>
+    </div>
+  </section>
+
   <!-- LOADBOARD AGGREGATOR PANEL -->
   <section id="panel-loadboard" class="feature-panel card">
     <h2>Loadboard Aggregator (Mock)</h2>
@@ -506,7 +637,16 @@
     <h2 id="docs-heading">Documents</h2>
     <p class="small" id="docs-description">
       Track where your documents live across BOL, rate cons, carrier packets, and other files.
+      Use notes to specify “Received vs Created” and “Where stored” (email, folder, cloud, etc.).
     </p>
+
+    <!-- Internal doc-type tabs inside panel -->
+    <div class="doc-type-tabs">
+      <button type="button" class="doc-type-btn active" data-doc-type="rate-confirmation">Ratecon</button>
+      <button type="button" class="doc-type-btn" data-doc-type="bol">BOL</button>
+      <button type="button" class="doc-type-btn" data-doc-type="carrier-packet">Carrier Packet</button>
+      <button type="button" class="doc-type-btn" data-doc-type="other">Other</button>
+    </div>
 
     <form id="doc-form">
       <input type="hidden" id="doc-type" value="rate-confirmation" />
@@ -524,12 +664,17 @@
       <input id="doc-carrier" placeholder="Carrier on this doc" />
 
       <label for="doc-notes">Notes</label>
-      <textarea id="doc-notes" rows="2" placeholder="Where the doc is stored, quick notes, etc."></textarea>
+      <textarea id="doc-notes" rows="2" placeholder="e.g. RECEIVED signed BOL via email; stored in Google Drive: /BOLs/2025/"></textarea>
 
       <button type="submit">Add document record</button>
     </form>
 
-    <div id="doc-list" style="margin-top:8px;"></div>
+    <div class="doc-list-header">
+      <h3 style="font-size:0.9rem;">Documents for this type</h3>
+      <span class="link-small" id="show-all-docs">Show all docs</span>
+    </div>
+
+    <div id="doc-list" style="margin-top:4px;"></div>
   </section>
 </main>
 
@@ -576,7 +721,7 @@
   const panels = document.querySelectorAll('.feature-panel');
 
   function activatePanel(panelId, extra) {
-    const requiresTms = ['loadboard', 'docs'];
+    const requiresTms = ['loadboard', 'docs', 'customers'];
     if (!tmsEnabled && requiresTms.includes(panelId)) {
       alert('This feature will live in the TMS plan. For now, only tracking & quotes are active.');
       return;
@@ -605,9 +750,14 @@
       loadLoads();
     }
     if (panelId === 'docs') {
-      const mode = extra && extra.docType ? extra.docType : 'rate-confirmation';
+      const mode = extra && extra.docType ? extra.docType : currentDocType;
       setDocMode(mode);
-      loadDocuments();
+      currentDocType = mode;
+      loadDocuments(false);
+    }
+    if (panelId === 'customers') {
+      // default to list subtab? no, keep create as default but refresh list
+      refreshCustomerList();
     }
   }
 
@@ -997,18 +1147,136 @@
     });
   }
 
+  // -------- CUSTOMERS --------
+  const customerForm = document.getElementById('customer-form');
+  const customerListContainer = document.getElementById('customer-list');
+  const customerSubtabs = document.querySelectorAll('.subtab-btn');
+  const customerCreatePanel = document.getElementById('customer-create-panel');
+  const customerListPanel = document.getElementById('customer-list-panel');
+  const refreshCustomersLink = document.getElementById('refresh-customers-link');
+
+  function setCustomerSubtab(sub) {
+    customerSubtabs.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.sub === sub);
+    });
+    customerCreatePanel.classList.toggle('active', sub === 'create');
+    customerListPanel.classList.toggle('active', sub === 'list');
+    if (sub === 'list') {
+      refreshCustomerList();
+    }
+  }
+
+  customerSubtabs.forEach(btn => {
+    btn.addEventListener('click', () => setCustomerSubtab(btn.dataset.sub));
+  });
+
+  if (refreshCustomersLink) {
+    refreshCustomersLink.addEventListener('click', refreshCustomerList);
+  }
+
+  async function loadCustomers() {
+    const resp = await fetch('/api/customers');
+    if (!resp.ok) throw new Error('Failed to load customers');
+    return resp.json();
+  }
+
+  async function refreshCustomerList() {
+    if (!customerListContainer) return;
+    customerListContainer.textContent = 'Loading customers…';
+    try {
+      const customers = await loadCustomers();
+      if (!customers.length) {
+        customerListContainer.innerHTML = '<p class="no-loads">No customers yet.</p>';
+        return;
+      }
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Contact</th>
+              <th>Phone / Email</th>
+              <th>MC #</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      for (const c of customers) {
+        html += `
+          <tr>
+            <td>${c.name}</td>
+            <td>${c.contactName || '-'}</td>
+            <td>
+              ${c.phone || '-'}
+              ${c.email ? '<br>' + c.email : ''}
+            </td>
+            <td>${c.mcNumber || '-'}</td>
+            <td>${c.notes || '-'}</td>
+          </tr>
+        `;
+      }
+      html += '</tbody></table>';
+      customerListContainer.innerHTML = html;
+    } catch (e) {
+      console.error(e);
+      customerListContainer.innerHTML = '<p class="no-loads">Error loading customers.</p>';
+    }
+  }
+
+  if (customerForm) {
+    customerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const body = {
+        name: document.getElementById('cust-name').value.trim(),
+        contactName: document.getElementById('cust-contact').value.trim(),
+        phone: document.getElementById('cust-phone').value.trim(),
+        email: document.getElementById('cust-email').value.trim(),
+        mcNumber: document.getElementById('cust-mc').value.trim(),
+        notes: document.getElementById('cust-notes').value.trim()
+      };
+      if (!body.name) {
+        alert('Customer name is required.');
+        return;
+      }
+      try {
+        const resp = await fetch('/api/customers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (!resp.ok) {
+          const data = await resp.json().catch(() => ({}));
+          alert('Error adding customer: ' + (data.error || resp.statusText));
+          return;
+        }
+        customerForm.reset();
+        // Optionally flip to list and refresh
+        setCustomerSubtab('list');
+      } catch (err) {
+        console.error(err);
+        alert('Error adding customer.');
+      }
+    });
+  }
+
   // -------- DOCUMENTS --------
   const docHeading = document.getElementById('docs-heading');
   const docDesc = document.getElementById('docs-description');
   const docTypeInput = document.getElementById('doc-type');
   const docForm = document.getElementById('doc-form');
   const docList = document.getElementById('doc-list');
+  const docTypeButtons = document.querySelectorAll('.doc-type-btn');
+  const showAllDocsLink = document.getElementById('show-all-docs');
+
+  let currentDocType = 'rate-confirmation';
+  let showAllDocs = false;
 
   const DOC_CONFIG = {
     'rate-confirmation': {
       label: 'Ratecon (Rate Confirmation)',
       heading: 'Rate Confirmation (Ratecon) Docs',
-      desc: 'Log where your rate confirmations are stored for quick reference by load, customer, and carrier.'
+      desc: 'Log and organize your rate confirmations by load, customer, and carrier.'
     },
     'bol': {
       label: 'Bill of Lading',
@@ -1028,10 +1296,15 @@
   };
 
   function setDocMode(mode) {
+    currentDocType = mode;
     const cfg = DOC_CONFIG[mode] || DOC_CONFIG['other'];
     docTypeInput.value = mode === 'other' ? 'other' : mode;
     if (docHeading) docHeading.textContent = cfg.heading;
     if (docDesc) docDesc.textContent = cfg.desc;
+
+    docTypeButtons.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.docType === mode);
+    });
   }
 
   function formatDocType(t) {
@@ -1042,7 +1315,24 @@
     return t;
   }
 
-  async function loadDocuments() {
+  docTypeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const mode = btn.dataset.docType;
+      showAllDocs = false;
+      setDocMode(mode);
+      loadDocuments(false);
+    });
+  });
+
+  if (showAllDocsLink) {
+    showAllDocsLink.addEventListener('click', () => {
+      showAllDocs = !showAllDocs;
+      showAllDocsLink.textContent = showAllDocs ? 'Show filtered by type' : 'Show all docs';
+      loadDocuments(showAllDocs);
+    });
+  }
+
+  async function loadDocuments(showAll) {
     try {
       const resp = await fetch('/api/documents');
       if (!resp.ok) {
@@ -1054,6 +1344,14 @@
         docList.innerHTML = '<p class="no-loads">No documents yet.</p>';
         return;
       }
+
+      const toRender = showAll ? docs : docs.filter(d => d.type === currentDocType);
+
+      if (!toRender.length) {
+        docList.innerHTML = '<p class="no-loads">No documents for this type yet.</p>';
+        return;
+      }
+
       let html = `
         <table>
           <thead>
@@ -1066,7 +1364,7 @@
           </thead>
           <tbody>
       `;
-      for (const d of docs) {
+      for (const d of toRender) {
         html += `
           <tr>
             <td>${formatDocType(d.type)}</td>
@@ -1115,7 +1413,7 @@
           return;
         }
         docForm.reset();
-        await loadDocuments();
+        loadDocuments(showAllDocs);
       } catch (err) {
         console.error(err);
         alert('Error adding document.');
@@ -1134,3 +1432,4 @@
 </script>
 </body>
 </html>
+
