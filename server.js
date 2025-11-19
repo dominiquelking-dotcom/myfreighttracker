@@ -58,19 +58,19 @@ async function fetchFmcsaCarrier({ dotNumber, docketNumber, name }) {
     throw new Error('FMCSA_WEBKEY is not configured');
   }
 
-  let path;
+  let pathPart;
   if (dotNumber) {
-    path = `/carriers/${encodeURIComponent(dotNumber)}`;
+    pathPart = `/carriers/${encodeURIComponent(dotNumber)}`;
   } else if (docketNumber) {
-    path = `/carriers/docket-number/${encodeURIComponent(docketNumber)}/`;
+    pathPart = `/carriers/docket-number/${encodeURIComponent(docketNumber)}/`;
   } else if (name) {
-    path = `/carriers/name/${encodeURIComponent(name)}?size=1`;
+    pathPart = `/carriers/name/${encodeURIComponent(name)}?size=1`;
   } else {
     throw new Error('No identifier provided for FMCSA lookup');
   }
 
-  const webKeyParam = path.includes('?') ? '&' : '?';
-  const url = `${FMCSA_BASE_URL}${path}${webKeyParam}webKey=${encodeURIComponent(
+  const webKeyParam = pathPart.includes('?') ? '&' : '?';
+  const url = `${FMCSA_BASE_URL}${pathPart}${webKeyParam}webKey=${encodeURIComponent(
     process.env.FMCSA_WEBKEY
   )}`;
 
@@ -314,6 +314,18 @@ app.post('/api/loads', async (req, res) => {
     });
   }
 
+  // Safely parse numeric rate
+  let numericRate = null;
+  if (rate !== undefined && rate !== null && rate !== '') {
+    const parsed = Number(rate);
+    if (Number.isNaN(parsed)) {
+      return res.status(400).json({
+        error: 'Rate must be a valid number'
+      });
+    }
+    numericRate = parsed;
+  }
+
   const effectivePlan = plan === 'tms' ? 'tms' : 'tracking';
   const walletKey = effectivePlan === 'tms' ? 'tmsCredits' : 'trackingCredits';
   const costPerLoad =
@@ -329,8 +341,6 @@ app.post('/api/loads', async (req, res) => {
       currentCredits
     });
   }
-
-  WALLET[walletKey] = currentCredits - costPerLoad;
 
   const token = makeToken();
 
@@ -363,12 +373,15 @@ app.post('/api/loads', async (req, res) => {
         trailerNumber || '',
         pickupAddress || '',
         deliveryAddress || '',
-        rate ? Number(rate) : null,
+        numericRate,
         notes || '',
         'invited',
         token
       ]
     );
+
+    // only debit wallet **after** successful insert
+    WALLET[walletKey] = currentCredits - costPerLoad;
 
     const loadId = insert.rows[0].id;
     const baseUrl = getBaseUrl(req);
@@ -386,7 +399,7 @@ app.post('/api/loads', async (req, res) => {
         equipmentType: equipmentType || '',
         pickupAddress,
         deliveryAddress,
-        rate,
+        rate: numericRate,
         notes,
         status: 'invited',
         sessionToken: token
@@ -400,7 +413,10 @@ app.post('/api/loads', async (req, res) => {
     });
   } catch (err) {
     console.error('Error creating load:', err);
-    res.status(500).json({ error: 'Server error creating load' });
+    res.status(500).json({
+      error: 'Server error creating load',
+      details: err.message || String(err)
+    });
   }
 });
 
@@ -934,11 +950,6 @@ app.get('/api/billing', (req, res) => {
 // ----------------------
 //  FMCSA VERIFY ENDPOINT
 // ----------------------
-//
-//  GET /api/fmcsa/carrier?dot=123456
-//  GET /api/fmcsa/carrier?mc=654321
-//  GET /api/fmcsa/carrier?name=LEATHERNECK%20TRUCKING
-//
 app.get('/api/fmcsa/carrier', async (req, res) => {
   if (!hasFmcsa) {
     return res.status(500).json({
