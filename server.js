@@ -112,9 +112,6 @@ async function fetchFmcsaCarrier({ dotNumber, docketNumber, name }) {
 // ----------------------
 //  CREDIT WALLET / PRICING
 // ----------------------
-//
-// Simple global wallet for now (no real auth yet).
-//
 const WALLET = {
   trackingCredits: 20.0, // e.g. $20 worth of tracking-only
   tmsCredits: 75.0       // e.g. $75 worth of TMS plan funds
@@ -146,8 +143,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ----------------------
 //  BROKER ACCOUNTS (LEGACY FALLBACK)
 // ----------------------
-//  NOTE: real accounts are now stored in PostgreSQL (app_users).
-//  This array is just so old test users like tms@test.com still work.
+//
+// Real accounts are in app_users (Postgres), but this keeps old test user working.
 const BROKER_USERS = [
   {
     email: 'broker@test.com',
@@ -163,11 +160,8 @@ const BROKER_USERS = [
 
 //
 // ----------------------
-//  IN-MEMORY DATA
+//  IN-MEMORY TMS ARRAYS (still local for now)
 // ----------------------
-let loads = [];          // load records
-let trackingPoints = []; // GPS pings
-
 let customers = [];
 let carriers = [];
 let documents = [];
@@ -243,7 +237,7 @@ app.post('/api/quote', (req, res) => {
       baseCpm -= 0.15; // long-haul discount
     }
 
-    // --- Weight adjustments (rough heuristic) ---
+    // --- Weight adjustments ---
     if (wt > 42000) {
       baseCpm += 0.12;
     } else if (wt < 15000 && wt > 0) {
@@ -252,9 +246,9 @@ app.post('/api/quote', (req, res) => {
 
     // --- Lane direction adjustments ---
     if (direction === 'headhaul') {
-      baseCpm += 0.12; // harder trucks
+      baseCpm += 0.12;
     } else if (direction === 'backhaul') {
-      baseCpm -= 0.10; // easier trucks
+      baseCpm -= 0.10;
     }
 
     // --- Urgency adjustments ---
@@ -308,10 +302,13 @@ app.post('/api/quote', (req, res) => {
 });
 
 //
-// ----------------------
-//  LOAD CREATION (with billing)
-// ----------------------
-app.post('/api/loads', (req, res) => {
+// ======================================================
+//  LOADS + GPS (Postgres-based)
+// ======================================================
+//
+
+// CREATE LOAD
+app.post('/api/loads', async (req, res) => {
   const {
     reference,
     driverName,
@@ -323,7 +320,7 @@ app.post('/api/loads', (req, res) => {
     deliveryAddress,
     rate,
     notes,
-    plan // 'tracking' or 'tms' from the dashboard
+    plan // 'tracking' or 'tms'
   } = req.body;
 
   if (!reference || !driverPhone) {
@@ -333,15 +330,9 @@ app.post('/api/loads', (req, res) => {
   }
 
   const effectivePlan = plan === 'tms' ? 'tms' : 'tracking';
-  let costPerLoad, walletKey;
-
-  if (effectivePlan === 'tms') {
-    costPerLoad = PRICING.tmsPerLoad;
-    walletKey = 'tmsCredits';
-  } else {
-    costPerLoad = PRICING.trackingPerLoad;
-    walletKey = 'trackingCredits';
-  }
+  const walletKey = effectivePlan === 'tms' ? 'tmsCredits' : 'trackingCredits';
+  const costPerLoad =
+    effectivePlan === 'tms' ? PRICING.tmsPerLoad : PRICING.trackingPerLoad;
 
   const currentCredits = WALLET[walletKey] ?? 0;
 
@@ -357,108 +348,210 @@ app.post('/api/loads', (req, res) => {
   WALLET[walletKey] = currentCredits - costPerLoad;
 
   const token = makeToken();
-  const newLoad = {
-    id: loads.length + 1,
-    reference,
-    driverName: driverName || '',
-    driverPhone,
-    tractorNumber: tractorNumber || '',
-    trailerNumber: trailerNumber || '',
-    equipmentType: equipmentType || '',
-    pickupAddress: pickupAddress || '',
-    deliveryAddress: deliveryAddress || '',
-    rate: rate || '',
-    notes: notes || '',
-    sessionToken: token,
-    status: 'invited'
-  };
 
-  loads.push(newLoad);
+  try {
+    const insert = await db.query(
+      `INSERT INTO loads (
+         reference_number,
+         broker_id,
+         equipment_type,
+         driver_name,
+         driver_phone,
+         tractor_number,
+         trailer_number,
+         pickup_address_short,
+         delivery_address_short,
+         total_rate,
+         commodity_description,
+         status,
+         session_token
+       )
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+       RETURNING id`,
+      [
+        reference,
+        1, // TEMP broker id until sessions are added
+        equipmentType || '',
+        driverName || '',
+        driverPhone,
+        tractorNumber || '',
+        trailerNumber || '',
+        pickupAddress || '',
+        deliveryAddress || '',
+        rate ? Number(rate) : null,
+        notes || '',
+        'invited',
+        token
+      ]
+    );
 
-  const baseUrl = getBaseUrl(req);
-  const driverLink = `${baseUrl}/driver.html?s=${token}`;
+    const loadId = insert.rows[0].id;
+    const baseUrl = getBaseUrl(req);
+    const driverLink = `${baseUrl}/driver.html?s=${token}`;
 
-  res.json({
-    message: 'Load created',
-    load: newLoad,
-    driverLink,
-    billing: {
-      plan: effectivePlan,
-      debited: costPerLoad,
-      remainingCredits: WALLET[walletKey]
-    }
-  });
+    res.json({
+      message: 'Load created',
+      load: {
+        id: loadId,
+        reference,
+        driverName: driverName || '',
+        driverPhone,
+        tractorNumber: tractorNumber || '',
+        trailerNumber: trailerNumber || '',
+        equipmentType: equipmentType || '',
+        pickupAddress: pickupAddress || '',
+        deliveryAddress: deliveryAddress || '',
+        rate,
+        notes,
+        status: 'invited',
+        sessionToken: token
+      },
+      driverLink,
+      billing: {
+        plan: effectivePlan,
+        debited: costPerLoad,
+        remainingCredits: WALLET[walletKey]
+      }
+    });
+  } catch (err) {
+    console.error('Error creating load:', err);
+    res.status(500).json({ error: 'Server error creating load' });
+  }
 });
 
-//
-// ----------------------
-//  GET LOADS WITH LAST GPS
-// ----------------------
-app.get('/api/loads', (req, res) => {
-  const result = loads.map(load => {
-    const points = trackingPoints.filter(
-      p => p.sessionToken === load.sessionToken
+// GET LOADS + last GPS point
+app.get('/api/loads', async (req, res) => {
+  try {
+    const result = await db.query(
+      `
+      SELECT
+        l.id,
+        l.reference_number,
+        l.driver_name,
+        l.driver_phone,
+        l.tractor_number,
+        l.trailer_number,
+        l.equipment_type,
+        l.pickup_address_short,
+        l.delivery_address_short,
+        l.total_rate,
+        l.commodity_description AS notes,
+        l.status,
+        l.session_token,
+        gp.latitude,
+        gp.longitude,
+        gp.recorded_at
+      FROM loads l
+      LEFT JOIN LATERAL (
+        SELECT latitude, longitude, recorded_at
+        FROM gps_points
+        WHERE load_id = l.id
+        ORDER BY recorded_at DESC
+        LIMIT 1
+      ) gp ON TRUE
+      ORDER BY l.id ASC
+      `
     );
-    const last = points[points.length - 1] || null;
 
-    return {
-      ...load,
-      lastLocation: last
+    const loads = result.rows.map(row => ({
+      id: row.id,
+      reference: row.reference_number,
+      driverName: row.driver_name,
+      driverPhone: row.driver_phone,
+      tractorNumber: row.tractor_number,
+      trailerNumber: row.trailer_number,
+      equipmentType: row.equipment_type,
+      pickupAddress: row.pickup_address_short,
+      deliveryAddress: row.delivery_address_short,
+      rate: row.total_rate,
+      notes: row.notes,
+      status: row.status,
+      sessionToken: row.session_token,
+      lastLocation: row.latitude
         ? {
-            lat: last.lat,
-            lng: last.lng,
-            recordedAt: last.recordedAt
+            lat: Number(row.latitude),
+            lng: Number(row.longitude),
+            recordedAt: row.recorded_at
           }
         : null
-    };
-  });
+    }));
 
-  res.json(result);
+    res.json(loads);
+  } catch (err) {
+    console.error('Error fetching loads:', err);
+    res.status(500).json({ error: 'Server error fetching loads' });
+  }
 });
 
-//
-// ----------------------
-//  DRIVER GPS PING
-// ----------------------
-app.post('/api/ping', (req, res) => {
+// DRIVER GPS PING
+app.post('/api/ping', async (req, res) => {
   const { token, lat, lng } = req.body;
 
   if (!token || typeof lat !== 'number' || typeof lng !== 'number') {
     return res.status(400).json({ error: 'token, lat, lng are required' });
   }
 
-  const load = loads.find(l => l.sessionToken === token);
-  if (!load) return res.status(404).json({ error: 'Invalid session token' });
+  try {
+    // Find load by session token
+    const loadResult = await db.query(
+      'SELECT id FROM loads WHERE session_token = $1 LIMIT 1',
+      [token]
+    );
 
-  load.status = 'tracking';
+    if (loadResult.rowCount === 0) {
+      return res.status(404).json({ error: 'Invalid session token' });
+    }
 
-  trackingPoints.push({
-    sessionToken: token,
-    lat,
-    lng,
-    recordedAt: new Date().toISOString()
-  });
+    const loadId = loadResult.rows[0].id;
 
-  res.json({ ok: true });
+    // Insert GPS point
+    await db.query(
+      `INSERT INTO gps_points (trucker_id, load_id, latitude, longitude, recorded_at, source)
+       VALUES (NULL, $1, $2, $3, NOW(), 'mobile_app')`,
+      [loadId, lat, lng]
+    );
+
+    // Update load status
+    await db.query(
+      `UPDATE loads
+       SET status = 'tracking', updated_at = NOW()
+       WHERE id = $1`,
+      [loadId]
+    );
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Error in /api/ping:', err);
+    res.status(500).json({ error: 'Server error recording GPS ping' });
+  }
 });
 
-//
-// ----------------------
-//  COMPLETE A LOAD
-// ----------------------
-app.post('/api/loads/:id/complete', (req, res) => {
+// COMPLETE LOAD
+app.post('/api/loads/:id/complete', async (req, res) => {
   const id = Number(req.params.id);
-  const load = loads.find(l => l.id === id);
-  if (!load) return res.status(404).json({ error: 'Load not found' });
+  if (!id) return res.status(400).json({ error: 'Invalid load id' });
 
-  load.status = 'completed';
-  res.json({ message: 'Load marked as completed', load });
+  try {
+    const updated = await db.query(
+      `UPDATE loads
+       SET status = 'completed', updated_at = NOW()
+       WHERE id = $1
+       RETURNING *`,
+      [id]
+    );
+
+    if (updated.rowCount === 0) {
+      return res.status(404).json({ error: 'Load not found' });
+    }
+
+    res.json({ message: 'Load marked as completed', load: updated.rows[0] });
+  } catch (err) {
+    console.error('Error completing load:', err);
+    res.status(500).json({ error: 'Server error completing load' });
+  }
 });
 
-//
-// ----------------------
-//  SMS DRIVER LINK (Twilio)
-// ----------------------
+// SMS DRIVER LINK (Twilio)
 app.post('/api/loads/:id/send-link', async (req, res) => {
   if (!twilioClient) {
     return res.status(500).json({
@@ -467,32 +560,45 @@ app.post('/api/loads/:id/send-link', async (req, res) => {
   }
 
   const id = Number(req.params.id);
-  const load = loads.find(l => l.id === id);
-
-  if (!load) return res.status(404).json({ error: 'Load not found' });
-  if (!load.driverPhone)
-    return res.status(400).json({ error: 'Driver phone missing' });
-
-  const baseUrl = getBaseUrl(req);
-  const link = `${baseUrl}/driver.html?s=${load.sessionToken}`;
+  if (!id) return res.status(400).json({ error: 'Invalid load id' });
 
   try {
+    const result = await db.query(
+      `SELECT driver_phone, session_token
+       FROM loads
+       WHERE id = $1`,
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Load not found' });
+    }
+
+    const load = result.rows[0];
+
+    if (!load.driver_phone) {
+      return res.status(400).json({ error: 'Driver phone missing' });
+    }
+
+    const baseUrl = getBaseUrl(req);
+    const link = `${baseUrl}/driver.html?s=${load.session_token}`;
+
     await twilioClient.messages.create({
-      to: load.driverPhone,
+      to: load.driver_phone,
       from: process.env.TWILIO_FROM_NUMBER,
       body: `MyFreightTracker: Start tracking your load here: ${link}`
     });
 
     res.json({ message: 'SMS sent', driverLink: link });
   } catch (err) {
-    console.error(err);
+    console.error('Twilio send-link error:', err);
     res.status(500).json({ error: 'Twilio SMS failed' });
   }
 });
 
 //
 // ======================
-//  TMS FEATURES
+//  TMS FEATURES (still in-memory for now)
 // ======================
 //
 
@@ -612,7 +718,6 @@ app.post('/api/documents/:id/send-to-carrier', async (req, res) => {
       .json({ error: 'Carrier has no email address' });
 
   const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
-
   const brokerEmail = 'broker@example.com'; // placeholder until real auth system
 
   const typeLabel =
@@ -718,7 +823,7 @@ app.get('/api/fmcsa/carrier', async (req, res) => {
 
 //
 // ----------------------
-//  BROKER REGISTRATION (NOW USING POSTGRES)
+//  BROKER REGISTRATION (Postgres)
 // ----------------------
 app.post('/broker-register', async (req, res) => {
   const { email, password, companyName } = req.body;
@@ -728,7 +833,6 @@ app.post('/broker-register', async (req, res) => {
   }
 
   try {
-    // Check if user already exists
     const existing = await db.query(
       'SELECT id FROM app_users WHERE email = $1',
       [email]
@@ -738,7 +842,6 @@ app.post('/broker-register', async (req, res) => {
       return res.status(400).send('Account already exists.');
     }
 
-    // Create user in app_users
     const inserted = await db.query(
       `INSERT INTO app_users (role, email, password_plain, full_name)
        VALUES ($1, $2, $3, $4)
@@ -748,7 +851,6 @@ app.post('/broker-register', async (req, res) => {
 
     const userId = inserted.rows[0].id;
 
-    // Create basic broker profile
     await db.query(
       `INSERT INTO broker_profiles (user_id, company_name)
        VALUES ($1, $2)
@@ -756,7 +858,6 @@ app.post('/broker-register', async (req, res) => {
       [userId, companyName || null]
     );
 
-    // Create a billing account with zero balance
     await db.query(
       `INSERT INTO billing_accounts (user_id, account_type, balance_cents)
        VALUES ($1, 'broker', 0)
@@ -776,7 +877,7 @@ app.post('/broker-register', async (req, res) => {
 
 //
 // ----------------------
-//  BROKER LOGIN (DB FIRST, LEGACY FALLBACK)
+//  BROKER LOGIN (DB-first with legacy fallback)
 // ----------------------
 app.post('/broker-login', async (req, res) => {
   const { email, password } = req.body;
@@ -790,7 +891,6 @@ app.post('/broker-login', async (req, res) => {
   }
 
   try {
-    // Try PostgreSQL first
     const dbUser = await db.query(
       `SELECT id, email, role
          FROM app_users
@@ -807,7 +907,6 @@ app.post('/broker-login', async (req, res) => {
     if (dbUser.rowCount > 0) {
       const user = dbUser.rows[0];
 
-      // Try to pull active subscription to decide plan (optional)
       try {
         const subs = await db.query(
           `SELECT sp.code
@@ -832,7 +931,6 @@ app.post('/broker-login', async (req, res) => {
         console.warn('Subscription lookup failed, defaulting plan=tracking');
       }
 
-      // Special override: keep old behavior for tms@test.com
       if (email === 'tms@test.com') {
         plan = 'tms';
       }
@@ -842,7 +940,6 @@ app.post('/broker-login', async (req, res) => {
       );
     }
 
-    // Legacy fallback: in-memory BROKER_USERS array
     const legacyUser = BROKER_USERS.find(
       u => u.email === email && u.password === password
     );
