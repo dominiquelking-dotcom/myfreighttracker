@@ -59,6 +59,14 @@
       margin-bottom: 10px;
     }
 
+    .top-info-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
     .plan-badge {
       display: inline-block;
       font-size: 0.75rem;
@@ -66,7 +74,6 @@
       border-radius: 999px;
       background: #e5e7eb;
       color: #374151;
-      margin-bottom: 16px;
     }
 
     .plan-badge.tms {
@@ -77,6 +84,16 @@
     .plan-badge.tracking {
       background: #dbeafe;
       color: #1d4ed8;
+    }
+
+    .credit-box {
+      display: inline-block;
+      font-size: 0.75rem;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: #f97316;
+      color: #111827;
+      font-weight: 600;
     }
 
     .feature-buttons {
@@ -268,7 +285,6 @@
       border: 1px solid #e5e7eb;
     }
 
-    /* Docs */
     .status-badge {
       display: inline-block;
       padding: 2px 8px;
@@ -303,7 +319,11 @@
   <p class="subtitle">
     Press a button to open the tool you need – quotes, tracking, docs, and more.
   </p>
-  <div id="planBadge" class="plan-badge tracking">Tracking-only plan</div>
+
+  <div class="top-info-row">
+    <div id="planBadge" class="plan-badge tracking">Tracking-only plan</div>
+    <div id="trackingBalance" class="credit-box">Tracking credit balance: loading…</div>
+  </div>
 
   <!-- Feature buttons row -->
   <div class="feature-buttons">
@@ -514,11 +534,12 @@
 </main>
 
 <script>
-  // -------- PLAN / FEATURE BUTTONS --------
+  // -------- PLAN / FEATURE BUTTONS / TRACKING CREDIT BALANCE --------
   const urlParams = new URLSearchParams(window.location.search);
   const plan = urlParams.get('plan') || 'tracking';
   const tmsEnabled = plan === 'tms';
   const planBadge = document.getElementById('planBadge');
+  const trackingBalanceEl = document.getElementById('trackingBalance');
 
   if (planBadge) {
     if (tmsEnabled) {
@@ -532,11 +553,29 @@
     }
   }
 
+  async function loadTrackingBalance() {
+    if (!trackingBalanceEl) return;
+    try {
+      const resp = await fetch('/api/billing');
+      if (!resp.ok) {
+        trackingBalanceEl.textContent = 'Tracking credit balance: unavailable';
+        return;
+      }
+      const data = await resp.json();
+      const remaining = (typeof data.remainingCredits === 'number')
+        ? data.remainingCredits
+        : (typeof data.balance === 'number' ? data.balance : 0);
+      trackingBalanceEl.textContent = 'Tracking credit balance: $' + remaining.toFixed(2);
+    } catch (err) {
+      console.error(err);
+      trackingBalanceEl.textContent = 'Tracking credit balance: unavailable';
+    }
+  }
+
   const featureButtons = document.querySelectorAll('.feature-btn');
   const panels = document.querySelectorAll('.feature-panel');
 
   function activatePanel(panelId, extra) {
-    // Optional: gate advanced features behind TMS
     const requiresTms = ['loadboard', 'docs'];
     if (!tmsEnabled && requiresTms.includes(panelId)) {
       alert('This feature will live in the TMS plan. For now, only tracking & quotes are active.');
@@ -546,7 +585,7 @@
     featureButtons.forEach(btn => {
       const btnPanel = btn.dataset.panel;
       const docType = btn.dataset.docType || null;
-      // Mark button active if it matches panelId AND matches doc type when docs panel
+
       if (btnPanel === panelId) {
         if (panelId === 'docs' && extra && extra.docType) {
           btn.classList.toggle('active', docType === extra.docType);
@@ -634,7 +673,6 @@
   const loadsContainer = document.getElementById('loads-container');
   const refreshBtn = document.getElementById('refresh-loads-btn');
 
-  // Create new load
   createForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -687,13 +725,13 @@
 
       createForm.reset();
       await loadLoads();
+      await loadTrackingBalance();
     } catch (err) {
       console.error(err);
       alert('Something went wrong creating the load.');
     }
   });
 
-  // Load loads from API
   async function loadLoads() {
     try {
       const resp = await fetch('/api/loads');
@@ -777,7 +815,6 @@
     }
   }
 
-  // Send SMS with driver link
   async function sendSms(id) {
     if (!confirm('Send driver link via SMS for load #' + id + '?')) return;
     try {
@@ -796,7 +833,6 @@
     }
   }
 
-  // Mark load completed
   async function markComplete(id) {
     if (!confirm('Mark load #' + id + ' as completed?')) return;
     try {
@@ -815,12 +851,14 @@
     }
   }
 
-  // Expose some functions globally
   window.sendSms = sendSms;
   window.markComplete = markComplete;
 
   if (refreshBtn) {
-    refreshBtn.addEventListener('click', loadLoads);
+    refreshBtn.addEventListener('click', () => {
+      loadLoads();
+      loadTrackingBalance();
+    });
   }
 
   // -------- SMART QUOTE --------
@@ -917,7 +955,6 @@
                 document.getElementById('pickupAddress').value = origin;
                 document.getElementById('deliveryAddress').value = destination;
                 document.getElementById('rate').value = data.sellRateMarket.toFixed(2);
-                // Switch to tracking panel so they see the form
                 activatePanel('tracking');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               });
@@ -1087,8 +1124,8 @@
   }
 
   // -------- INITIALIZE --------
-  // Default: tracking panel active; load loads
   loadLoads();
+  loadTrackingBalance();
 </script>
 
 <!-- Put your real Maps API key in place of YOUR_API_KEY_HERE -->
