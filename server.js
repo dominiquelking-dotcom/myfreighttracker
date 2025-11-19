@@ -78,7 +78,6 @@ async function fetchFmcsaCarrier({ dotNumber, docketNumber, name }) {
     process.env.FMCSA_WEBKEY
   )}`;
 
-  // Uses global fetch (Node 18+); if needed we can swap to node-fetch later
   const resp = await fetch(url);
   if (!resp.ok) {
     throw new Error(`FMCSA API error: ${resp.status}`);
@@ -86,7 +85,6 @@ async function fetchFmcsaCarrier({ dotNumber, docketNumber, name }) {
 
   const data = await resp.json();
 
-  // QCMobile wraps results in data.content[0].carrier
   const first = data && data.content && data.content[0];
   if (!first || !first.carrier) {
     throw new Error('No carrier data found in FMCSA response');
@@ -116,7 +114,6 @@ async function fetchFmcsaCarrier({ dotNumber, docketNumber, name }) {
 // ----------------------
 //
 // Simple global wallet for now (no real auth yet).
-// You can top this up manually or later via Stripe/etc.
 //
 const WALLET = {
   trackingCredits: 20.0, // e.g. $20 worth of tracking-only
@@ -147,8 +144,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 //
 // ----------------------
-//  BROKER ACCOUNTS
+//  BROKER ACCOUNTS (LEGACY FALLBACK)
 // ----------------------
+//  NOTE: real accounts are now stored in PostgreSQL (app_users).
+//  This array is just so old test users like tms@test.com still work.
 const BROKER_USERS = [
   {
     email: 'broker@test.com',
@@ -268,23 +267,16 @@ app.post('/api/quote', (req, res) => {
       baseCpm += 0.05;
     }
 
-    // Guard against ridiculous negatives
     if (baseCpm < 1.0) baseCpm = 1.0;
 
     const totalCost = baseCpm * dist;
     const fuelTotal = fuel > 0 ? fuel * dist : 0;
 
-    // margin is applied on top of cost + fuel
     const costPlusFuel = totalCost + fuelTotal;
     const marginMultiplier = 1 + (mg / 100 || 0);
 
-    // Market (target margin)
     const sellRateMarket = costPlusFuel * marginMultiplier;
-
-    // Aggressive (volume play) ~3% below market
     const sellRateAggressive = sellRateMarket * 0.97;
-
-    // Premium (priority / guaranteed) ~5% above market
     const sellRatePremium = sellRateMarket * 1.05;
 
     const effectiveMarginMarket =
@@ -340,7 +332,6 @@ app.post('/api/loads', (req, res) => {
     });
   }
 
-  // Determine which plan & wallet to charge
   const effectivePlan = plan === 'tms' ? 'tms' : 'tracking';
   let costPerLoad, walletKey;
 
@@ -355,7 +346,6 @@ app.post('/api/loads', (req, res) => {
   const currentCredits = WALLET[walletKey] ?? 0;
 
   if (currentCredits < costPerLoad) {
-    // Not enough funds
     return res.status(402).json({
       error: 'Insufficient credits to create a new load.',
       plan: effectivePlan,
@@ -364,7 +354,6 @@ app.post('/api/loads', (req, res) => {
     });
   }
 
-  // Debit the wallet
   WALLET[walletKey] = currentCredits - costPerLoad;
 
   const token = makeToken();
@@ -659,7 +648,7 @@ This is an automated message from MyFreightTracker.
     await mailTransport.sendMail({
       from: fromEmail,
       to: carrier.email,
-      replyTo: brokerEmail,  // replies go to broker
+      replyTo: brokerEmail,
       subject,
       text: textBody
     });
@@ -729,50 +718,156 @@ app.get('/api/fmcsa/carrier', async (req, res) => {
 
 //
 // ----------------------
-//  BROKER REGISTRATION
+//  BROKER REGISTRATION (NOW USING POSTGRES)
 // ----------------------
-app.post('/broker-register', (req, res) => {
-  const { email, password } = req.body;
+app.post('/broker-register', async (req, res) => {
+  const { email, password, companyName } = req.body;
 
-  if (!email || !password)
+  if (!email || !password) {
     return res.status(400).send('Email and password are required.');
+  }
 
-  const exists = BROKER_USERS.find(u => u.email === email);
-  if (exists)
-    return res.status(400).send('Account already exists.');
+  try {
+    // Check if user already exists
+    const existing = await db.query(
+      'SELECT id FROM app_users WHERE email = $1',
+      [email]
+    );
 
-  // New accounts default to tracking-only plan for now
-  BROKER_USERS.push({ email, password, plan: 'tracking' });
+    if (existing.rowCount > 0) {
+      return res.status(400).send('Account already exists.');
+    }
 
-  res.send(`
-    <h1>Account created</h1>
-    <p>Login at <a href="/broker-login.html">Broker Login</a></p>
-  `);
+    // Create user in app_users
+    const inserted = await db.query(
+      `INSERT INTO app_users (role, email, password_plain, full_name)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id`,
+      ['broker', email, password, null]
+    );
+
+    const userId = inserted.rows[0].id;
+
+    // Create basic broker profile
+    await db.query(
+      `INSERT INTO broker_profiles (user_id, company_name)
+       VALUES ($1, $2)
+       ON CONFLICT (user_id) DO NOTHING`,
+      [userId, companyName || null]
+    );
+
+    // Create a billing account with zero balance
+    await db.query(
+      `INSERT INTO billing_accounts (user_id, account_type, balance_cents)
+       VALUES ($1, 'broker', 0)
+       ON CONFLICT (user_id) DO NOTHING`,
+      [userId]
+    );
+
+    res.send(`
+      <h1>Account created</h1>
+      <p>Login at <a href="/broker-login.html">Broker Login</a></p>
+    `);
+  } catch (err) {
+    console.error('Broker register error:', err);
+    res.status(500).send('Server error creating account.');
+  }
 });
 
 //
 // ----------------------
-//  BROKER LOGIN
+//  BROKER LOGIN (DB FIRST, LEGACY FALLBACK)
 // ----------------------
-app.post('/broker-login', (req, res) => {
+app.post('/broker-login', async (req, res) => {
   const { email, password } = req.body;
 
-  const user = BROKER_USERS.find(
-    u => u.email === email && u.password === password
-  );
-
-  if (!user) {
-    return res.status(401).send(`
+  if (!email || !password) {
+    return res.status(400).send(`
       <h1>Login failed</h1>
-      <p>Invalid email or password.</p>
+      <p>Email and password are required.</p>
       <a href="/broker-login.html">Back to login</a>
     `);
   }
 
-  const plan = user.plan || 'tracking';
+  try {
+    // Try PostgreSQL first
+    const dbUser = await db.query(
+      `SELECT id, email, role
+         FROM app_users
+        WHERE email = $1
+          AND password_plain = $2
+          AND role = 'broker'
+          AND (is_active IS NULL OR is_active = TRUE)
+        LIMIT 1`,
+      [email, password]
+    );
 
-  // Later you can include broker identity in a real session/token
-  res.redirect(`/broker-dashboard.html?plan=${encodeURIComponent(plan)}`);
+    let plan = 'tracking';
+
+    if (dbUser.rowCount > 0) {
+      const user = dbUser.rows[0];
+
+      // Try to pull active subscription to decide plan (optional)
+      try {
+        const subs = await db.query(
+          `SELECT sp.code
+             FROM user_subscriptions us
+             JOIN subscription_plans sp ON sp.id = us.plan_id
+            WHERE us.user_id = $1
+              AND us.status IN ('trial','active')
+            ORDER BY us.created_at DESC
+            LIMIT 1`,
+          [user.id]
+        );
+
+        if (subs.rowCount > 0) {
+          const code = subs.rows[0].code;
+          if (code === 'BROKER_TMS') {
+            plan = 'tms';
+          } else {
+            plan = 'tracking';
+          }
+        }
+      } catch (subErr) {
+        console.warn('Subscription lookup failed, defaulting plan=tracking');
+      }
+
+      // Special override: keep old behavior for tms@test.com
+      if (email === 'tms@test.com') {
+        plan = 'tms';
+      }
+
+      return res.redirect(
+        `/broker-dashboard.html?plan=${encodeURIComponent(plan)}`
+      );
+    }
+
+    // Legacy fallback: in-memory BROKER_USERS array
+    const legacyUser = BROKER_USERS.find(
+      u => u.email === email && u.password === password
+    );
+
+    if (!legacyUser) {
+      return res.status(401).send(`
+        <h1>Login failed</h1>
+        <p>Invalid email or password.</p>
+        <a href="/broker-login.html">Back to login</a>
+      `);
+    }
+
+    plan = legacyUser.plan || 'tracking';
+
+    return res.redirect(
+      `/broker-dashboard.html?plan=${encodeURIComponent(plan)}`
+    );
+  } catch (err) {
+    console.error('Broker login error:', err);
+    return res.status(500).send(`
+      <h1>Login failed</h1>
+      <p>Server error. Please try again later.</p>
+      <a href="/broker-login.html">Back to login</a>
+    `);
+  }
 });
 
 //
