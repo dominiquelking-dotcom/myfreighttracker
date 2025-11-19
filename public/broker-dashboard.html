@@ -129,25 +129,12 @@
       border-color: #0f172a;
     }
 
-    .feature-btn[data-panel="loadboard"] span.dot {
-      background: #38bdf8;
-    }
-
-    .feature-btn[data-panel="docs"] span.dot {
-      background: #f97316;
-    }
-
-    .feature-btn[data-panel="quote"] span.dot {
-      background: #22c55e;
-    }
-
-    .feature-btn[data-panel="tracking"] span.dot {
-      background: #4ade80;
-    }
-
-    .feature-btn[data-panel="customers"] span.dot {
-      background: #a855f7;
-    }
+    .feature-btn[data-panel="customers"] span.dot { background: #a855f7; }
+    .feature-btn[data-panel="loads"] span.dot { background: #4ade80; }
+    .feature-btn[data-panel="loadboard"] span.dot { background: #38bdf8; }
+    .feature-btn[data-panel="docs"] span.dot { background: #f97316; }
+    .feature-btn[data-panel="carriers"] span.dot { background: #6366f1; }
+    .feature-btn[data-panel="tracking"] span.dot { background: #22c55e; }
 
     .card {
       background: #ffffff;
@@ -281,7 +268,7 @@
       margin-top: 8px;
     }
 
-    #map {
+    #tracking-map {
       width: 100%;
       height: 280px;
       margin-top: 16px;
@@ -299,7 +286,16 @@
       margin-top: 2px;
     }
 
-    /* Customers subtabs */
+    .status-ok {
+      background: #bbf7d0;
+      color: #166534;
+    }
+
+    .status-oos {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
     .subtabs {
       display: inline-flex;
       border-radius: 999px;
@@ -333,7 +329,6 @@
       display: block;
     }
 
-    /* Docs type tabs */
     .doc-type-tabs {
       display: inline-flex;
       border-radius: 999px;
@@ -396,7 +391,7 @@
 <main>
   <h1>Broker Dashboard</h1>
   <p class="subtitle">
-    Press a button to open the tool you need – quotes, tracking, docs, customers and more.
+    Press a tab to open the tool you need – customers, loads, docs, carriers, tracking and more.
   </p>
 
   <div class="top-info-row">
@@ -404,99 +399,86 @@
     <div id="trackingBalance" class="credit-box">Tracking credit balance: loading…</div>
   </div>
 
-  <!-- Feature buttons row -->
+  <!-- Feature buttons row in requested order -->
   <div class="feature-buttons">
-    <button class="feature-btn active" data-panel="tracking">
-      <span class="dot"></span> Driver Tracking &amp; Loads
-    </button>
-    <button class="feature-btn" data-panel="quote">
-      <span class="dot"></span> Quote Calculator
-    </button>
-    <button class="feature-btn" data-panel="customers">
+    <button class="feature-btn active" data-panel="customers">
       <span class="dot"></span> Customers
+    </button>
+    <button class="feature-btn" data-panel="loads">
+      <span class="dot"></span> Loads
     </button>
     <button class="feature-btn" data-panel="loadboard">
       <span class="dot"></span> Loadboard Aggregator
     </button>
-    <button class="feature-btn" data-panel="docs" data-doc-type="rate-confirmation">
-      <span class="dot"></span> Ratecon
+    <button class="feature-btn" data-panel="docs">
+      <span class="dot"></span> Documents
     </button>
-    <button class="feature-btn" data-panel="docs" data-doc-type="bol">
-      <span class="dot"></span> BOL
+    <button class="feature-btn" data-panel="carriers">
+      <span class="dot"></span> Carriers
     </button>
-    <button class="feature-btn" data-panel="docs" data-doc-type="carrier-packet">
-      <span class="dot"></span> Carrier Packet
-    </button>
-    <button class="feature-btn" data-panel="docs" data-doc-type="other">
-      <span class="dot"></span> Other Docs
+    <button class="feature-btn" data-panel="tracking">
+      <span class="dot"></span> Driver Tracking
     </button>
   </div>
 
-  <!-- DRIVER TRACKING & LOADS PANEL -->
-  <section id="panel-tracking" class="feature-panel active card">
-    <h2>Driver Tracking & Loads</h2>
+  <!-- CUSTOMERS PANEL -->
+  <section id="panel-customers" class="feature-panel active card">
+    <h2>Customers</h2>
     <p class="small">
-      Create a load, get a driver link, and see last known locations on the map.
+      Keep your shipper list clean and simple. Create customers and see your master list in one place.
     </p>
 
-    <form id="create-load-form">
-      <label for="reference">Load reference (PO, BOL, etc.)</label>
-      <input id="reference" name="reference" required placeholder="e.g. PO-12345" />
-
-      <label for="driverName">Driver name</label>
-      <input id="driverName" name="driverName" placeholder="e.g. John Doe" />
-
-      <label for="driverPhone">Driver phone</label>
-      <input id="driverPhone" name="driverPhone" required placeholder="e.g. +15551234567" />
-
-      <label for="tractorNumber">Tractor #</label>
-      <input id="tractorNumber" name="tractorNumber" placeholder="e.g. 101" />
-
-      <label for="trailerNumber">Trailer #</label>
-      <input id="trailerNumber" name="trailerNumber" placeholder="e.g. 53-12" />
-
-      <label for="equipmentType">Equipment type</label>
-      <input id="equipmentType" name="equipmentType" placeholder="e.g. Van, Flatbed" />
-
-      <label for="pickupAddress">Pickup address</label>
-      <input id="pickupAddress" name="pickupAddress" placeholder="City / State or full address" />
-
-      <label for="deliveryAddress">Delivery address</label>
-      <input id="deliveryAddress" name="deliveryAddress" placeholder="City / State or full address" />
-
-      <label for="rate">Rate</label>
-      <input id="rate" name="rate" placeholder="e.g. 1500.00" />
-
-      <label for="notes">Notes</label>
-      <textarea id="notes" name="notes" rows="2" placeholder="Any special instructions"></textarea>
-
-      <button type="submit">Create Load</button>
-
-      <p class="small">
-        After creating a load, you'll get a driver link. You can text it manually or use the SMS button in the table.
-      </p>
-    </form>
-
-    <div id="driver-link-container" class="driver-link-box" style="display:none;"></div>
-
-    <hr style="margin:16px 0;">
-
-    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
-      <h3 style="font-size:0.95rem;">Active &amp; recent loads</h3>
-      <button id="refresh-loads-btn" type="button" class="btn-secondary">Refresh loads</button>
-    </div>
-    <p class="small">Shows status, details, and last known location (if tracking).</p>
-
-    <div id="loads-container">
-      <p class="no-loads">No loads yet. Create one above to get started.</p>
+    <div class="subtabs">
+      <button type="button" class="subtab-btn active" data-sub="create">Create customer</button>
+      <button type="button" class="subtab-btn" data-sub="list">Customer list</button>
     </div>
 
-    <div id="map"></div>
+    <!-- Create customer sub-panel -->
+    <div id="customer-create-panel" class="subtab-panel active">
+      <form id="customer-form">
+        <label>Customer name</label>
+        <input id="cust-name" placeholder="e.g. ACME Manufacturing" required />
+
+        <label>Contact name</label>
+        <input id="cust-contact" placeholder="e.g. Jane Smith" />
+
+        <label>Phone</label>
+        <input id="cust-phone" placeholder="e.g. 555-123-4567" />
+
+        <label>Email</label>
+        <input id="cust-email" placeholder="e.g. dispatch@example.com" />
+
+        <label>MC # (optional)</label>
+        <input id="cust-mc" placeholder="e.g. 123456" />
+
+        <label>Notes</label>
+        <textarea id="cust-notes" rows="2" placeholder="Credit info, lanes, accessorials, etc."></textarea>
+
+        <button type="submit">Add customer</button>
+      </form>
+    </div>
+
+    <!-- Customer list sub-panel -->
+    <div id="customer-list-panel" class="subtab-panel">
+      <div class="doc-list-header">
+        <h3 style="font-size:0.9rem;">Customer list</h3>
+        <span class="link-small" id="refresh-customers-link">Refresh</span>
+      </div>
+      <div id="customer-list" class="small" style="margin-top:4px;">
+        Loading customers…
+      </div>
+    </div>
   </section>
 
-  <!-- QUOTE CALCULATOR PANEL -->
-  <section id="panel-quote" class="feature-panel card">
-    <h2>Smart Spot Quote Calculator</h2>
+  <!-- LOADS PANEL -->
+  <section id="panel-loads" class="feature-panel card">
+    <h2>Loads</h2>
+    <p class="small">
+      Price lanes, create loads, and manage your load list. Driver tracking is in its own tab.
+    </p>
+
+    <!-- Smart Quote -->
+    <h3 style="font-size:0.95rem; margin-top:4px;">Smart Spot Quote Calculator</h3>
     <p class="small">
       Use AI-style logic + live miles to price lanes fast. Then push the quote into the load form.
     </p>
@@ -546,101 +528,97 @@
     <button type="button" id="run-quote-btn">Calculate quote</button>
 
     <div id="quote-results" class="driver-link-box" style="display:none; margin-top:10px;"></div>
-  </section>
 
-  <!-- CUSTOMERS PANEL -->
-  <section id="panel-customers" class="feature-panel card">
-    <h2>Customers</h2>
-    <p class="small">
-      Keep your shipper list clean and simple. Create customers and see your master list in one place.
-    </p>
+    <hr style="margin:16px 0;">
 
-    <div class="subtabs">
-      <button type="button" class="subtab-btn active" data-sub="create">Create customer</button>
-      <button type="button" class="subtab-btn" data-sub="list">Customer list</button>
+    <!-- Create Load -->
+    <h3 style="font-size:0.95rem;">Create a new load</h3>
+    <form id="create-load-form">
+      <label for="reference">Load reference (PO, BOL, etc.)</label>
+      <input id="reference" name="reference" required placeholder="e.g. PO-12345" />
+
+      <label for="driverName">Driver name</label>
+      <input id="driverName" name="driverName" placeholder="e.g. John Doe" />
+
+      <label for="driverPhone">Driver phone</label>
+      <input id="driverPhone" name="driverPhone" required placeholder="e.g. +15551234567" />
+
+      <label for="tractorNumber">Tractor #</label>
+      <input id="tractorNumber" name="tractorNumber" placeholder="e.g. 101" />
+
+      <label for="trailerNumber">Trailer #</label>
+      <input id="trailerNumber" name="trailerNumber" placeholder="e.g. 53-12" />
+
+      <label for="equipmentType">Equipment type</label>
+      <input id="equipmentType" name="equipmentType" placeholder="e.g. Van, Flatbed" />
+
+      <label for="pickupAddress">Pickup address</label>
+      <input id="pickupAddress" name="pickupAddress" placeholder="City / State or full address" />
+
+      <label for="deliveryAddress">Delivery address</label>
+      <input id="deliveryAddress" name="deliveryAddress" placeholder="City / State or full address" />
+
+      <label for="rate">Rate</label>
+      <input id="rate" name="rate" placeholder="e.g. 1500.00" />
+
+      <label for="notes">Notes</label>
+      <textarea id="notes" name="notes" rows="2" placeholder="Any special instructions"></textarea>
+
+      <button type="submit">Create Load</button>
+
+      <p class="small">
+        After creating a load, you'll get a driver link. You can text it manually or use the SMS button in the table.
+      </p>
+    </form>
+
+    <div id="driver-link-container" class="driver-link-box" style="display:none;"></div>
+
+    <hr style="margin:16px 0;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+      <h3 style="font-size:0.95rem;">Load list</h3>
+      <button id="refresh-loads-btn" type="button" class="btn-secondary">Refresh loads</button>
     </div>
+    <p class="small">Shows status, details, and lets you send SMS links, mark complete, or create docs.</p>
 
-    <!-- Create customer sub-panel -->
-    <div id="customer-create-panel" class="subtab-panel active">
-      <form id="customer-form">
-        <label>Customer name</label>
-        <input id="cust-name" placeholder="e.g. ACME Manufacturing" required />
-
-        <label>Contact name</label>
-        <input id="cust-contact" placeholder="e.g. Jane Smith" />
-
-        <label>Phone</label>
-        <input id="cust-phone" placeholder="e.g. 555-123-4567" />
-
-        <label>Email</label>
-        <input id="cust-email" placeholder="e.g. dispatch@example.com" />
-
-        <label>MC # (optional)</label>
-        <input id="cust-mc" placeholder="e.g. 123456" />
-
-        <label>Notes</label>
-        <textarea id="cust-notes" rows="2" placeholder="Credit info, lanes, accessorials, etc."></textarea>
-
-        <button type="submit">Add customer</button>
-      </form>
-    </div>
-
-    <!-- Customer list sub-panel -->
-    <div id="customer-list-panel" class="subtab-panel">
-      <div class="doc-list-header">
-        <h3 style="font-size:0.9rem;">Customer list</h3>
-        <span class="link-small" id="refresh-customers-link">Refresh</span>
-      </div>
-      <div id="customer-list" class="small" style="margin-top:4px;">
-        Loading customers…
-      </div>
+    <div id="loads-container">
+      <p class="no-loads">No loads yet. Create one above to get started.</p>
     </div>
   </section>
 
   <!-- LOADBOARD AGGREGATOR PANEL -->
   <section id="panel-loadboard" class="feature-panel card">
-    <h2>Loadboard Aggregator (Mock)</h2>
+    <h2>Loadboard Aggregator (Coming Soon)</h2>
     <p class="small">
-      Future feature: plug in DAT, Truckstop.com, etc. For now, use this as a “saved search” helper.
+      This tab will eventually plug into DAT, Truckstop.com, and other boards so you can search and post inside
+      MyFreightTracker.
     </p>
 
-    <form id="loadboard-form">
-      <label for="lb-origin">Origin</label>
-      <input id="lb-origin" placeholder="City / State or radius (e.g. Louisville, KY or 50mi of 40202)" />
+    <ul class="small" style="margin-top:8px; padding-left:18px;">
+      <li>Saved lane searches (origin / destination / equipment)</li>
+      <li>Single-screen view of multiple boards</li>
+      <li>One-click posting straight from your quote / load builder</li>
+    </ul>
 
-      <label for="lb-destination">Destination</label>
-      <input id="lb-destination" placeholder="City / State or region (e.g. Southeast, TX, etc.)" />
-
-      <label for="lb-equipment">Equipment</label>
-      <select id="lb-equipment">
-        <option value="any">Any</option>
-        <option value="van">Dry Van</option>
-        <option value="reefer">Reefer</option>
-        <option value="flatbed">Flatbed</option>
-        <option value="hotshot">Hotshot</option>
-      </select>
-
-      <label for="lb-date">Pickup date</label>
-      <input id="lb-date" type="date" />
-
-      <label for="lb-notes">Notes (brokers to call, lane comments, etc.)</label>
-      <textarea id="lb-notes" rows="2" placeholder="e.g. 'Good flatbed trucks in this lane after 2pm'"></textarea>
-
-      <button type="submit">Save search (mock)</button>
-    </form>
-
-    <div id="loadboard-results" class="driver-link-box" style="display:none;"></div>
+    <div class="driver-link-box" style="margin-top:12px;">
+      <strong>For now:</strong><br>
+      Use this tab as a reminder of where we're headed. Once APIs are live, this tile will become your
+      “mission control” for hunting freight.
+    </div>
   </section>
 
-  <!-- DOCUMENTS PANEL: BOL / RATECON / CARRIER PACKET / OTHER -->
+  <!-- DOCUMENTS PANEL -->
   <section id="panel-docs" class="feature-panel card">
-    <h2 id="docs-heading">Documents</h2>
+    <h2 id="docs-heading">Rate Confirmation (Ratecon) Docs</h2>
     <p class="small" id="docs-description">
-      Track where your documents live across BOL, rate cons, carrier packets, and other files.
-      Use notes to specify “Received vs Created” and “Where stored” (email, folder, cloud, etc.).
+      Log and organize your rate confirmations by load, customer, and carrier. Use notes to track where files are stored.
     </p>
 
-    <!-- Internal doc-type tabs inside panel -->
+    <div style="margin:6px 0 10px;">
+      <button type="button" id="create-doc-btn">Create a document</button>
+    </div>
+
+    <!-- Internal doc-type tabs inside Documents -->
     <div class="doc-type-tabs">
       <button type="button" class="doc-type-btn active" data-doc-type="rate-confirmation">Ratecon</button>
       <button type="button" class="doc-type-btn" data-doc-type="bol">BOL</button>
@@ -676,10 +654,100 @@
 
     <div id="doc-list" style="margin-top:4px;"></div>
   </section>
+
+  <!-- CARRIERS PANEL -->
+  <section id="panel-carriers" class="feature-panel card">
+    <h2>Carriers</h2>
+    <p class="small">
+      Start by running an FMCSA lookup, then save the carrier into your master list.
+    </p>
+
+    <!-- FMCSA lookup FIRST -->
+    <div class="card" style="background:#f9fafb; box-shadow:none; padding:12px 14px; margin-bottom:12px;">
+      <h3 style="font-size:0.95rem; margin-bottom:6px;">FMCSA Lookup</h3>
+      <p class="small">
+        Enter MC # or carrier name. We’ll pull basic info and drop it into the carrier form below.
+      </p>
+
+      <label for="fmcsa-mc">MC # (optional)</label>
+      <input id="fmcsa-mc" placeholder="e.g. 654321" />
+
+      <label for="fmcsa-name">Carrier name (optional)</label>
+      <input id="fmcsa-name" placeholder="e.g. Leatherneck Trucking LLC" />
+
+      <button type="button" id="fmcsa-lookup-btn">Run FMCSA Lookup</button>
+    </div>
+
+    <div class="subtabs">
+      <button type="button" class="subtab-btn active" data-car-sub="create">Create carrier</button>
+      <button type="button" class="subtab-btn" data-car-sub="list">Carrier list</button>
+    </div>
+
+    <!-- Create carrier sub-panel -->
+    <div id="carrier-create-panel" class="subtab-panel active">
+      <form id="carrier-form">
+        <label>Carrier name</label>
+        <input id="car-name" placeholder="e.g. Leatherneck Trucking LLC" required />
+
+        <label>MC #</label>
+        <div style="display:flex; gap:4px; align-items:center; margin-bottom:10px;">
+          <input id="car-mc" placeholder="e.g. 654321" style="flex:1;" />
+          <button type="button" id="car-verify-fmcsa" style="white-space:nowrap;">Verify via FMCSA</button>
+        </div>
+
+        <label>Phone</label>
+        <input id="car-phone" placeholder="e.g. 555-987-6543" />
+
+        <label>Email</label>
+        <input id="car-email" placeholder="e.g. safety@example.com" />
+
+        <label>Truckstop ID (optional)</label>
+        <input id="car-truckstop" placeholder="Truckstop.com ID" />
+
+        <label>DAT ID (optional)</label>
+        <input id="car-dat" placeholder="DAT ID" />
+
+        <label>Notes</label>
+        <textarea id="car-notes" rows="2" placeholder="Insurance info, preferred lanes, FMCSA notes, etc."></textarea>
+
+        <button type="submit">Add carrier</button>
+      </form>
+    </div>
+
+    <!-- Carrier list sub-panel -->
+    <div id="carrier-list-panel" class="subtab-panel">
+      <div class="doc-list-header">
+        <h3 style="font-size:0.9rem;">Carrier list</h3>
+        <span class="link-small" id="refresh-carriers-link">Refresh</span>
+      </div>
+      <div id="carrier-list" class="small" style="margin-top:4px;">
+        Loading carriers…
+      </div>
+    </div>
+  </section>
+
+  <!-- DRIVER TRACKING PANEL -->
+  <section id="panel-tracking" class="feature-panel card">
+    <h2>Driver Tracking</h2>
+    <p class="small">
+      See active tracking loads on the map and in a quick list. Create and manage loads from the Loads tab.
+    </p>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
+      <h3 style="font-size:0.95rem;">Currently tracking</h3>
+      <button id="refresh-tracking-btn" type="button" class="btn-secondary">Refresh tracking</button>
+    </div>
+
+    <div id="tracking-map"></div>
+
+    <div id="tracking-table" style="margin-top:10px;">
+      <p class="no-loads">No loads are actively tracking yet.</p>
+    </div>
+  </section>
 </main>
 
 <script>
-  // -------- PLAN / FEATURE BUTTONS / TRACKING CREDIT BALANCE --------
+  // -------- PLAN & TRACKING BALANCE --------
   const urlParams = new URLSearchParams(window.location.search);
   const plan = urlParams.get('plan') || 'tracking';
   const tmsEnabled = plan === 'tms';
@@ -717,81 +785,75 @@
     }
   }
 
+  // -------- FEATURE PANELS --------
   const featureButtons = document.querySelectorAll('.feature-btn');
   const panels = document.querySelectorAll('.feature-panel');
 
-  function activatePanel(panelId, extra) {
-    const requiresTms = ['loadboard', 'docs', 'customers'];
-    if (!tmsEnabled && requiresTms.includes(panelId)) {
-      alert('This feature will live in the TMS plan. For now, only tracking & quotes are active.');
-      return;
-    }
-
+  function activatePanel(panelId) {
     featureButtons.forEach(btn => {
       const btnPanel = btn.dataset.panel;
-      const docType = btn.dataset.docType || null;
-
-      if (btnPanel === panelId) {
-        if (panelId === 'docs' && extra && extra.docType) {
-          btn.classList.toggle('active', docType === extra.docType);
-        } else if (panelId !== 'docs') {
-          btn.classList.toggle('active', btnPanel === panelId);
-        }
-      } else if (btnPanel !== 'docs' || panelId !== 'docs') {
-        btn.classList.remove('active');
-      }
+      btn.classList.toggle('active', btnPanel === panelId);
     });
 
     panels.forEach(p => {
       p.classList.toggle('active', p.id === 'panel-' + panelId);
     });
 
-    if (panelId === 'tracking') {
+    if (panelId === 'loads') {
       loadLoads();
     }
+    if (panelId === 'tracking') {
+      renderTrackingView();
+    }
     if (panelId === 'docs') {
-      const mode = extra && extra.docType ? extra.docType : currentDocType;
-      setDocMode(mode);
-      currentDocType = mode;
-      loadDocuments(false);
+      setDocMode(currentDocType);
+      loadDocuments(showAllDocs);
     }
     if (panelId === 'customers') {
-      // default to list subtab? no, keep create as default but refresh list
       refreshCustomerList();
+    }
+    if (panelId === 'carriers') {
+      refreshCarrierList();
     }
   }
 
   featureButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const panelId = btn.dataset.panel;
-      const docType = btn.dataset.docType || null;
-      if (panelId === 'docs') {
-        activatePanel('docs', { docType });
-      } else {
-        activatePanel(panelId);
-      }
+      activatePanel(panelId);
     });
   });
 
-  // -------- MAP & LOADS / TRACKING --------
-  let map;
-  let markers = [];
+  // -------- LOADS & DRIVER TRACKING (SHARED DATA) --------
+  let allLoads = [];
+
+  const createForm = document.getElementById('create-load-form');
+  const driverLinkBox = document.getElementById('driver-link-container');
+  const loadsContainer = document.getElementById('loads-container');
+  const refreshBtn = document.getElementById('refresh-loads-btn');
+  const refreshTrackingBtn = document.getElementById('refresh-tracking-btn');
+
+  let trackingMap;
+  let trackingMarkers = [];
 
   function initMap() {
-    map = new google.maps.Map(document.getElementById('map'), {
+    const mapEl = document.getElementById('tracking-map');
+    if (!mapEl) return;
+    trackingMap = new google.maps.Map(mapEl, {
       center: { lat: 39.8283, lng: -98.5795 },
       zoom: 4
     });
+    renderTrackingView();
   }
 
-  function clearMarkers() {
-    markers.forEach(m => m.setMap(null));
-    markers = [];
+  function clearTrackingMarkers() {
+    trackingMarkers.forEach(m => m.setMap(null));
+    trackingMarkers = [];
   }
 
-  function updateMap(loads) {
-    if (!map) return;
-    clearMarkers();
+  function updateTrackingMap(loads) {
+    if (!trackingMap) return;
+    clearTrackingMarkers();
 
     const bounds = new google.maps.LatLngBounds();
     let hasPoints = false;
@@ -804,83 +866,19 @@
         };
         const marker = new google.maps.Marker({
           position: pos,
-          map,
+          map: trackingMap,
           title: `${load.reference} (${load.driverName || load.driverPhone || 'Driver'})`
         });
-        markers.push(marker);
+        trackingMarkers.push(marker);
         bounds.extend(pos);
         hasPoints = true;
       }
     });
 
     if (hasPoints) {
-      map.fitBounds(bounds);
+      trackingMap.fitBounds(bounds);
     }
   }
-
-  const createForm = document.getElementById('create-load-form');
-  const driverLinkBox = document.getElementById('driver-link-container');
-  const loadsContainer = document.getElementById('loads-container');
-  const refreshBtn = document.getElementById('refresh-loads-btn');
-
-  createForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const body = {
-      reference: document.getElementById('reference').value.trim(),
-      driverName: document.getElementById('driverName').value.trim(),
-      driverPhone: document.getElementById('driverPhone').value.trim(),
-      tractorNumber: document.getElementById('tractorNumber').value.trim(),
-      trailerNumber: document.getElementById('trailerNumber').value.trim(),
-      equipmentType: document.getElementById('equipmentType').value.trim(),
-      pickupAddress: document.getElementById('pickupAddress').value.trim(),
-      deliveryAddress: document.getElementById('deliveryAddress').value.trim(),
-      rate: document.getElementById('rate').value.trim(),
-      notes: document.getElementById('notes').value.trim(),
-      plan
-    };
-
-    if (!body.reference || !body.driverPhone) {
-      alert('Please fill out at least reference and driver phone.');
-      return;
-    }
-
-    try {
-      const resp = await fetch('/api/loads', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-
-      const data = await resp.json().catch(() => ({}));
-
-      if (!resp.ok) {
-        alert('Error creating load: ' + (data.error || resp.statusText));
-        return;
-      }
-
-      driverLinkBox.style.display = 'block';
-      driverLinkBox.innerHTML = `
-        <strong>Driver link:</strong><br>
-        <span>${data.driverLink}</span><br><br>
-        <span class="small">
-          Text this link to your driver. When they open it and share location,
-          the load will move to "tracking".
-        </span>
-        ${data.billing ? `<br><br><span class="small">
-          Plan: ${data.billing.plan}, debited $${data.billing.debited.toFixed(2)}.
-          Remaining credits: $${data.billing.remainingCredits.toFixed(2)}.
-        </span>` : ''}
-      `;
-
-      createForm.reset();
-      await loadLoads();
-      await loadTrackingBalance();
-    } catch (err) {
-      console.error(err);
-      alert('Something went wrong creating the load.');
-    }
-  });
 
   async function loadLoads() {
     try {
@@ -891,78 +889,194 @@
       }
 
       const loads = await resp.json();
+      allLoads = loads;
 
-      if (!loads.length) {
-        loadsContainer.innerHTML = '<p class="no-loads">No loads yet.</p>';
-        updateMap([]);
-        return;
-      }
-
-      let html = `
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Ref / Driver</th>
-              <th>Equip</th>
-              <th>Route</th>
-              <th>Status</th>
-              <th>Last location</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-
-      for (const load of loads) {
-        let statusClass = 'status-pill';
-        if (load.status === 'invited') statusClass += ' status-invited';
-        if (load.status === 'tracking') statusClass += ' status-tracking';
-        if (load.status === 'completed') statusClass += ' status-completed';
-
-        let lastLocText = '—';
-        if (load.lastLocation) {
-          lastLocText = `${load.lastLocation.lat.toFixed(5)}, ${load.lastLocation.lng.toFixed(5)}
-(${load.lastLocation.recordedAt})`;
-        }
-
-        const routeText = `${load.pickupAddress || '-'} → ${load.deliveryAddress || '-'}`;
-
-        html += `
-          <tr>
-            <td>${load.id}</td>
-            <td>
-              <strong>${load.reference}</strong><br>
-              ${(load.driverName || '')} ${load.driverPhone ? `<br>${load.driverPhone}` : ''}
-              ${load.tractorNumber || load.trailerNumber || load.rate
-                ? `<br><span class="small">
-                    ${load.tractorNumber ? 'Tractor ' + load.tractorNumber + ' ' : ''}
-                    ${load.trailerNumber ? 'Trailer ' + load.trailerNumber + ' ' : ''}
-                    ${load.rate ? 'Rate $' + load.rate : ''}
-                  </span>`
-                : ''}
-            </td>
-            <td>${load.equipmentType || '-'}</td>
-            <td style="white-space: pre-line;">${routeText}</td>
-            <td><span class="${statusClass}">${load.status}</span></td>
-            <td style="white-space: pre-line;">${lastLocText}</td>
-            <td>
-              <button type="button" onclick="sendSms(${load.id})">SMS link</button>
-              <button type="button" class="btn-secondary" onclick="markComplete(${load.id})">Complete</button>
-            </td>
-          </tr>
-        `;
-      }
-
-      html += '</tbody></table>';
-      loadsContainer.innerHTML = html;
-
-      updateMap(loads);
+      renderLoadsTable();
+      renderTrackingView();
     } catch (err) {
       console.error(err);
       loadsContainer.innerHTML = '<p class="no-loads">Error loading loads.</p>';
-      updateMap([]);
     }
+  }
+
+  function renderLoadsTable() {
+    if (!allLoads.length) {
+      loadsContainer.innerHTML = '<p class="no-loads">No loads yet.</p>';
+      return;
+    }
+
+    let html = `
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Ref / Driver</th>
+            <th>Equip</th>
+            <th>Route</th>
+            <th>Status</th>
+            <th>Last location</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    for (const load of allLoads) {
+      let statusClass = 'status-pill';
+      if (load.status === 'invited') statusClass += ' status-invited';
+      if (load.status === 'tracking') statusClass += ' status-tracking';
+      if (load.status === 'completed') statusClass += ' status-completed';
+
+      let lastLocText = '—';
+      if (load.lastLocation) {
+        lastLocText = `${load.lastLocation.lat.toFixed(5)}, ${load.lastLocation.lng.toFixed(5)}
+(${load.lastLocation.recordedAt})`;
+      }
+
+      const routeText = `${load.pickupAddress || '-'} → ${load.deliveryAddress || '-'}`;
+
+      html += `
+        <tr>
+          <td>${load.id}</td>
+          <td>
+            <strong>${load.reference}</strong><br>
+            ${(load.driverName || '')} ${load.driverPhone ? `<br>${load.driverPhone}` : ''}
+            ${load.tractorNumber || load.trailerNumber || load.rate
+              ? `<br><span class="small">
+                  ${load.tractorNumber ? 'Tractor ' + load.tractorNumber + ' ' : ''}
+                  ${load.trailerNumber ? 'Trailer ' + load.trailerNumber + ' ' : ''}
+                  ${load.rate ? 'Rate $' + load.rate : ''}
+                </span>`
+              : ''}
+          </td>
+          <td>${load.equipmentType || '-'}</td>
+          <td style="white-space: pre-line;">${routeText}</td>
+          <td><span class="${statusClass}">${load.status}</span></td>
+          <td style="white-space: pre-line;">${lastLocText}</td>
+          <td>
+            <button type="button" onclick="sendSms(${load.id})">SMS link</button>
+            <button type="button" class="btn-secondary" onclick="markComplete(${load.id})">Complete</button>
+            <button type="button" class="btn-secondary" onclick="createDocFromLoad(${load.id})">Create doc</button>
+          </td>
+        </tr>
+      `;
+    }
+
+    html += '</tbody></table>';
+    loadsContainer.innerHTML = html;
+  }
+
+  function renderTrackingView() {
+    const trackingTable = document.getElementById('tracking-table');
+    if (!trackingTable) return;
+
+    const trackingLoads = allLoads.filter(l => l.status === 'tracking');
+
+    if (!trackingLoads.length) {
+      trackingTable.innerHTML = '<p class="no-loads">No loads are actively tracking yet.</p>';
+      updateTrackingMap([]);
+      return;
+    }
+
+    let html = `
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Ref / Driver</th>
+            <th>Route</th>
+            <th>Last location</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    for (const load of trackingLoads) {
+      let lastLocText = '—';
+      if (load.lastLocation) {
+        lastLocText = `${load.lastLocation.lat.toFixed(5)}, ${load.lastLocation.lng.toFixed(5)}
+(${load.lastLocation.recordedAt})`;
+      }
+      const routeText = `${load.pickupAddress || '-'} → ${load.deliveryAddress || '-'}`;
+
+      html += `
+        <tr>
+          <td>${load.id}</td>
+          <td>
+            <strong>${load.reference}</strong><br>
+            ${(load.driverName || '')} ${load.driverPhone ? `<br>${load.driverPhone}` : ''}
+          </td>
+          <td style="white-space: pre-line;">${routeText}</td>
+          <td style="white-space: pre-line;">${lastLocText}</td>
+        </tr>
+      `;
+    }
+
+    html += '</tbody></table>';
+    trackingTable.innerHTML = html;
+
+    updateTrackingMap(trackingLoads);
+  }
+
+  if (createForm) {
+    createForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const body = {
+        reference: document.getElementById('reference').value.trim(),
+        driverName: document.getElementById('driverName').value.trim(),
+        driverPhone: document.getElementById('driverPhone').value.trim(),
+        tractorNumber: document.getElementById('tractorNumber').value.trim(),
+        trailerNumber: document.getElementById('trailerNumber').value.trim(),
+        equipmentType: document.getElementById('equipmentType').value.trim(),
+        pickupAddress: document.getElementById('pickupAddress').value.trim(),
+        deliveryAddress: document.getElementById('deliveryAddress').value.trim(),
+        rate: document.getElementById('rate').value.trim(),
+        notes: document.getElementById('notes').value.trim(),
+        plan
+      };
+
+      if (!body.reference || !body.driverPhone) {
+        alert('Please fill out at least reference and driver phone.');
+        return;
+      }
+
+      try {
+        const resp = await fetch('/api/loads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        const data = await resp.json().catch(() => ({}));
+
+        if (!resp.ok) {
+          alert('Error creating load: ' + (data.error || resp.statusText));
+          return;
+        }
+
+        driverLinkBox.style.display = 'block';
+        driverLinkBox.innerHTML = `
+          <strong>Driver link:</strong><br>
+          <span>${data.driverLink}</span><br><br>
+          <span class="small">
+            Text this link to your driver. When they open it and share location,
+            the load will move to "tracking".
+          </span>
+          ${data.billing ? `<br><br><span class="small">
+            Plan: ${data.billing.plan}, debited $${data.billing.debited.toFixed(2)}.
+            Remaining credits: $${data.billing.remainingCredits.toFixed(2)}.
+          </span>` : ''}
+        `;
+
+        createForm.reset();
+        await loadLoads();
+        await loadTrackingBalance();
+      } catch (err) {
+        console.error(err);
+        alert('Something went wrong creating the load.');
+      }
+    });
   }
 
   async function sendSms(id) {
@@ -1001,13 +1115,47 @@
     }
   }
 
+  function createDocFromLoad(id) {
+    const load = allLoads.find(l => l.id === id);
+    if (!load) {
+      alert('Could not find that load.');
+      return;
+    }
+    activatePanel('docs');
+
+    const docLoadId = document.getElementById('doc-load-id');
+    const docRef = document.getElementById('doc-ref');
+    const docNotes = document.getElementById('doc-notes');
+
+    if (docLoadId) docLoadId.value = String(load.id || '');
+    if (docRef) docRef.value = load.reference || '';
+
+    const baseNote = `Created from load #${load.id}${load.reference ? ' (' + load.reference + ')' : ''}.`;
+    if (docNotes) {
+      const existing = docNotes.value.trim();
+      docNotes.value = existing ? (existing + '\\n' + baseNote) : baseNote;
+    }
+
+    const docFormEl = document.getElementById('doc-form');
+    if (docFormEl) {
+      docFormEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (docRef) docRef.focus();
+    }
+  }
+
   window.sendSms = sendSms;
   window.markComplete = markComplete;
+  window.createDocFromLoad = createDocFromLoad;
 
   if (refreshBtn) {
     refreshBtn.addEventListener('click', () => {
       loadLoads();
       loadTrackingBalance();
+    });
+  }
+  if (refreshTrackingBtn) {
+    refreshTrackingBtn.addEventListener('click', () => {
+      loadLoads();
     });
   }
 
@@ -1105,7 +1253,7 @@
                 document.getElementById('pickupAddress').value = origin;
                 document.getElementById('deliveryAddress').value = destination;
                 document.getElementById('rate').value = data.sellRateMarket.toFixed(2);
-                activatePanel('tracking');
+                activatePanel('loads');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               });
             }
@@ -1118,39 +1266,13 @@
     });
   }
 
-  // -------- LOADBOARD (MOCK) --------
-  const loadboardForm = document.getElementById('loadboard-form');
-  const loadboardResults = document.getElementById('loadboard-results');
-
-  if (loadboardForm) {
-    loadboardForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const origin = document.getElementById('lb-origin').value.trim();
-      const dest = document.getElementById('lb-destination').value.trim();
-      const equip = document.getElementById('lb-equipment').value;
-      const date = document.getElementById('lb-date').value;
-      const notes = document.getElementById('lb-notes').value.trim();
-
-      loadboardResults.style.display = 'block';
-      loadboardResults.innerHTML = `
-        <strong>Saved search (mock only):</strong><br>
-        Origin: ${origin || 'Any'}<br>
-        Destination: ${dest || 'Any'}<br>
-        Equipment: ${equip}<br>
-        Date: ${date || 'Any'}<br><br>
-        <span class="small">
-          In the real version, this button would hit integrated DAT / Truckstop APIs
-          and show results inside MyFreightTracker.
-        </span>
-        ${notes ? '<br><br><strong>Notes:</strong><br>' + notes : ''}
-      `;
-    });
-  }
+  // -------- LOADBOARD (placeholder) --------
+  // (No extra JS needed for Option A)
 
   // -------- CUSTOMERS --------
   const customerForm = document.getElementById('customer-form');
   const customerListContainer = document.getElementById('customer-list');
-  const customerSubtabs = document.querySelectorAll('.subtab-btn');
+  const customerSubtabs = document.querySelectorAll('.subtab-btn[data-sub]');
   const customerCreatePanel = document.getElementById('customer-create-panel');
   const customerListPanel = document.getElementById('customer-list-panel');
   const refreshCustomersLink = document.getElementById('refresh-customers-link');
@@ -1251,11 +1373,212 @@
           return;
         }
         customerForm.reset();
-        // Optionally flip to list and refresh
         setCustomerSubtab('list');
       } catch (err) {
         console.error(err);
         alert('Error adding customer.');
+      }
+    });
+  }
+
+  // -------- CARRIERS + FMCSA --------
+  const carrierForm = document.getElementById('carrier-form');
+  const carrierListContainer = document.getElementById('carrier-list');
+  const carrierSubtabs = document.querySelectorAll('.subtab-btn[data-car-sub]');
+  const carrierCreatePanel = document.getElementById('carrier-create-panel');
+  const carrierListPanel = document.getElementById('carrier-list-panel');
+  const refreshCarriersLink = document.getElementById('refresh-carriers-link');
+
+  const fmcsaMcInput = document.getElementById('fmcsa-mc');
+  const fmcsaNameInput = document.getElementById('fmcsa-name');
+  const fmcsaLookupBtn = document.getElementById('fmcsa-lookup-btn');
+  const carVerifyBtn = document.getElementById('car-verify-fmcsa');
+
+  function setCarrierSubtab(sub) {
+    carrierSubtabs.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.carSub === sub);
+    });
+    carrierCreatePanel.classList.toggle('active', sub === 'create');
+    carrierListPanel.classList.toggle('active', sub === 'list');
+    if (sub === 'list') {
+      refreshCarrierList();
+    }
+  }
+
+  carrierSubtabs.forEach(btn => {
+    btn.addEventListener('click', () => setCarrierSubtab(btn.dataset.carSub));
+  });
+
+  if (refreshCarriersLink) {
+    refreshCarriersLink.addEventListener('click', refreshCarrierList);
+  }
+
+  async function loadCarriers() {
+    const resp = await fetch('/api/carriers');
+    if (!resp.ok) throw new Error('Failed to load carriers');
+    return resp.json();
+  }
+
+  async function refreshCarrierList() {
+    if (!carrierListContainer) return;
+    carrierListContainer.textContent = 'Loading carriers…';
+    try {
+      const carriers = await loadCarriers();
+      if (!carriers.length) {
+        carrierListContainer.innerHTML = '<p class="no-loads">No carriers yet.</p>';
+        return;
+      }
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>MC #</th>
+              <th>Phone / Email</th>
+              <th>TS / DAT</th>
+              <th>FMCSA status</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      for (const c of carriers) {
+        let statusBadge = '<span class="status-badge">Not verified</span>';
+        const notesText = (c.notes || '').toLowerCase();
+        if (notesText.includes('allowed to operate: y')) {
+          statusBadge = '<span class="status-badge status-ok">FMCSA: Allowed</span>';
+        } else if (
+          notesText.includes('allowed to operate: n') ||
+          notesText.includes('out-of-service') ||
+          notesText.includes('out of service')
+        ) {
+          statusBadge = '<span class="status-badge status-oos">FMCSA: Check status</span>';
+        }
+
+        html += `
+          <tr>
+            <td>${c.name}</td>
+            <td>${c.mcNumber || '-'}</td>
+            <td>
+              ${c.phone || '-'}
+              ${c.email ? '<br>' + c.email : ''}
+            </td>
+            <td>
+              ${c.truckstopId ? 'TS: ' + c.truckstopId + '<br>' : ''}
+              ${c.datId ? 'DAT: ' + c.datId : (!c.truckstopId ? '-' : '')}
+            </td>
+            <td>${statusBadge}</td>
+            <td>${c.notes || '-'}</td>
+          </tr>
+        `;
+      }
+      html += '</tbody></table>';
+      carrierListContainer.innerHTML = html;
+    } catch (e) {
+      console.error(e);
+      carrierListContainer.innerHTML = '<p class="no-loads">Error loading carriers.</p>';
+    }
+  }
+
+  async function runFmcsaLookup(mc, name) {
+    if (!mc && !name) {
+      alert('Enter MC # or Carrier name first.');
+      return;
+    }
+
+    const query = mc
+      ? `mc=${encodeURIComponent(mc)}`
+      : `name=${encodeURIComponent(name)}`;
+
+    try {
+      const resp = await fetch(`/api/fmcsa/carrier?${query}`);
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        alert('FMCSA lookup failed: ' + (data.error || resp.statusText));
+        return;
+      }
+
+      if (data.legalName) {
+        document.getElementById('car-name').value = data.legalName;
+      }
+      if (data.telephone) {
+        document.getElementById('car-phone').value = data.telephone;
+      }
+      if (data.mcNumber && !document.getElementById('car-mc').value.trim()) {
+        document.getElementById('car-mc').value = data.mcNumber;
+      }
+
+      const notesEl = document.getElementById('car-notes');
+      let noteBits = [];
+      if (data.allowedToOperate) {
+        noteBits.push('Allowed to operate: ' + data.allowedToOperate);
+      }
+      if (data.outOfServiceDate) {
+        noteBits.push('Out-of-service date: ' + data.outOfServiceDate);
+      }
+      if (noteBits.length) {
+        const fmLine = 'FMCSA: ' + noteBits.join(' | ');
+        const existing = notesEl.value.trim();
+        notesEl.value = existing ? (existing + '\\n' + fmLine) : fmLine;
+      }
+
+      alert('FMCSA data loaded for this carrier.');
+      setCarrierSubtab('create');
+    } catch (err) {
+      console.error(err);
+      alert('Error contacting FMCSA verification endpoint.');
+    }
+  }
+
+  if (fmcsaLookupBtn) {
+    fmcsaLookupBtn.addEventListener('click', () => {
+      const mc = fmcsaMcInput.value.trim();
+      const name = fmcsaNameInput.value.trim();
+      runFmcsaLookup(mc, name);
+    });
+  }
+
+  if (carVerifyBtn) {
+    carVerifyBtn.addEventListener('click', () => {
+      const mc = document.getElementById('car-mc').value.trim();
+      const name = document.getElementById('car-name').value.trim();
+      runFmcsaLookup(mc, name);
+    });
+  }
+
+  if (carrierForm) {
+    carrierForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const body = {
+        name: document.getElementById('car-name').value.trim(),
+        mcNumber: document.getElementById('car-mc').value.trim(),
+        phone: document.getElementById('car-phone').value.trim(),
+        email: document.getElementById('car-email').value.trim(),
+        truckstopId: document.getElementById('car-truckstop').value.trim(),
+        datId: document.getElementById('car-dat').value.trim(),
+        notes: document.getElementById('car-notes').value.trim()
+      };
+      if (!body.name) {
+        alert('Carrier name is required.');
+        return;
+      }
+      try {
+        const resp = await fetch('/api/carriers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (!resp.ok) {
+          const data = await resp.json().catch(() => ({}));
+          alert('Error adding carrier: ' + (data.error || resp.statusText));
+          return;
+        }
+        carrierForm.reset();
+        setCarrierSubtab('list');
+      } catch (err) {
+        console.error(err);
+        alert('Error adding carrier.');
       }
     });
   }
@@ -1268,6 +1591,7 @@
   const docList = document.getElementById('doc-list');
   const docTypeButtons = document.querySelectorAll('.doc-type-btn');
   const showAllDocsLink = document.getElementById('show-all-docs');
+  const createDocBtn = document.getElementById('create-doc-btn');
 
   let currentDocType = 'rate-confirmation';
   let showAllDocs = false;
@@ -1329,6 +1653,15 @@
       showAllDocs = !showAllDocs;
       showAllDocsLink.textContent = showAllDocs ? 'Show filtered by type' : 'Show all docs';
       loadDocuments(showAllDocs);
+    });
+  }
+
+  if (createDocBtn && docForm) {
+    createDocBtn.addEventListener('click', () => {
+      activatePanel('docs');
+      docForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const refField = document.getElementById('doc-ref');
+      if (refField) refField.focus();
     });
   }
 
@@ -1432,4 +1765,3 @@
 </script>
 </body>
 </html>
-
