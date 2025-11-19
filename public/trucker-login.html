@@ -4,324 +4,163 @@
   <meta charset="UTF-8" />
   <title>Trucker Login – MyFreightTracker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; }
     body {
-      background: #020617;
-      color: #e5e7eb;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    header {
-      background: #020617;
-      border-bottom: 1px solid #111827;
-      padding: 14px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .logo {
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: #f9fafb;
-    }
-
-    .logo span {
-      color: #22c55e;
-    }
-
-    .header-right a {
-      color: #9ca3af;
-      text-decoration: none;
-      font-size: 0.85rem;
-    }
-
-    .header-right a:hover {
-      color: #e5e7eb;
-    }
-
-    main {
-      flex: 1;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px 16px 32px;
+      padding: 16px;
     }
 
-    .login-wrapper {
+    .container {
+      background: #f9fafb;
+      border-radius: 18px;
       max-width: 420px;
       width: 100%;
+      padding: 24px 24px 28px;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.7);
     }
 
-    .login-card {
-      background: #020617;
-      border-radius: 18px;
-      border: 1px solid #1f2937;
-      padding: 20px 20px 18px;
-      box-shadow: 0 24px 40px rgba(0, 0, 0, 0.75);
+    .logo {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #0f172a;
+      text-align: center;
+      margin-bottom: 4px;
     }
 
-    .login-tag {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: #9ca3af;
-      margin-bottom: 6px;
+    .logo span { color: #22c55e; }
+
+    .subtitle {
+      font-size: 0.9rem;
+      text-align: center;
+      color: #6b7280;
+      margin-bottom: 18px;
     }
 
-    .login-title {
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: #f9fafb;
-      margin-bottom: 6px;
-    }
-
-    .login-subtitle {
-      font-size: 0.85rem;
+    .subsidiary {
+      text-align: center;
+      font-size: 0.8rem;
       color: #9ca3af;
       margin-bottom: 16px;
     }
 
-    label {
-      display: block;
-      font-size: 0.8rem;
-      color: #e5e7eb;
-      margin-bottom: 4px;
+    .subsidiary span { font-weight: 600; color: #6b7280; }
+
+    h1 {
+      text-align: center;
+      font-size: 1.2rem;
+      margin-bottom: 6px;
+      color: #111827;
     }
 
-    .label-note {
-      font-size: 0.75rem;
-      color: #6b7280;
-      margin-bottom: 6px;
+    form { margin-top: 10px; }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+      color: #374151;
     }
 
     input {
       width: 100%;
       padding: 9px 10px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       border-radius: 10px;
-      border: 1px solid #1f2937;
-      background: #020617;
-      color: #e5e7eb;
-      font-size: 0.85rem;
-      outline: none;
-    }
-
-    input::placeholder {
-      color: #4b5563;
+      border: 1px solid #d1d5db;
+      font-size: 0.9rem;
     }
 
     input:focus {
       border-color: #22c55e;
-      box-shadow: 0 0 0 1px #22c55e55;
+      box-shadow: 0 0 0 1px #22c55e33;
+      outline: none;
     }
 
-    .row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .row > div {
-      flex: 1;
-    }
-
-    .btn-primary {
+    .btn-login {
       width: 100%;
-      margin-top: 8px;
-      padding: 9px 14px;
+      padding: 10px;
       border-radius: 999px;
       border: none;
       background: #22c55e;
-      color: #020617;
-      font-size: 0.9rem;
+      color: #0f172a;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
+      margin-top: 4px;
     }
 
-    .btn-primary:hover {
-      filter: brightness(1.05);
-    }
+    .btn-login:hover { filter: brightness(1.05); }
 
-    .helper-row {
+    .footer-links {
+      margin-top: 14px;
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      font-size: 0.8rem;
+    }
+
+    .footer-links a { color: #4b5563; text-decoration: none; }
+    .footer-links a:hover { text-decoration: underline; }
+
+    .back-link {
       margin-top: 10px;
-      font-size: 0.75rem;
-      color: #6b7280;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .helper-row a {
-      color: #9ca3af;
-      text-decoration: none;
-    }
-
-    .helper-row a:hover {
-      color: #e5e7eb;
-    }
-
-    .status-pill {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 999px;
-      border: 1px solid #1f2937;
-      font-size: 0.7rem;
-      color: #9ca3af;
-    }
-
-    .status-soon {
-      border-color: #22c55e;
-      color: #bbf7d0;
-    }
-
-    .info-banner {
-      margin-top: 12px;
-      padding: 9px 10px;
-      border-radius: 10px;
-      background: #020617;
-      border: 1px dashed #374151;
-      font-size: 0.78rem;
-      color: #9ca3af;
-    }
-
-    .info-banner span {
-      color: #22c55e;
-      font-weight: 600;
-    }
-
-    footer {
-      padding: 10px 16px 16px;
-      font-size: 0.75rem;
-      color: #6b7280;
       text-align: center;
+      font-size: 0.8rem;
     }
 
-    @media (max-width: 480px) {
-      .login-card {
-        padding: 16px 14px 16px;
-      }
+    .back-link a { color: #4b5563; text-decoration: none; }
+    .back-link a:hover { text-decoration: underline; }
+
+    .tip {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      text-align: center;
+      margin-top: 10px;
     }
   </style>
 </head>
+
 <body>
-  <header>
-    <div class="logo">
-      MyFreight<span>Tracker</span>
+  <div class="container">
+    <div class="logo">MyFreight<span>Tracker</span></div>
+
+    <p class="subtitle">Driver / Trucker Portal Login</p>
+    <p class="subsidiary">A subsidiary of <span>Leatherneck Trucking LLC</span></p>
+
+    <h1>Sign in to your driver account</h1>
+
+    <form method="POST" action="/trucker-login">
+      <label>Email</label>
+      <input type="email" name="email" required placeholder="you@example.com">
+
+      <label>Password</label>
+      <input type="password" name="password" required placeholder="••••••••">
+
+      <button class="btn-login">Log In</button>
+    </form>
+
+    <div class="footer-links">
+      <a href="#">Forgot password?</a>
+      <a href="#">Need an account?</a>
     </div>
-    <div class="header-right">
-      <a href="/index.html">← Back to main site</a>
+
+    <div class="back-link">
+      <a href="index.html">← Back to Home</a>
     </div>
-  </header>
 
-  <main>
-    <div class="login-wrapper">
-      <div class="login-card">
-        <div class="login-tag">Trucker / Carrier Portal</div>
-        <div class="login-title">Trucker Login</div>
-        <p class="login-subtitle">
-          Log in to access your loads, documents, miles, and IFTA tracking.
-          This portal is being rolled out with our first partner carriers.
-        </p>
-
-        <form id="trucker-login-form">
-          <label for="contact">Email or mobile number</label>
-          <p class="label-note">Use the same email or phone your broker has on file.</p>
-          <input
-            id="contact"
-            name="contact"
-            type="text"
-            placeholder="e.g. driver@example.com or +15551234567"
-            autocomplete="username"
-            required
-          />
-
-          <label for="password">Password / access code</label>
-          <p class="label-note">For early access, your broker will provide a temporary code.</p>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            placeholder="Enter your access code"
-            autocomplete="current-password"
-            required
-          />
-
-          <div class="row">
-            <div>
-              <label for="company">Company / carrier name</label>
-              <input
-                id="company"
-                name="company"
-                type="text"
-                placeholder="e.g. Leatherneck Trucking LLC"
-              />
-            </div>
-            <div>
-              <label for="truck">Truck / unit #</label>
-              <input
-                id="truck"
-                name="truck"
-                type="text"
-                placeholder="e.g. 101"
-              />
-            </div>
-          </div>
-
-          <button type="submit" class="btn-primary">Sign in</button>
-
-          <div class="helper-row">
-            <span class="status-pill status-soon">Status: Trucker portal in early access</span>
-            <a href="#" id="need-invite-link">Need an invite?</a>
-          </div>
-        </form>
-
-        <div class="info-banner">
-          <strong>Heads up:</strong> The full trucker portal is coming online in phases.
-          For now, your broker can still send you a <span>MyFreightTracker driver link</span> per load
-          so you can share GPS and keep them updated.
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <footer>
-    © <span id="year"></span> MyFreightTracker • Trucker Portal
-  </footer>
-
-  <script>
-    // Footer year
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    // Temporary "coming soon" behavior so drivers don't hit a 404
-    const form = document.getElementById('trucker-login-form');
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      alert(
-        "The full Trucker Portal login is coming online soon.\n\n" +
-        "For now, please use the tracking links your broker sends you from MyFreightTracker " +
-        "to update your location and share load status."
-      );
-    });
-
-    // Invite link placeholder
-    document.getElementById('need-invite-link').addEventListener('click', function (e) {
-      e.preventDefault();
-      alert(
-        "To get early access to the Trucker Portal, ask your broker to register you in MyFreightTracker.\n\n" +
-        "In a later update, this will let you request access directly."
-      );
-    });
-  </script>
+    <p class="tip">Admin note: hook this form to real driver accounts later.</p>
+  </div>
 </body>
 </html>
+
+
+ 
+
+
+
+    
