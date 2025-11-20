@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Shipper Dashboard – MyFreightTracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background: #f4f6fb;
+      color: #111827;
+    }
+
+    header {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    .logo span {
+      color: #22c55e;
+    }
+
+    .header-right a {
+      color: #e5e7eb;
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-left: 16px;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 16px 32px;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+
+    .partnership {
+      font-size: 0.85rem;
+      color: #1d4ed8;
+      margin-bottom: 16px;
+      background: #e0f2fe;
+      border-radius: 12px;
+      padding: 8px 10px;
+      border: 1px solid #bfdbfe;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 16px 18px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.1);
+    }
+
+    /* Top-level tabs */
+    .tabs {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .tab-button {
+      border-radius: 999px;
+      border: none;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      background: #e5e7eb;
+      cursor: pointer;
+      color: #111827;
+    }
+
+    .tab-button.active {
+      background: #22c55e;
+      color: #0f172a;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
+    }
+
+    .tab-panel {
+      display: none;
+      margin-top: 4px;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+      color: #374151;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 8px 9px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      font-size: 0.9rem;
+      outline: none;
+      resize: vertical;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 1px #22c55e33;
+    }
+
+    button {
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: none;
+      background: #22c55e;
+      color: #0f172a;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    button:hover {
+      filter: brightness(1.05);
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+      margin-left: 4px;
+    }
+
+    .small {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: minmax(260px, 1.1fr) minmax(260px, 1.1fr);
+      gap: 18px;
+      margin-top: 10px;
+    }
+
+    .box {
+      background: #f9fafb;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      padding: 10px 12px;
+    }
+
+    .box-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .box-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.8rem;
+    }
+
+    th, td {
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      padding: 6px 4px;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f3f4f6;
+      font-weight: 600;
+    }
+
+    .no-rows {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-top: 6px;
+    }
+
+    .dropzone {
+      border: 2px dashed #9ca3af;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #6b7280;
+      cursor: pointer;
+      background: #f9fafb;
+      margin-bottom: 6px;
+    }
+
+    .dropzone.dragover {
+      background: #eef2ff;
+      border-color: #4f46e5;
+      color: #111827;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .metric-card {
+      background: #f9fafb;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      padding: 10px 12px;
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin-bottom: 2px;
+    }
+
+    .metric-value {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    @media (max-width: 900px) {
+      .split {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      MyFreight<span>Tracker</span>
+    </div>
+    <div class="header-right">
+      <a href="/index.html">← Back to Landing</a>
+    </div>
+  </header>
+
+  <main>
+    <h1>Shipper Dashboard</h1>
+    <p class="subtitle">
+      Create loads, send over freight details, and track status – all in one view.
+    </p>
+    <div class="partnership">
+      <strong>Booking your freight in partnership with MyFreightTracker.</strong><br />
+      Loads you create here are booked and moved under our Motor Carrier authority and broker tools.
+    </div>
+
+    <div class="card">
+      <!-- TOP-LEVEL TABS: mirrored from Broker -->
+      <div class="tabs">
+        <button class="tab-button active" data-tab="customers">Customers</button>
+        <button class="tab-button" data-tab="loads">Loads</button>
+        <button class="tab-button" data-tab="aggregator">Loadboard Aggregator</button>
+        <button class="tab-button" data-tab="documents">Documents</button>
+        <button class="tab-button" data-tab="carriers">Carriers</button>
+        <button class="tab-button" data-tab="tracking">Driver Tracking</button>
+        <button class="tab-button" data-tab="quote">Quote Calculator</button>
+      </div>
+
+      <!-- CUSTOMERS TAB -->
+      <section id="tab-customers" class="tab-panel active">
+        <h2 style="font-size:1rem; margin-bottom:6px;">Customer Profiles</h2>
+        <p class="small">
+          If you ship on behalf of multiple locations or internal departments, use this to keep them organized.
+        </p>
+
+        <div class="split">
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Add / Update Customer</div>
+              </div>
+
+              <label for="cust-name">Customer name</label>
+              <input id="cust-name" placeholder="e.g. ACME Manufacturing – Louisville Plant" />
+
+              <label for="cust-contact">Contact person</label>
+              <input id="cust-contact" placeholder="e.g. John Smith" />
+
+              <label for="cust-phone">Phone</label>
+              <input id="cust-phone" placeholder="e.g. (555) 123-4567" />
+
+              <label for="cust-email">Email</label>
+              <input id="cust-email" placeholder="e.g. shipping@acme.com" />
+
+              <label for="cust-notes">Notes</label>
+              <textarea id="cust-notes" rows="2" placeholder="Receiving hours, docks, special instructions, etc."></textarea>
+
+              <button type="button" id="cust-add-btn">Save customer (local)</button>
+              <p class="small">
+                This is a local list just for your browser for now. Later we can wire this into /api/customers.
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Customer list</div>
+              </div>
+              <div id="cust-list" class="small">
+                <p class="no-rows">No customers added yet.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LOADS TAB -->
+      <section id="tab-loads" class="tab-panel">
+        <h2 style="font-size:1rem; margin-bottom:6px;">Loads You’ve Requested</h2>
+        <p class="small">
+          Create loads that you want us to cover under our MC. We’ll move them through our broker TMS, but you’ll still see status here.
+        </p>
+
+        <div class="split">
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Create load request</div>
+              </div>
+
+              <label for="load-ref">Your reference / PO</label>
+              <input id="load-ref" placeholder="e.g. PO-12345" />
+
+              <label for="load-customer-name">Customer / location</label>
+              <input id="load-customer-name" placeholder="e.g. ACME – Louisville Plant" />
+
+              <label for="load-pu">Pickup address</label>
+              <input id="load-pu" placeholder="Street, City, State, ZIP" />
+
+              <label for="load-del">Delivery address</label>
+              <input id="load-del" placeholder="Street, City, State, ZIP" />
+
+              <label for="load-equipment">Equipment type</label>
+              <select id="load-equipment">
+                <option value="van">Dry Van</option>
+                <option value="reefer">Reefer</option>
+                <option value="flatbed">Flatbed</option>
+                <option value="stepdeck">Stepdeck</option>
+                <option value="hotshot">Hotshot</option>
+                <option value="rgn">RGN</option>
+                <option value="lowboy">Lowboy</option>
+              </select>
+
+              <label for="load-weight">Weight (lbs)</label>
+              <input id="load-weight" placeholder="e.g. 42000" />
+
+              <label for="load-notes">Notes</label>
+              <textarea id="load-notes" rows="2" placeholder="Time windows, hazmat, special handling, etc."></textarea>
+
+              <button type="button" id="load-add-btn">Save load request (local)</button>
+              <p class="small">
+                Later we can post this directly into the broker loads table (/api/loads) so your loads drop into dispatch instantly.
+              </p>
+            </div>
+          </div>
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Requested loads</div>
+              </div>
+              <div id="load-list" class="small">
+                <p class="no-rows">No loads requested yet.</p>
+              </div>
+            </div>
+
+            <div class="box" style="margin-top:10px;">
+              <div class="box-header">
+                <div class="box-title">Status from MyFreightTracker</div>
+              </div>
+              <p class="small">
+                Once wired to the live API, you’ll see current status here:
+              </p>
+              <ul class="small" style="margin-left:16px; margin-top:4px; list-style:disc;">
+                <li>Pending – load received, waiting for truck</li>
+                <li>Assigned – carrier booked under our MC</li>
+                <li>In transit – driver GPS pings are active</li>
+                <li>Delivered – POD and BOL on file</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LOADBOARD AGGREGATOR TAB -->
+      <section id="tab-aggregator" class="tab-panel">
+        <h2 style="font-size:1rem; margin-bottom:6px;">Loadboard Aggregator</h2>
+        <p class="small">
+          Track the lanes you and the brokerage are watching across DAT, Truckstop, and other boards.
+        </p>
+
+        <div class="split">
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Lane watch</div>
+                <span class="pill">Planning</span>
+              </div>
+
+              <label for="agg-origin">Origin (market)</label>
+              <input id="agg-origin" placeholder="e.g. Louisville, KY" />
+
+              <label for="agg-dest">Destination (market)</label>
+              <input id="agg-dest" placeholder="e.g. Dallas, TX" />
+
+              <label for="agg-eq">Equipment</label>
+              <select id="agg-eq">
+                <option value="van">Dry Van</option>
+                <option value="reefer">Reefer</option>
+                <option value="flatbed">Flatbed</option>
+                <option value="hotshot">Hotshot</option>
+                <option value="stepdeck">Stepdeck</option>
+                <option value="rgn">RGN</option>
+                <option value="lowboy">Lowboy</option>
+              </select>
+
+              <label for="agg-notes">Notes (board, min rate, etc.)</label>
+              <textarea id="agg-notes" rows="2" placeholder="DAT, Truckstop, min $/mi, daily volume, etc."></textarea>
+
+              <button type="button" id="agg-add-btn">Add lane (local)</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Saved lanes</div>
+              </div>
+              <div id="agg-list" class="small">
+                <p class="no-rows">No lanes saved yet.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- DOCUMENTS TAB -->
+      <section id="tab-documents" class="tab-panel">
+        <h2 style="font-size:1rem; margin-bottom:6px;">Documents</h2>
+        <p class="small">
+          Keep track of the docs you send us: rate requests, routing guides, SOPs, contracts, and more.
+        </p>
+
+        <div class="split">
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Upload / attach</div>
+              </div>
+
+              <label for="doc-type">Document type</label>
+              <select id="doc-type">
+                <option value="routing-guide">Routing guide</option>
+                <option value="rate-sheet">Rate sheet</option>
+                <option value="sop">SOP / instructions</option>
+                <option value="contract">Contract</option>
+                <option value="other">Other</option>
+              </select>
+
+              <label for="doc-ref">Reference / description</label>
+              <input id="doc-ref" placeholder="e.g. 2025 contract, Lane matrix v2, etc." />
+
+              <label for="doc-notes">Notes</label>
+              <textarea id="doc-notes" rows="2" placeholder="What this doc is used for."></textarea>
+
+              <label>Attach file (optional)</label>
+              <div id="doc-dropzone" class="dropzone">
+                <span class="drop-label">Drag & drop here, or click to browse.</span>
+              </div>
+              <input id="doc-file" type="file" style="margin-top:6px;" />
+
+              <button type="button" id="doc-add-btn">Save document (local)</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Document list</div>
+              </div>
+              <div id="doc-list" class="small">
+                <p class="no-rows">No documents saved yet.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CARRIERS TAB (view-only concept) -->
+      <section id="tab-carriers" class="tab-panel">
+        <h2 style="font-size:1rem; margin-bottom:6px;">Carriers (visibility)</h2>
+        <p class="small">
+          View carriers that the brokerage is using for your freight (concept view – wiring to live data comes later).
+        </p>
+
+        <div class="box" style="margin-top:8px;">
+          <p class="small">
+            In the live version, this section will reflect the vetted carriers we use under our MC to move your freight,
+            including safety status and FMCSA info.
+          </p>
+          <table style="margin-top:10px;">
+            <thead>
+              <tr>
+                <th>Carrier name</th>
+                <th>MC</th>
+                <th>DOT</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody id="carrier-list">
+              <tr>
+                <td colspan="4" class="small">Carrier visibility will be populated from the broker TMS.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- DRIVER TRACKING TAB (read-only concept) -->
+      <section id="tab-tracking" class="tab-panel">
+        <h2 style="font-size:1rem; margin-bottom:6px;">Driver Tracking</h2>
+        <p class="small">
+          MyFreightTracker tracks trucks via driver phones (Life360-style). You’ll eventually see high-level status here.
+        </p>
+
+        <div class="split">
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Current loads snapshot</div>
+              </div>
+              <p class="small">
+                Example view:
+              </p>
+              <table style="margin-top:8px;">
+                <thead>
+                  <tr>
+                    <th>Load</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="tracking-list">
+                  <tr>
+                    <td>PO-12345</td>
+                    <td>Louisville, KY</td>
+                    <td>Atlanta, GA</td>
+                    <td>In transit</td>
+                  </tr>
+                  <tr>
+                    <td>PO-12346</td>
+                    <td>Cincinnati, OH</td>
+                    <td>Chicago, IL</td>
+                    <td>Assigned</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Map view (future)</div>
+              </div>
+              <div style="
+                width: 100%;
+                height: 260px;
+                border-radius: 12px;
+                border: 1px solid #e5e7eb;
+                background: repeating-linear-gradient(
+                  45deg,
+                  #f3f4f6,
+                  #f3f4f6 10px,
+                  #e5e7eb 10px,
+                  #e5e7eb 20px
+                );
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #6b7280;
+                font-size: 0.85rem;
+                text-align: center;
+                padding: 0 10px;
+              ">
+                Live driver GPS from the broker / carrier app will show here – you’ll see "At pickup", "In transit", "At receiver" status.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- QUOTE CALCULATOR TAB -->
+      <section id="tab-quote" class="tab-panel">
+        <h2 style="font-size:1rem; margin-bottom:6px;">Spot Quote Calculator</h2>
+        <p class="small">
+          Get a quick feel for the market before you send over a lane. This mirrors the broker’s quoting engine.
+        </p>
+
+        <div class="split">
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Enter lane details</div>
+              </div>
+
+              <label for="q-origin">Origin</label>
+              <input id="q-origin" placeholder="e.g. Louisville, KY" />
+
+              <label for="q-dest">Destination</label>
+              <input id="q-dest" placeholder="e.g. Atlanta, GA" />
+
+              <label for="q-miles">Miles</label>
+              <input id="q-miles" placeholder="e.g. 420" />
+
+              <label for="q-eq">Equipment</label>
+              <select id="q-eq">
+                <option value="van">Dry Van</option>
+                <option value="reefer">Reefer</option>
+                <option value="flatbed">Flatbed</option>
+                <option value="hotshot">Hotshot</option>
+              </select>
+
+              <label for="q-weight">Weight (lbs)</label>
+              <input id="q-weight" placeholder="e.g. 38000" />
+
+              <label for="q-margin">Target margin %</label>
+              <input id="q-margin" placeholder="e.g. 18" />
+
+              <label for="q-fuel">Fuel cost per mile (optional)</label>
+              <input id="q-fuel" placeholder="e.g. 0.65" />
+
+              <button type="button" id="q-run-btn">Run quote (server)</button>
+              <p class="small">
+                Uses the same /api/quote endpoint as the broker dashboard.
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Quote output</div>
+              </div>
+              <div id="q-output" class="small">
+                Enter a lane and click "Run quote" for an estimate.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    // -------------------------
+    // Tab behavior
+    // -------------------------
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabPanels = {
+      customers: document.getElementById('tab-customers'),
+      loads: document.getElementById('tab-loads'),
+      aggregator: document.getElementById('tab-aggregator'),
+      documents: document.getElementById('tab-documents'),
+      carriers: document.getElementById('tab-carriers'),
+      tracking: document.getElementById('tab-tracking'),
+      quote: document.getElementById('tab-quote')
+    };
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const name = btn.dataset.tab;
+        tabButtons.forEach(b => b.classList.toggle('active', b === btn));
+        Object.entries(tabPanels).forEach(([key, el]) => {
+          el.classList.toggle('active', key === name);
+        });
+      });
+    });
+
+    // -------------------------
+    // Local storage helpers
+    // -------------------------
+    const LS_SHIPPER_CUSTOMERS = 'mftShipperCustomers';
+    const LS_SHIPPER_LOADS = 'mftShipperLoads';
+    const LS_SHIPPER_DOCS = 'mftShipperDocs';
+    const LS_SHIPPER_LANES = 'mftShipperLanes';
+
+    function safeNumber(v) {
+      const n = Number(v);
+      return Number.isNaN(n) ? 0 : n;
+    }
+
+    // -------------------------
+    // Customers (local)
+    // -------------------------
+    const custAddBtn = document.getElementById('cust-add-btn');
+    const custListEl = document.getElementById('cust-list');
+    let shipperCustomers = [];
+
+    function loadShipperCustomers() {
+      try {
+        const raw = localStorage.getItem(LS_SHIPPER_CUSTOMERS);
+        if (raw) {
+          shipperCustomers = JSON.parse(raw);
+        }
+      } catch (e) {
+        shipperCustomers = [];
+      }
+    }
+
+    function saveShipperCustomers() {
+      try {
+        localStorage.setItem(LS_SHIPPER_CUSTOMERS, JSON.stringify(shipperCustomers));
+      } catch (e) {}
+    }
+
+    function renderShipperCustomers() {
+      if (!shipperCustomers.length) {
+        custListEl.innerHTML = '<p class="no-rows">No customers added yet.</p>';
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Contact</th>
+              <th>Phone</th>
+              <th>Email</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      for (const c of shipperCustomers) {
+        html += `
+          <tr>
+            <td>${c.name || '-'}</td>
+            <td>${c.contact || '-'}</td>
+            <td>${c.phone || '-'}</td>
+            <td>${c.email || '-'}</td>
+          </tr>
+        `;
+      }
+      html += '</tbody></table>';
+      custListEl.innerHTML = html;
+    }
+
+    if (custAddBtn) {
+      custAddBtn.addEventListener('click', () => {
+        const name = document.getElementById('cust-name').value.trim();
+        const contact = document.getElementById('cust-contact').value.trim();
+        const phone = document.getElementById('cust-phone').value.trim();
+        const email = document.getElementById('cust-email').value.trim();
+        const notes = document.getElementById('cust-notes').value.trim();
+
+        if (!name && !contact) {
+          alert('Enter at least a customer name or contact.');
+          return;
+        }
+
+        shipperCustomers.push({
+          id: Date.now(),
+          name, contact, phone, email, notes
+        });
+        saveShipperCustomers();
+        renderShipperCustomers();
+
+        document.getElementById('cust-name').value = '';
+        document.getElementById('cust-contact').value = '';
+        document.getElementById('cust-phone').value = '';
+        document.getElementById('cust-email').value = '';
+        document.getElementById('cust-notes').value = '';
+      });
+    }
+
+    // -------------------------
+    // Loads (local)
+    // -------------------------
+    const loadAddBtn = document.getElementById('load-add-btn');
+    const loadListEl = document.getElementById('load-list');
+    let shipperLoads = [];
+
+    function loadShipperLoads() {
+      try {
+        const raw = localStorage.getItem(LS_SHIPPER_LOADS);
+        if (raw) {
+          shipperLoads = JSON.parse(raw);
+        }
+      } catch (e) {
+        shipperLoads = [];
+      }
+    }
+
+    function saveShipperLoads() {
+      try {
+        localStorage.setItem(LS_SHIPPER_LOADS, JSON.stringify(shipperLoads));
+      } catch (e) {}
+    }
+
+    function renderShipperLoads() {
+      if (!shipperLoads.length) {
+        loadListEl.innerHTML = '<p class="no-rows">No loads requested yet.</p>';
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Ref / PO</th>
+              <th>Customer</th>
+              <th>Pickup</th>
+              <th>Delivery</th>
+              <th>Equipment</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      for (const l of shipperLoads) {
+        html += `
+          <tr>
+            <td>${l.ref || '-'}</td>
+            <td>${l.customer || '-'}</td>
+            <td>${l.pu || '-'}</td>
+            <td>${l.del || '-'}</td>
+            <td>${l.eq || '-'}</td>
+          </tr>
+        `;
+      }
+      html += '</tbody></table>';
+      loadListEl.innerHTML = html;
+    }
+
+    if (loadAddBtn) {
+      loadAddBtn.addEventListener('click', () => {
+        const ref = document.getElementById('load-ref').value.trim();
+        const customer = document.getElementById('load-customer-name').value.trim();
+        const pu = document.getElementById('load-pu').value.trim();
+        const del = document.getElementById('load-del').value.trim();
+        const eq = document.getElementById('load-equipment').value;
+        const weight = document.getElementById('load-weight').value.trim();
+        const notes = document.getElementById('load-notes').value.trim();
+
+        if (!ref && !customer && !pu && !del) {
+          alert('Enter at least a reference, customer, pickup or delivery.');
+          return;
+        }
+
+        shipperLoads.push({
+          id: Date.now(),
+          ref, customer, pu, del, eq, weight, notes
+        });
+        saveShipperLoads();
+        renderShipperLoads();
+
+        document.getElementById('load-ref').value = '';
+        document.getElementById('load-customer-name').value = '';
+        document.getElementById('load-pu').value = '';
+        document.getElementById('load-del').value = '';
+        document.getElementById('load-equipment').value = 'van';
+        document.getElementById('load-weight').value = '';
+        document.getElementById('load-notes').value = '';
+      });
+    }
+
+    // -------------------------
+    // Documents (local)
+    // -------------------------
+    const docAddBtn = document.getElementById('doc-add-btn');
+    const docListEl = document.getElementById('doc-list');
+    let shipperDocs = [];
+
+    function loadShipperDocs() {
+      try {
+        const raw = localStorage.getItem(LS_SHIPPER_DOCS);
+        if (raw) {
+          shipperDocs = JSON.parse(raw);
+        }
+      } catch (e) {
+        shipperDocs = [];
+      }
+    }
+
+    function saveShipperDocs() {
+      try {
+        localStorage.setItem(LS_SHIPPER_DOCS, JSON.stringify(shipperDocs));
+      } catch (e) {}
+    }
+
+    function renderShipperDocs() {
+      if (!shipperDocs.length) {
+        docListEl.innerHTML = '<p class="no-rows">No documents saved yet.</p>';
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Reference</th>
+              <th>File</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      for (const d of shipperDocs) {
+        html += `
+          <tr>
+            <td>${d.type}</td>
+            <td>${d.ref || '-'}</td>
+            <td>${d.fileName || '-'}</td>
+            <td>${d.notes || '-'}</td>
+          </tr>
+        `;
+      }
+      html += '</tbody></table>';
+      docListEl.innerHTML = html;
+    }
+
+    function setupDropzone(zoneId, inputId) {
+      const zone = document.getElementById(zoneId);
+      const input = document.getElementById(inputId);
+      if (!zone || !input) return;
+
+      const labelSpan = zone.querySelector('.drop-label');
+      if (labelSpan && !labelSpan.dataset.defaultText) {
+        labelSpan.dataset.defaultText = labelSpan.textContent;
+      }
+
+      function setLabel(files) {
+        if (!files || !files.length) {
+          if (labelSpan && labelSpan.dataset.defaultText) {
+            labelSpan.textContent = labelSpan.dataset.defaultText;
+          }
+          return;
+        }
+        const first = files[0];
+        const extra = files.length > 1 ? ` (+${files.length - 1} more)` : '';
+        labelSpan.textContent = `${first.name}${extra}`;
+      }
+
+      zone.addEventListener('click', () => input.click());
+
+      ['dragenter', 'dragover'].forEach(evt => {
+        zone.addEventListener(evt, e => {
+          e.preventDefault();
+          e.stopPropagation();
+          zone.classList.add('dragover');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(evt => {
+        zone.addEventListener(evt, e => {
+          e.preventDefault();
+          e.stopPropagation();
+          zone.classList.remove('dragover');
+        });
+      });
+
+      zone.addEventListener('drop', e => {
+        const dt = e.dataTransfer;
+        if (!dt || !dt.files || !dt.files.length) return;
+        input.files = dt.files;
+        setLabel(dt.files);
+      });
+
+      input.addEventListener('change', () => setLabel(input.files));
+    }
+
+    setupDropzone('doc-dropzone', 'doc-file');
+
+    if (docAddBtn) {
+      docAddBtn.addEventListener('click', () => {
+        const type = document.getElementById('doc-type').value;
+        const ref = document.getElementById('doc-ref').value.trim();
+        const notes = document.getElementById('doc-notes').value.trim();
+        const input = document.getElementById('doc-file');
+        const fileName = input && input.files[0] ? input.files[0].name : '';
+
+        if (!ref && !notes && !fileName) {
+          alert('Enter a reference, notes, or attach a file.');
+          return;
+        }
+
+        shipperDocs.push({
+          id: Date.now(),
+          type, ref, notes, fileName
+        });
+        saveShipperDocs();
+        renderShipperDocs();
+
+        document.getElementById('doc-ref').value = '';
+        document.getElementById('doc-notes').value = '';
+        if (input) input.value = '';
+      });
+    }
+
+    // -------------------------
+    // Loadboard lanes (local)
+    // -------------------------
+    const aggAddBtn = document.getElementById('agg-add-btn');
+    const aggListEl = document.getElementById('agg-list');
+    let shipperLanes = [];
+
+    function loadShipperLanes() {
+      try {
+        const raw = localStorage.getItem(LS_SHIPPER_LANES);
+        if (raw) {
+          shipperLanes = JSON.parse(raw);
+        }
+      } catch (e) {
+        shipperLanes = [];
+      }
+    }
+
+    function saveShipperLanes() {
+      try {
+        localStorage.setItem(LS_SHIPPER_LANES, JSON.stringify(shipperLanes));
+      } catch (e) {}
+    }
+
+    function renderShipperLanes() {
+      if (!shipperLanes.length) {
+        aggListEl.innerHTML = '<p class="no-rows">No lanes saved yet.</p>';
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Lane</th>
+              <th>Equipment</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      for (const lane of shipperLanes) {
+        html += `
+          <tr>
+            <td>${lane.origin || '-'} → ${lane.dest || '-'}</td>
+            <td>${lane.eq || '-'}</td>
+            <td>${lane.notes || '-'}</td>
+          </tr>
+        `;
+      }
+      html += '</tbody></table>';
+      aggListEl.innerHTML = html;
+    }
+
+    if (aggAddBtn) {
+      aggAddBtn.addEventListener('click', () => {
+        const origin = document.getElementById('agg-origin').value.trim();
+        const dest = document.getElementById('agg-dest').value.trim();
+        const eq = document.getElementById('agg-eq').value;
+        const notes = document.getElementById('agg-notes').value.trim();
+
+        if (!origin && !dest) {
+          alert('Enter at least an origin or destination.');
+          return;
+        }
+
+        shipperLanes.push({
+          id: Date.now(),
+          origin, dest, eq, notes
+        });
+        saveShipperLanes();
+        renderShipperLanes();
+
+        document.getElementById('agg-origin').value = '';
+        document.getElementById('agg-dest').value = '';
+        document.getElementById('agg-eq').value = 'van';
+        document.getElementById('agg-notes').value = '';
+      });
+    }
+
+    // -------------------------
+    // Quote calculator -> /api/quote
+    // -------------------------
+    const qBtn = document.getElementById('q-run-btn');
+    const qOut = document.getElementById('q-output');
+
+    if (qBtn) {
+      qBtn.addEventListener('click', async () => {
+        const origin = document.getElementById('q-origin').value.trim();
+        const destination = document.getElementById('q-dest').value.trim();
+        const miles = safeNumber(document.getElementById('q-miles').value);
+        const equipment = document.getElementById('q-eq').value;
+        const weight = safeNumber(document.getElementById('q-weight').value);
+        const margin = safeNumber(document.getElementById('q-margin').value);
+        const fuelPerMile = safeNumber(document.getElementById('q-fuel').value);
+
+        if (!origin || !destination || !miles) {
+          alert('Origin, destination, and miles are required.');
+          return;
+        }
+
+        qOut.textContent = 'Calculating quote...';
+
+        try {
+          const resp = await fetch('/api/quote', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              origin,
+              destination,
+              miles,
+              equipment,
+              weight,
+              margin,
+              fuelPerMile
+            })
+          });
+
+          if (!resp.ok) {
+            qOut.textContent = 'Quote failed. Server returned an error.';
+            return;
+          }
+
+          const data = await resp.json();
+          qOut.innerHTML = `
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-label">Sell (Market)</div>
+                <div class="metric-value">$${data.sellRateMarket.toFixed(2)}</div>
+                <div class="metric-sub">Approx. market sell rate</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Sell (Aggressive)</div>
+                <div class="metric-value">$${data.sellRateAggressive.toFixed(2)}</div>
+                <div class="metric-sub">Sharper price if needed</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Sell (Premium)</div>
+                <div class="metric-value">$${data.sellRatePremium.toFixed(2)}</div>
+                <div class="metric-sub">If service/coverage is tight</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Estimated cost per mile</div>
+                <div class="metric-value">$${data.costPerMile.toFixed(2)}</div>
+                <div class="metric-sub">${data.miles} miles considered</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Effective margin (Market)</div>
+                <div class="metric-value">${data.effectiveMarginMarket.toFixed(1)}%</div>
+                <div class="metric-sub">Based on your margin input</div>
+              </div>
+            </div>
+          `;
+        } catch (e) {
+          console.error(e);
+          qOut.textContent = 'Quote failed due to a network error.';
+        }
+      });
+    }
+
+    // -------------------------
+    // Initial load
+    // -------------------------
+    (function init() {
+      loadShipperCustomers();
+      renderShipperCustomers();
+
+      loadShipperLoads();
+      renderShipperLoads();
+
+      loadShipperDocs();
+      renderShipperDocs();
+
+      loadShipperLanes();
+      renderShipperLanes();
+    })();
+  </script>
+</body>
+</html>
