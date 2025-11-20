@@ -2,130 +2,250 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>MyFreightTracker – Simplify Logistics</title>
+  <title>MyFreightTracker – Landing</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body {
+    * {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
       font-family: Arial, Helvetica, sans-serif;
-      background: #f4f6fb;
-      color: #111827;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1f2937, #020617 55%, #000000);
+      color: #f9fafb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 980px;
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: 22px;
+      border: 1px solid #111827;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+      padding: 22px 22px 24px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 22px;
     }
 
     header {
-      background: #0f172a;
-      color: white;
-      padding: 16px 28px;
+      grid-column: 1 / -1;
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
     }
 
     .logo {
-      font-size: 1.4rem;
-      font-weight: bold;
+      font-size: 1.2rem;
+      font-weight: 700;
     }
 
     .logo span {
       color: #22c55e;
     }
 
-    .nav-links {
-      display: flex;
-      gap: 18px;
+    .sub-logo {
+      font-size: 0.8rem;
+      color: #9ca3af;
     }
 
-    .nav-links a {
-      color: #e5e7eb;
+    .tagline {
+      font-size: 0.9rem;
+      color: #cbd5f5;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 4px;
+    }
+
+    .hero-left {
+      padding-right: 6px;
+    }
+
+    .hero-text {
+      font-size: 0.9rem;
+      color: #9ca3af;
+      margin-top: 8px;
+      max-width: 32rem;
+    }
+
+    .cta-row {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    a.btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 999px;
       text-decoration: none;
       font-size: 0.9rem;
-      transition: 0.2s;
+      font-weight: 600;
+      border: 1px solid transparent;
+      cursor: pointer;
     }
 
-    .nav-links a:hover {
-      color: #ffffff;
+    a.btn-primary {
+      background: #22c55e;
+      color: #022c22;
+      border-color: #22c55e;
     }
 
-    .hero {
-      text-align: center;
-      padding: 80px 20px;
+    a.btn-secondary {
+      background: #020617;
+      color: #e5e7eb;
+      border-color: #4b5563;
     }
 
-    .hero h1 {
-      font-size: 2.2rem;
-      color: #0f172a;
+    .btn span.badge {
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: #0f172a;
+      color: #a5b4fc;
+    }
+
+    .hero-right {
+      border-radius: 18px;
+      border: 1px solid #1f2937;
+      background: radial-gradient(circle at top, #111827, #020617);
+      padding: 14px 14px 16px;
+      font-size: 0.78rem;
+    }
+
+    .hero-right h2 {
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
       margin-bottom: 10px;
     }
 
-    .hero p {
-      color: #6b7280;
-      font-size: 1.1rem;
-      max-width: 650px;
-      margin: 0 auto;
-      margin-bottom: 24px;
-    }
-
-    .cta-buttons {
-      margin-top: 28px;
-      display: flex;
-      justify-content: center;
-      gap: 14px;
-    }
-
-    .cta-buttons a {
-      padding: 12px 22px;
+    .pill {
+      padding: 3px 8px;
       border-radius: 999px;
-      background: #22c55e;
-      color: #0f172a;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 0.95rem;
+      border: 1px solid #4b5563;
+      background: #020617;
+      color: #d1d5db;
+      font-size: 0.74rem;
     }
 
-    .cta-buttons a:hover {
-      filter: brightness(1.05);
+    .pill.green {
+      border-color: #22c55e;
+      color: #bbf7d0;
     }
 
-    footer {
-      margin-top: 80px;
-      text-align: center;
-      color: #6b7280;
+    .mini-section {
+      margin-top: 6px;
+    }
+
+    .mini-title {
       font-size: 0.8rem;
-      padding-bottom: 20px;
+      color: #e5e7eb;
+      margin-bottom: 2px;
+    }
+
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    li {
+      margin-bottom: 3px;
+      color: #9ca3af;
+    }
+
+    li::before {
+      content: "• ";
+      color: #4ade80;
+    }
+
+    @media (max-width: 800px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-right {
+        order: 3;
+      }
     }
   </style>
 </head>
-
 <body>
-  <!-- HEADER -->
-  <header>
-    <div class="logo">MyFreight<span>Tracker</span></div>
+  <div class="shell">
+    <header>
+      <div>
+        <div class="logo">MyFreight<span>Tracker</span></div>
+        <div class="sub-logo">A subsidiary of Leatherneck Trucking LLC</div>
+      </div>
+      <div class="tagline">Broker • Shipper • Carrier • Dispatcher – one shared battlefield picture.</div>
+    </header>
 
-    <nav class="nav-links">
-      <a href="/broker-login.html">Broker Login</a>
-      <a href="/trucker-login.html">Trucker Login</a>
-      <a href="/shipper-login.html">Shipper Login</a>
-      <a href="/dispatcher-login.html">Dispatcher Login</a>
-    </nav>
-  </header>
+    <section class="hero-left">
+      <h1>Your command center for freight.</h1>
+      <p class="hero-text">
+        Track loads, share GPS, store documents, and keep your lanes organized. Choose your side of the move below.
+      </p>
 
-  <!-- HERO SECTION -->
-  <section class="hero">
-    <h1>Smart. Simple. Powerful Logistics Software.</h1>
-    <p>
-      A unified freight ecosystem for brokers, truckers, shippers, and dispatchers.
-      Create loads, track drivers, store documents, verify carriers, and quote lanes
-      with AI — all in one place.
-    </p>
+      <div class="cta-row">
+        <a href="/broker-login.html" class="btn btn-primary">
+          Broker / Shipper Login
+          <span class="badge">TMS + Tracking</span>
+        </a>
+        <a href="/carrier-login.html" class="btn btn-secondary">
+          Carrier / Dispatcher Login
+          <span class="badge">Fleet + Docs</span>
+        </a>
+      </div>
+    </section>
 
-    <div class="cta-buttons">
-      <a href="/broker-login.html">Get Started</a>
-      <a href="/broker-register.html" style="background:#e5e7eb;color:#111827;">Create Broker Account</a>
-    </div>
-  </section>
+    <section class="hero-right">
+      <h2>What you get here</h2>
+      <div class="pill-row">
+        <div class="pill green">Real-time GPS</div>
+        <div class="pill">BOL & Ratecon locker</div>
+        <div class="pill">Load lifecycle</div>
+        <div class="pill">Deadhead vs loaded miles</div>
+        <div class="pill">Revenue & expense tracking</div>
+      </div>
 
-  <footer>
-    © 2025 MyFreightTracker — A subsidiary of Leatherneck Trucking LLC
-  </footer>
+      <div class="mini-section">
+        <div class="mini-title">For Brokers & Shippers</div>
+        <ul>
+          <li>Create loads, assign carriers, complete loads</li>
+          <li>Driver tracking links and map view</li>
+          <li>Customers, carriers, documents (RC / BOL / packets)</li>
+        </ul>
+      </div>
+
+      <div class="mini-section" style="margin-top:8px;">
+        <div class="mini-title">For Carriers & Dispatchers</div>
+        <ul>
+          <li>Fleet GPS overview for all trucks</li>
+          <li>Drag & drop BOLs and ratecons</li>
+          <li>Deadhead vs loaded miles + net profit calculator</li>
+        </ul>
+      </div>
+    </section>
+  </div>
 </body>
 </html>
