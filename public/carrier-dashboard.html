@@ -379,11 +379,11 @@
       <!-- TOP-LEVEL TABS -->
       <div class="tabs">
         <button class="tab-button active" data-tab="fleet">Fleet Overview</button>
-        <button class="tab-button" data-tab="aggregator">Loadboard Aggregator</button>
         <button class="tab-button" data-tab="bols">BOLs</button>
         <button class="tab-button" data-tab="ratecons">Rate Cons</button>
         <button class="tab-button" data-tab="docs">Documents</button>
         <button class="tab-button" data-tab="metrics">Your Metrics</button>
+        <button class="tab-button" data-tab="aggregator">Loadboard Aggregator</button>
       </div>
 
       <!-- FLEET OVERVIEW TAB -->
@@ -401,80 +401,83 @@
           </div>
 
           <div>
-            <div class="box">
+            <!-- Trucks & Trailers -->
+            <div class="box" style="margin-bottom:10px;">
               <div class="box-header">
-                <div class="box-title">Driver App / Life360-style Linking</div>
-                <span class="pill">Pairing</span>
+                <div class="box-title">Trucks & Trailers</div>
+                <span class="pill">Assets</span>
               </div>
-              <p class="small">
-                Link drivers’ phones (driver app) to your main carrier account so
-                their GPS pings show in the Fleet Overview.
-              </p>
 
-              <label for="fleet-truck-id">Truck / Unit #</label>
-              <input id="fleet-truck-id" placeholder="e.g. Truck 101" />
+              <label for="fleet-truck-select">Select a truck / unit</label>
+              <select id="fleet-truck-select">
+                <option value="">— No trucks added yet —</option>
+              </select>
+
+              <div id="fleet-truck-details" class="small" style="margin-bottom:8px;">
+                Add a truck below, then select it here to see its details and generate a driver link.
+              </div>
 
               <button type="button" id="generate-pair-link-btn">
-                Generate driver pairing link
+                Generate driver pairing link for selected truck
               </button>
 
               <div id="pair-link-box" class="driver-link-box" style="display:none;"></div>
 
-              <p class="small" style="margin-top:6px;">
-                Later, the driver app will let the driver tap this link or enter a code,
-                and it will send GPS pings every few minutes tied to that truck.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+              <hr style="margin:10px 0; border:none; border-top:1px dashed #e5e7eb;" />
 
-      <!-- LOADBOARD AGGREGATOR TAB -->
-      <section id="tab-aggregator" class="tab-panel">
-        <h2 style="font-size:1rem; margin-bottom:6px;">Loadboard Aggregator</h2>
-        <p class="small">
-          Log the lanes you’re hunting so you can quickly see where you’re working DAT, Truckstop, etc.
-          (API integration will plug in here later.)
-        </p>
+              <div class="small" style="margin-bottom:4px; font-weight:600;">Add / edit truck</div>
 
-        <div class="split">
-          <div>
-            <div class="box">
-              <div class="box-header">
-                <div class="box-title">New lane watch</div>
-                <span class="pill">Manual</span>
-              </div>
+              <label for="truck-unit">Truck / Unit #</label>
+              <input id="truck-unit" placeholder="e.g. Truck 101" />
 
-              <label for="agg-origin">Origin (market)</label>
-              <input id="agg-origin" placeholder="e.g. Louisville, KY" />
+              <label for="truck-trailer-number">Trailer #</label>
+              <input id="truck-trailer-number" placeholder="e.g. Trailer 53-12" />
 
-              <label for="agg-destination">Destination (market)</label>
-              <input id="agg-destination" placeholder="e.g. Atlanta, GA" />
+              <label for="truck-registration">Registration / License #</label>
+              <input id="truck-registration" placeholder="e.g. KY ABC-123 or plate #" />
 
-              <label for="agg-equipment">Equipment</label>
-              <select id="agg-equipment">
-                <option value="van">Dry Van</option>
-                <option value="reefer">Reefer</option>
-                <option value="flatbed">Flatbed</option>
-                <option value="hotshot">Hotshot</option>
-                <option value="stepdeck">Stepdeck</option>
-                <option value="rgn">RGN</option>
-                <option value="lowboy">Lowboy</option>
+              <label for="truck-driver-select">Assigned driver (optional)</label>
+              <select id="truck-driver-select">
+                <option value="">— No driver assigned —</option>
               </select>
 
-              <label for="agg-notes">Notes (board, min CPM, etc.)</label>
-              <textarea id="agg-notes" rows="2" placeholder="DAT, Truckstop, min $/mi, time window, etc."></textarea>
-
-              <button type="button" id="agg-add-btn">Add to watchlist</button>
+              <button type="button" id="add-truck-btn">Add / Update Truck</button>
+              <p class="small">
+                Once added, this rig will appear in the dropdown above with its driver attached.
+              </p>
             </div>
-          </div>
 
-          <div>
+            <!-- Drivers & contacts -->
             <div class="box">
               <div class="box-header">
-                <div class="box-title">Saved lanes</div>
+                <div class="box-title">Drivers & Contacts</div>
+                <span class="pill">Roster</span>
               </div>
-              <div id="agg-list"></div>
+
+              <label for="driver-name">Driver name</label>
+              <input id="driver-name" placeholder="e.g. John Doe" />
+
+              <label for="driver-phone">Phone number</label>
+              <input id="driver-phone" placeholder="e.g. +1 (555) 123-4567" />
+
+              <label for="driver-address">Address</label>
+              <input id="driver-address" placeholder="Street, City, State, ZIP" />
+
+              <label for="driver-emergency">Emergency contact</label>
+              <input id="driver-emergency" placeholder="Name & phone" />
+
+              <label for="driver-med-card">Medical card info</label>
+              <input id="driver-med-card" placeholder="Issued date, expiry, notes" />
+
+              <label for="driver-license">Driver’s License / CDL #</label>
+              <input id="driver-license" placeholder="License/CDL number & state" />
+
+              <label for="driver-docs">Other documents (notes / where stored)</label>
+              <input id="driver-docs" placeholder="Where files are stored, cloud link, etc." />
+
+              <button type="button" id="add-driver-btn">Add / Update Driver</button>
+
+              <div id="driver-list" class="small" style="margin-top:8px;"></div>
             </div>
           </div>
         </div>
@@ -484,7 +487,7 @@
       <section id="tab-bols" class="tab-panel">
         <h2 style="font-size:1rem; margin-bottom:6px;">Bill of Lading (BOLs)</h2>
         <p class="small">
-          Store and organize your BOLs for quick reference. File content is local-only for now.
+          Store and organize your BOLs and any files tied to that load (photos, lumper receipts, POD shots, etc.).
         </p>
 
         <div class="split">
@@ -505,15 +508,17 @@
               <label for="bol-notes">Notes</label>
               <textarea id="bol-notes" rows="2" placeholder="Pickup/delivery notes, reference #, etc."></textarea>
 
-              <label>Attach BOL (optional)</label>
+              <label>Attach BOL / load files (optional)</label>
               <div id="bol-dropzone" class="dropzone">
-                <span class="drop-label">Drag & drop BOL file here, or click to browse.</span>
+                <span class="drop-label">
+                  Drag & drop BOLs, photos, POD pictures, lumper receipts, and any other files for this load – or click to browse.
+                </span>
               </div>
-              <input id="bol-file" type="file" style="margin-top:6px;" />
+              <input id="bol-file" type="file" multiple style="margin-top:6px;" />
 
               <button type="button" id="add-bol-btn">Add BOL</button>
               <p class="small">
-                Attachments stay on this device for now. Later we’ll sync to the server.
+                Attachments stay on this device for now. Later we’ll sync everything to your account.
               </p>
             </div>
           </div>
@@ -580,7 +585,7 @@
         <h2 style="font-size:1rem; margin-bottom:6px;">Documents</h2>
         <p class="small">
           A simple place to log other documents: maintenance reports, insurance, escrow statements,
-          carrier packets from your side, etc.
+          carrier-side packets, W-9s, and more.
         </p>
 
         <div class="split">
@@ -595,6 +600,7 @@
                 <option value="maintenance-report">Maintenance report</option>
                 <option value="insurance">Insurance document</option>
                 <option value="escrow-statement">Escrow statement</option>
+                <option value="w9">W-9</option>
                 <option value="carrier-packet">Carrier packet</option>
                 <option value="other">Other</option>
               </select>
@@ -762,6 +768,57 @@
         </div>
       </section>
 
+      <!-- LOADBOARD AGGREGATOR TAB (moved to end) -->
+      <section id="tab-aggregator" class="tab-panel">
+        <h2 style="font-size:1rem; margin-bottom:6px;">Loadboard Aggregator</h2>
+        <p class="small">
+          Log the lanes you’re hunting so you can quickly see where you’re working DAT, Truckstop, etc.
+          (API integration will plug in here later.)
+        </p>
+
+        <div class="split">
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">New lane watch</div>
+                <span class="pill">Manual</span>
+              </div>
+
+              <label for="agg-origin">Origin (market)</label>
+              <input id="agg-origin" placeholder="e.g. Louisville, KY" />
+
+              <label for="agg-destination">Destination (market)</label>
+              <input id="agg-destination" placeholder="e.g. Atlanta, GA" />
+
+              <label for="agg-equipment">Equipment</label>
+              <select id="agg-equipment">
+                <option value="van">Dry Van</option>
+                <option value="reefer">Reefer</option>
+                <option value="flatbed">Flatbed</option>
+                <option value="hotshot">Hotshot</option>
+                <option value="stepdeck">Stepdeck</option>
+                <option value="rgn">RGN</option>
+                <option value="lowboy">Lowboy</option>
+              </select>
+
+              <label for="agg-notes">Notes (board, min CPM, etc.)</label>
+              <textarea id="agg-notes" rows="2" placeholder="DAT, Truckstop, min $/mi, time window, etc."></textarea>
+
+              <button type="button" id="agg-add-btn">Add to watchlist</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Saved lanes</div>
+              </div>
+              <div id="agg-list"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
   </main>
 
@@ -820,11 +877,11 @@
     const tabButtons = document.querySelectorAll('.tab-button');
     const tabPanels = {
       fleet: document.getElementById('tab-fleet'),
-      aggregator: document.getElementById('tab-aggregator'),
       bols: document.getElementById('tab-bols'),
       ratecons: document.getElementById('tab-ratecons'),
       docs: document.getElementById('tab-docs'),
-      metrics: document.getElementById('tab-metrics')
+      metrics: document.getElementById('tab-metrics'),
+      aggregator: document.getElementById('tab-aggregator')
     };
 
     tabButtons.forEach(btn => {
@@ -858,22 +915,245 @@
     });
 
     // -------------------------------
-    // Fleet Overview - driver pairing
+    // Fleet Overview - Trucks, Drivers, Pairing
     // -------------------------------
+    const LS_TRUCKS_KEY = 'mftCarrierTrucks';
+    const LS_DRIVERS_KEY = 'mftCarrierDrivers';
+
+    let trucks = [];
+    let drivers = [];
+
+    const truckSelect = document.getElementById('fleet-truck-select');
+    const truckDetailsEl = document.getElementById('fleet-truck-details');
+    const addTruckBtn = document.getElementById('add-truck-btn');
+
+    const driverSelectForTruck = document.getElementById('truck-driver-select');
+    const addDriverBtn = document.getElementById('add-driver-btn');
+    const driverListEl = document.getElementById('driver-list');
+
     const pairBtn = document.getElementById('generate-pair-link-btn');
     const pairBox = document.getElementById('pair-link-box');
-    const truckInput = document.getElementById('fleet-truck-id');
+
+    function loadTrucksFromStorage() {
+      try {
+        const raw = localStorage.getItem(LS_TRUCKS_KEY);
+        if (raw) trucks = JSON.parse(raw);
+      } catch (e) {
+        trucks = [];
+      }
+    }
+
+    function saveTrucksToStorage() {
+      try {
+        localStorage.setItem(LS_TRUCKS_KEY, JSON.stringify(trucks));
+      } catch (e) {}
+    }
+
+    function loadDriversFromStorage() {
+      try {
+        const raw = localStorage.getItem(LS_DRIVERS_KEY);
+        if (raw) drivers = JSON.parse(raw);
+      } catch (e) {
+        drivers = [];
+      }
+    }
+
+    function saveDriversToStorage() {
+      try {
+        localStorage.setItem(LS_DRIVERS_KEY, JSON.stringify(drivers));
+      } catch (e) {}
+    }
+
+    function renderDriverSelectOptions() {
+      if (!driverSelectForTruck) return;
+      const existing = driverSelectForTruck.value;
+      driverSelectForTruck.innerHTML = '<option value="">— No driver assigned —</option>';
+      drivers.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = String(d.id);
+        opt.textContent = d.name || ('Driver ' + d.id);
+        driverSelectForTruck.appendChild(opt);
+      });
+      if (existing) {
+        driverSelectForTruck.value = existing;
+      }
+    }
+
+    function renderTruckSelect() {
+      const current = truckSelect.value;
+      truckSelect.innerHTML = '<option value="">— Select a truck —</option>';
+      trucks.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = String(t.id);
+        const label = t.unit || 'Truck ' + t.id;
+        opt.textContent = label;
+        truckSelect.appendChild(opt);
+      });
+      if (!trucks.length) {
+        truckSelect.innerHTML = '<option value="">— No trucks added yet —</option>';
+      } else if (current && trucks.some(t => String(t.id) === current)) {
+        truckSelect.value = current;
+      }
+      updateTruckDetails();
+    }
+
+    function findDriverById(id) {
+      const numeric = Number(id);
+      return drivers.find(d => d.id === numeric) || null;
+    }
+
+    function updateTruckDetails() {
+      const id = truckSelect.value;
+      if (!id) {
+        truckDetailsEl.textContent = 'Select a truck to see its driver, trailer, and registration.';
+        return;
+      }
+      const truck = trucks.find(t => String(t.id) === id);
+      if (!truck) {
+        truckDetailsEl.textContent = 'Truck not found.';
+        return;
+      }
+      const driver = truck.driverId ? findDriverById(truck.driverId) : null;
+
+      truckDetailsEl.innerHTML = `
+        <strong>${truck.unit || 'Truck ' + truck.id}</strong><br>
+        Trailer: ${truck.trailerNumber || '-'}<br>
+        Registration / Plate: ${truck.registration || '-'}<br>
+        Driver: ${driver ? driver.name : '— none assigned —'}${driver && driver.phone ? ' (' + driver.phone + ')' : ''}
+      `;
+    }
+
+    if (truckSelect) {
+      truckSelect.addEventListener('change', updateTruckDetails);
+    }
+
+    if (addTruckBtn) {
+      addTruckBtn.addEventListener('click', () => {
+        const unit = document.getElementById('truck-unit').value.trim();
+        const trailerNumber = document.getElementById('truck-trailer-number').value.trim();
+        const registration = document.getElementById('truck-registration').value.trim();
+        const driverIdRaw = driverSelectForTruck.value;
+
+        if (!unit && !trailerNumber && !registration) {
+          alert('Enter at least a Truck / Unit # or some details.');
+          return;
+        }
+
+        // If a truck with same unit exists, update it; otherwise create new
+        let truck = trucks.find(t => t.unit === unit && unit);
+        if (!truck) {
+          truck = {
+            id: Date.now(),
+            unit: unit || '',
+            trailerNumber: trailerNumber || '',
+            registration: registration || '',
+            driverId: driverIdRaw ? Number(driverIdRaw) : null
+          };
+          trucks.push(truck);
+        } else {
+          truck.trailerNumber = trailerNumber || truck.trailerNumber;
+          truck.registration = registration || truck.registration;
+          truck.driverId = driverIdRaw ? Number(driverIdRaw) : null;
+        }
+
+        saveTrucksToStorage();
+        renderTruckSelect();
+
+        document.getElementById('truck-unit').value = '';
+        document.getElementById('truck-trailer-number').value = '';
+        document.getElementById('truck-registration').value = '';
+        driverSelectForTruck.value = '';
+      });
+    }
+
+    if (addDriverBtn) {
+      addDriverBtn.addEventListener('click', () => {
+        const name = document.getElementById('driver-name').value.trim();
+        const phone = document.getElementById('driver-phone').value.trim();
+        const address = document.getElementById('driver-address').value.trim();
+        const emergency = document.getElementById('driver-emergency').value.trim();
+        const medCard = document.getElementById('driver-med-card').value.trim();
+        const license = document.getElementById('driver-license').value.trim();
+        const otherDocs = document.getElementById('driver-docs').value.trim();
+
+        if (!name && !phone) {
+          alert('Enter at least a driver name or phone.');
+          return;
+        }
+
+        let driver = drivers.find(d => d.name === name && name);
+        if (!driver) {
+          driver = {
+            id: Date.now(),
+            name,
+            phone,
+            address,
+            emergency,
+            medCard,
+            license,
+            otherDocs
+          };
+          drivers.push(driver);
+        } else {
+          driver.phone = phone || driver.phone;
+          driver.address = address || driver.address;
+          driver.emergency = emergency || driver.emergency;
+          driver.medCard = medCard || driver.medCard;
+          driver.license = license || driver.license;
+          driver.otherDocs = otherDocs || driver.otherDocs;
+        }
+
+        saveDriversToStorage();
+        renderDriverList();
+        renderDriverSelectOptions();
+
+        document.getElementById('driver-name').value = '';
+        document.getElementById('driver-phone').value = '';
+        document.getElementById('driver-address').value = '';
+        document.getElementById('driver-emergency').value = '';
+        document.getElementById('driver-med-card').value = '';
+        document.getElementById('driver-license').value = '';
+        document.getElementById('driver-docs').value = '';
+      });
+    }
+
+    function renderDriverList() {
+      if (!drivers.length) {
+        driverListEl.innerHTML = '<p class="no-rows">No drivers added yet.</p>';
+        return;
+      }
+
+      let html = '<table><thead><tr><th>Name</th><th>Phone</th><th>License/CDL</th><th>Emergency</th></tr></thead><tbody>';
+      drivers.forEach(d => {
+        html += `
+          <tr>
+            <td>${d.name || '-'}</td>
+            <td>${d.phone || '-'}</td>
+            <td>${d.license || '-'}</td>
+            <td>${d.emergency || '-'}</td>
+          </tr>
+        `;
+      });
+      html += '</tbody></table>';
+      driverListEl.innerHTML = html;
+    }
 
     if (pairBtn) {
       pairBtn.addEventListener('click', () => {
-        const truckLabel = (truckInput.value || 'Unassigned truck').trim();
+        const truckId = truckSelect.value;
+        if (!truckId) {
+          alert('Select a truck first.');
+          return;
+        }
+        const truck = trucks.find(t => String(t.id) === truckId);
+        const label = truck && truck.unit ? truck.unit : ('Truck ' + truckId);
         const token = makeLocalToken(12);
         const base = window.location.origin || '';
         const fakeLink = `${base}/driver-app?s=${token}`;
 
         pairBox.style.display = 'block';
         pairBox.innerHTML = `
-          <strong>Driver pairing link for: ${truckLabel}</strong><br>
+          <strong>Driver pairing link for: ${label}</strong><br>
           <span>${fakeLink}</span>
           <br><br>
           <span class="small">
@@ -896,7 +1176,9 @@
 
       function setLabelFromFiles(files) {
         if (!files || !files.length) {
-          if (labelSpan) labelSpan.textContent = labelSpan.dataset.defaultText || labelSpan.textContent;
+          if (labelSpan && labelSpan.dataset.defaultText) {
+            labelSpan.textContent = labelSpan.dataset.defaultText;
+          }
           return;
         }
         const first = files[0];
@@ -944,7 +1226,7 @@
     setupDropzone('doc-dropzone', 'doc-file');
 
     // -------------------------------
-    // Local storage keys
+    // Local storage keys for other pieces
     // -------------------------------
     const LS_TRIPS_KEY = 'mftCarrierTripsAll';
     const LS_BOLS_KEY = 'mftCarrierBols';
@@ -955,7 +1237,7 @@
 
     // -------------------------------
     // Trip log + metrics (all time, then filtered by weekOffset)
-// -------------------------------
+    // -------------------------------
     let trips = [];
     const tripListEl = document.getElementById('trip-list');
     const addTripBtn = document.getElementById('add-trip-btn');
@@ -1102,9 +1384,7 @@
       });
     }
 
-    // -------------------------------
     // Week selector buttons
-    // -------------------------------
     const prevWeekBtn = document.getElementById('prev-week-btn');
     const thisWeekBtn = document.getElementById('this-week-btn');
     const nextWeekBtn = document.getElementById('next-week-btn');
@@ -1133,10 +1413,7 @@
       });
     }
 
-    // -------------------------------
     // Pull real loads from backend into metrics
-    // (expects /api/loads to eventually return createdAt or created_at)
-// -------------------------------
     async function loadServerLoadsIntoTrips() {
       try {
         const resp = await fetch('/api/loads');
@@ -1150,7 +1427,7 @@
           const loadId = load.id || null;
           const gross = safeNumber(load.rate);
 
-          if (!gross) continue; // skip loads with no rate
+          if (!gross) continue;
 
           const existing = trips.find(
             t => t.source === 'server' && t.loadId === loadId
@@ -1185,9 +1462,7 @@
       }
     }
 
-    // -------------------------------
     // Monthly fixed expenses
-    // -------------------------------
     const expenseFields = [
       'exp-fuel',
       'exp-insurance',
@@ -1239,9 +1514,6 @@
       });
     }
 
-    // -------------------------------
-    // Metrics rendering
-    // -------------------------------
     const milesMetricsEl = document.getElementById('miles-metrics');
     const revenueMetricsEl = document.getElementById('revenue-metrics');
     const expenseMetricsEl = document.getElementById('expense-metrics');
@@ -1384,7 +1656,7 @@
               <th>Load / Trip</th>
               <th>Customer</th>
               <th>Date</th>
-              <th>File</th>
+              <th>Files (names only)</th>
               <th>Notes</th>
             </tr>
           </thead>
@@ -1396,7 +1668,7 @@
             <td>${b.loadId || '-'}</td>
             <td>${b.customer || '-'}</td>
             <td>${b.date || '-'}</td>
-            <td>${b.fileName || '-'}</td>
+            <td>${b.fileNames && b.fileNames.length ? b.fileNames.join(', ') : '-'}</td>
             <td>${b.notes || '-'}</td>
           </tr>
         `;
@@ -1412,14 +1684,18 @@
         const date = document.getElementById('bol-date').value;
         const notes = document.getElementById('bol-notes').value.trim();
         const fileInput = document.getElementById('bol-file');
-        const fileName = fileInput && fileInput.files[0] ? fileInput.files[0].name : '';
 
-        if (!loadId && !customer && !date && !fileName) {
+        let fileNames = [];
+        if (fileInput && fileInput.files && fileInput.files.length) {
+          fileNames = Array.from(fileInput.files).map(f => f.name);
+        }
+
+        if (!loadId && !customer && !date && !fileNames.length) {
           alert('Enter at least a load ID, customer, date or attach a file.');
           return;
         }
 
-        bols.push({ loadId, customer, date, notes, fileName });
+        bols.push({ loadId, customer, date, notes, fileNames });
         saveBolsToStorage();
         renderBols();
 
@@ -1669,6 +1945,12 @@
     // Initial load
     // -------------------------------
     (async function init() {
+      loadTrucksFromStorage();
+      loadDriversFromStorage();
+      renderDriverSelectOptions();
+      renderTruckSelect();
+      renderDriverList();
+
       loadTripsFromStorage();
       loadBolsFromStorage();
       loadRateConsFromStorage();
@@ -1676,7 +1958,6 @@
       loadExpensesFromStorage();
       loadAggFromStorage();
 
-      // Pull real loads from backend into metrics (expects createdAt/created_at from server later)
       await loadServerLoadsIntoTrips();
 
       updateWeekRangeLabel();
