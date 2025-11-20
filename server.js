@@ -151,6 +151,15 @@ const BROKER_USERS = [
   }
 ];
 
+// Carrier / Dispatcher demo users (for carrier-login)
+const CARRIER_USERS = [
+  {
+    email: 'carrier@test.com',
+    password: 'password123',
+    role: 'carrier'
+  }
+];
+
 function makeToken(length = 24) {
   const chars =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -1126,6 +1135,39 @@ app.post('/broker-login', async (req, res) => {
       <a href="/broker-login.html">Back to login</a>
     `);
   }
+});
+
+//
+// ----------------------
+//  CARRIER / DISPATCHER LOGIN (JSON API)
+// ----------------------
+app.post('/carrier-login', (req, res) => {
+  const { email, password } = req.body || {};
+
+  if (!email || !password) {
+    return res.status(400).json({
+      success: false,
+      error: 'Email and password are required.'
+    });
+  }
+
+  // For now we use in-memory demo users.
+  // Later we can move carriers into app_users with role = 'carrier'.
+  const user = CARRIER_USERS.find(
+    u => u.email === email && u.password === password
+  );
+
+  if (!user) {
+    return res.status(401).json({
+      success: false,
+      error: 'Invalid email or password.'
+    });
+  }
+
+  res.json({
+    success: true,
+    role: user.role
+  });
 });
 
 //
