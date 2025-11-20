@@ -56,70 +56,7 @@
     .subtitle {
       font-size: 0.9rem;
       color: #6b7280;
-      margin-bottom: 14px;
-    }
-
-    .pill-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-
-    .pill {
-      font-size: 0.75rem;
-      padding: 3px 9px;
-      border-radius: 999px;
-      background: #e5e7eb;
-      color: #374151;
-    }
-
-    .pill.green {
-      background: #bbf7d0;
-      color: #166534;
-    }
-
-    .pill.blue {
-      background: #dbeafe;
-      color: #1d4ed8;
-    }
-
-    .feature-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-
-    .feature-btn {
-      border-radius: 999px;
-      border: 1px solid #cbd5f5;
-      background: #ffffff;
-      padding: 7px 14px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      color: #111827;
-    }
-
-    .feature-btn span.dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: #22c55e;
-    }
-
-    .feature-btn[data-panel="fleet"] span.dot { background: #22c55e; }
-    .feature-btn[data-panel="bols"] span.dot { background: #f97316; }
-    .feature-btn[data-panel="ratecons"] span.dot { background: #6366f1; }
-    .feature-btn[data-panel="docs"] span.dot { background: #0ea5e9; }
-
-    .feature-btn.active {
-      background: #0f172a;
-      color: #f9fafb;
-      border-color: #0f172a;
+      margin-bottom: 20px;
     }
 
     .card {
@@ -127,112 +64,41 @@
       border-radius: 14px;
       padding: 16px 18px;
       box-shadow: 0 4px 14px rgba(15, 23, 42, 0.1);
+    }
+
+    /* Top-level tabs */
+    .tabs {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
       margin-bottom: 16px;
     }
 
-    .card h2 {
-      font-size: 1.05rem;
-      margin-bottom: 6px;
-    }
-
-    .small {
-      font-size: 0.8rem;
-      color: #6b7280;
-      margin-top: 4px;
-      margin-bottom: 6px;
-    }
-
-    .panel {
-      display: none;
-    }
-
-    .panel.active {
-      display: block;
-    }
-
-    #fleet-map {
-      width: 100%;
-      height: 320px;
-      border-radius: 12px;
-      border: 1px solid #e5e7eb;
-      margin-top: 12px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-      font-size: 0.8rem;
-    }
-
-    th, td {
-      border-bottom: 1px solid #e5e7eb;
-      text-align: left;
-      padding: 6px 4px;
-      vertical-align: top;
-    }
-
-    th {
-      background: #f3f4f6;
-      font-weight: 600;
-    }
-
-    .no-rows {
-      font-size: 0.85rem;
-      color: #9ca3af;
-      margin-top: 8px;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 2px 7px;
+    .tab-button {
       border-radius: 999px;
-      font-size: 0.75rem;
+      border: none;
+      padding: 8px 14px;
+      font-size: 0.85rem;
       background: #e5e7eb;
-      color: #374151;
-    }
-
-    .badge.good {
-      background: #bbf7d0;
-      color: #166534;
-    }
-
-    .badge.warn {
-      background: #fee2e2;
-      color: #b91c1c;
-    }
-
-    .upload-area {
-      border: 2px dashed #d1d5db;
-      border-radius: 12px;
-      padding: 14px 12px;
-      text-align: center;
-      font-size: 0.8rem;
-      color: #6b7280;
-      margin-top: 8px;
       cursor: pointer;
-      background: #f9fafb;
-    }
-
-    .upload-area.dragover {
-      border-color: #22c55e;
-      background: #ecfdf5;
-      color: #166534;
-    }
-
-    .upload-area strong {
       color: #111827;
     }
 
-    .upload-list {
-      margin-top: 8px;
-      font-size: 0.78rem;
-      color: #374151;
+    .tab-button.active {
+      background: #22c55e;
+      color: #0f172a;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
     }
 
-    .upload-list-item {
-      padding: 4px 0;
-      border-bottom: 1px solid #e5e7eb;
+    .tab-panel {
+      display: none;
+      margin-top: 4px;
+    }
+
+    .tab-panel.active {
+      display: block;
     }
 
     label {
@@ -280,576 +146,1178 @@
       margin-left: 4px;
     }
 
-    .grid-two {
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-      gap: 16px;
-      align-items: flex-start;
+    .small {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-top: 4px;
     }
 
-    .calc-output {
-      font-size: 0.85rem;
+    .split {
+      display: grid;
+      grid-template-columns: minmax(260px, 1.1fr) minmax(260px, 1.1fr);
+      gap: 18px;
+      margin-top: 10px;
+    }
+
+    .full {
+      margin-top: 10px;
+    }
+
+    .box {
+      background: #f9fafb;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      padding: 10px 12px;
+    }
+
+    .box-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .box-title {
+      font-size: 0.9rem;
+      font-weight: 600;
       color: #111827;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.8rem;
+    }
+
+    th, td {
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      padding: 6px 4px;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f3f4f6;
+      font-weight: 600;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .metric-card {
+      background: #f9fafb;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      padding: 10px 12px;
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin-bottom: 2px;
+    }
+
+    .metric-value {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .metric-sub {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    .subtabs {
+      margin-top: 8px;
+      display: inline-flex;
+      gap: 4px;
+      padding: 2px;
+      border-radius: 999px;
+      background: #f3f4f6;
+    }
+
+    .subtab-button {
+      border-radius: 999px;
+      border: none;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      background: transparent;
+      cursor: pointer;
+      color: #4b5563;
+    }
+
+    .subtab-button.active {
+      background: #ffffff;
+      color: #111827;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+    }
+
+    .subtab-panel {
+      display: none;
+      margin-top: 10px;
+      font-size: 0.8rem;
+    }
+
+    .subtab-panel.active {
+      display: block;
+    }
+
+    #fleet-map {
+      width: 100%;
+      height: 320px;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      background: repeating-linear-gradient(
+        45deg,
+        #f3f4f6,
+        #f3f4f6 10px,
+        #e5e7eb 10px,
+        #e5e7eb 20px
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6b7280;
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 0 12px;
+    }
+
+    .driver-link-box {
+      margin-top: 10px;
+      font-size: 0.85rem;
       background: #f9fafb;
       border-radius: 10px;
-      padding: 8px 9px;
+      padding: 8px;
       border: 1px dashed #d1d5db;
+      word-break: break-all;
+    }
+
+    .no-rows {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-top: 6px;
     }
 
     @media (max-width: 900px) {
-      .grid-two {
+      .split {
         grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
-<header>
-  <div class="logo">
-    MyFreight<span>Tracker</span>
-  </div>
-  <div class="header-right">
-    <a href="/index.html">← Back to Landing</a>
-  </div>
-</header>
-
-<main>
-  <h1>Carrier / Dispatcher Dashboard</h1>
-  <p class="subtitle">
-    See your entire fleet on one map, keep ratecons & BOLs in one locker, and know your true deadhead vs loaded miles.
-  </p>
-
-  <div class="pill-row">
-    <div class="pill green">Fleet GPS overview</div>
-    <div class="pill blue">Driver-friendly docs</div>
-    <div class="pill">Deadhead vs loaded miles</div>
-    <div class="pill">Revenue & expense net</div>
-  </div>
-
-  <div class="feature-buttons">
-    <button class="feature-btn active" data-panel="fleet">
-      <span class="dot"></span> Fleet Overview
-    </button>
-    <button class="feature-btn" data-panel="bols">
-      <span class="dot"></span> BOLs
-    </button>
-    <button class="feature-btn" data-panel="ratecons">
-      <span class="dot"></span> Ratecons
-    </button>
-    <button class="feature-btn" data-panel="docs">
-      <span class="dot"></span> Documents & Miles
-    </button>
-  </div>
-
-  <!-- FLEET OVERVIEW -->
-  <section id="panel-fleet" class="panel active card">
-    <h2>Fleet Overview</h2>
-    <p class="small">
-      All active trucks on one map. Each unit shows last pinged GPS and status.
-    </p>
-    <button type="button" id="refreshFleetBtn" class="btn-secondary">Refresh fleet</button>
-
-    <div id="fleetSummary" class="small" style="margin-top:6px;">
-      Loading fleet…
+  <header>
+    <div class="logo">
+      MyFreight<span>Tracker</span>
     </div>
-
-    <div id="fleet-map"></div>
-
-    <div id="fleetTableBox">
-      <p class="no-rows">Loading units…</p>
+    <div class="header-right">
+      <a href="/index.html">← Back to Landing</a>
     </div>
-  </section>
+  </header>
 
-  <!-- BOLs -->
-  <section id="panel-bols" class="panel card">
-    <h2>BOLs</h2>
-    <p class="small">
-      Drag & drop your BOL PDFs/images here, or tap to browse. We’ll keep a list so you know what’s on file.
+  <main>
+    <h1>Carrier / Dispatcher Dashboard</h1>
+    <p class="subtitle">
+      Track your fleet, organize your documents, and understand your weekly numbers at a glance.
     </p>
 
-    <div class="upload-area" id="bolUploadArea">
-      <strong>Drop BOL files here</strong><br>
-      or click to browse
-      <input type="file" id="bolFileInput" multiple style="display:none;" />
-    </div>
-    <div class="upload-list" id="bolUploadList"></div>
-
-    <hr style="margin:14px 0;">
-
-    <h3 style="font-size:0.95rem;">BOL Records</h3>
-    <p class="small">This will eventually sync with the backend document locker.</p>
-    <div id="bolTableBox">
-      <p class="no-rows">No BOLs recorded yet.</p>
-    </div>
-  </section>
-
-  <!-- RATECONS -->
-  <section id="panel-ratecons" class="panel card">
-    <h2>Ratecons (Rate Confirmations)</h2>
-    <p class="small">
-      Upload your rate confirmations and keep them tied to loads so you always know the agreed pay.
-    </p>
-
-    <div class="upload-area" id="rcUploadArea">
-      <strong>Drop ratecon files here</strong><br>
-      or click to browse
-      <input type="file" id="rcFileInput" multiple style="display:none;" />
-    </div>
-    <div class="upload-list" id="rcUploadList"></div>
-
-    <hr style="margin:14px 0;">
-
-    <h3 style="font-size:0.95rem;">Ratecon Records</h3>
-    <p class="small">Later we can link these to specific loads + settlements.</p>
-    <div id="rcTableBox">
-      <p class="no-rows">No ratecons recorded yet.</p>
-    </div>
-  </section>
-
-  <!-- DOCUMENTS & MILES -->
-  <section id="panel-docs" class="panel card">
-    <h2>Documents & Miles / Money</h2>
-    <p class="small">
-      Catch-all document notes plus a quick calculator for deadhead vs loaded miles, revenue, and expenses.
-    </p>
-
-    <div class="grid-two">
-      <!-- Left: simple doc records -->
-      <div>
-        <h3 style="font-size:0.95rem;">Other Documents</h3>
-        <p class="small">
-          Fuel receipts, lumper, OS&D photos, email screenshots – anything you want to track.
-        </p>
-
-        <form id="docForm">
-          <label for="docRef">Document reference (optional)</label>
-          <input id="docRef" placeholder="e.g. Fuel Receipt #123" />
-
-          <label for="docNotes">Notes</label>
-          <textarea id="docNotes" rows="2" placeholder="Where stored, which load, etc."></textarea>
-
-          <button type="submit">Add document note</button>
-        </form>
-
-        <div id="docListBox" style="margin-top:8px;">
-          <p class="no-rows">No document notes yet.</p>
-        </div>
+    <div class="card">
+      <!-- TOP-LEVEL TABS -->
+      <div class="tabs">
+        <button class="tab-button active" data-tab="fleet">Fleet Overview</button>
+        <button class="tab-button" data-tab="bols">BOLs</button>
+        <button class="tab-button" data-tab="ratecons">Rate Cons</button>
+        <button class="tab-button" data-tab="docs">Documents</button>
+        <button class="tab-button" data-tab="metrics">Your Metrics</button>
       </div>
 
-      <!-- Right: calculator -->
-      <div>
-        <h3 style="font-size:0.95rem;">Miles & Money Calculator</h3>
+      <!-- FLEET OVERVIEW TAB -->
+      <section id="tab-fleet" class="tab-panel active">
+        <div class="split">
+          <div>
+            <h2 style="font-size:1rem; margin-bottom:6px;">Live Fleet Overview</h2>
+            <p class="small">
+              This view will show all your trucks on a single map once the driver app is connected.
+              Think of it like a freight-focused Life360 for your fleet.
+            </p>
+            <div id="fleet-map">
+              Real fleet map coming soon (GPS pings from the driver app will show up here).
+            </div>
+          </div>
+
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Driver App / Life360-style Linking</div>
+                <span class="pill">Pairing</span>
+              </div>
+              <p class="small">
+                Use this to link drivers’ phones (driver app) to your main carrier account so
+                their GPS pings show up in the Fleet Overview map.
+              </p>
+
+              <label for="fleet-truck-id">Truck / Unit #</label>
+              <input id="fleet-truck-id" placeholder="e.g. Truck 101" />
+
+              <button type="button" id="generate-pair-link-btn">
+                Generate driver pairing link
+              </button>
+
+              <div id="pair-link-box" class="driver-link-box" style="display:none;"></div>
+
+              <p class="small" style="margin-top:6px;">
+                Later, the driver app will let the driver tap this link or enter a code,
+                and it will start sending GPS pings every few minutes tied to that truck.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BOLs TAB -->
+      <section id="tab-bols" class="tab-panel">
+        <h2 style="font-size:1rem; margin-bottom:6px;">Bill of Lading (BOLs)</h2>
         <p class="small">
-          Quick back-of-the-envelope to see how the load really pays after deadhead and expenses.
+          Store and organize your BOLs for quick reference. Drag and drop coming later — for now
+          you can log details and attach files locally.
         </p>
 
-        <form id="calcForm">
-          <label>Deadhead miles</label>
-          <input id="deadheadMiles" type="number" step="0.1" placeholder="e.g. 120" />
+        <div class="split">
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Add BOL record</div>
+              </div>
+              <label for="bol-load-id">Load / Trip ID</label>
+              <input id="bol-load-id" placeholder="e.g. 2025-LO-001" />
 
-          <label>Loaded miles</label>
-          <input id="loadedMiles" type="number" step="0.1" placeholder="e.g. 780" />
+              <label for="bol-customer">Customer</label>
+              <input id="bol-customer" placeholder="e.g. ACME Manufacturing" />
 
-          <label>Total revenue ($)</label>
-          <input id="totalRevenue" type="number" step="0.01" placeholder="e.g. 2500" />
+              <label for="bol-date">Date</label>
+              <input id="bol-date" type="date" />
 
-          <label>Fuel cost ($)</label>
-          <input id="fuelCost" type="number" step="0.01" placeholder="e.g. 800" />
+              <label for="bol-notes">Notes</label>
+              <textarea id="bol-notes" rows="2" placeholder="Pickup/delivery notes, reference #, etc."></textarea>
 
-          <label>Truck payment / lease ($)</label>
-          <input id="truckPayment" type="number" step="0.01" placeholder="e.g. 300" />
+              <label for="bol-file">Attach BOL (optional)</label>
+              <input id="bol-file" type="file" />
 
-          <label>Other expenses ($)</label>
-          <input id="otherExpenses" type="number" step="0.01" placeholder="tolls, DEF, etc." />
+              <button type="button" id="add-bol-btn">Add BOL</button>
+              <p class="small">
+                File attachments are local-only for now. Later we’ll send these to the server so they sync
+                across devices.
+              </p>
+            </div>
+          </div>
 
-          <button type="submit">Calculate</button>
-          <button type="button" id="calcResetBtn" class="btn-secondary">Reset</button>
-        </form>
-
-        <div id="calcOutput" class="calc-output" style="margin-top:8px;">
-          Enter miles and money to see results.
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">BOL list (local)</div>
+              </div>
+              <div id="bol-list"></div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
+
+      <!-- RATE CONS TAB -->
+      <section id="tab-ratecons" class="tab-panel">
+        <h2 style="font-size:1rem; margin-bottom:6px;">Rate Confirmations</h2>
+        <p class="small">
+          Track your rate cons so you always know what was agreed to on each load.
+        </p>
+
+        <div class="split">
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Add Rate Con</div>
+              </div>
+              <label for="rc-load-id">Load / Trip ID</label>
+              <input id="rc-load-id" placeholder="e.g. 2025-LO-001" />
+
+              <label for="rc-broker">Broker / Shipper</label>
+              <input id="rc-broker" placeholder="e.g. Leatherneck Trucking LLC" />
+
+              <label for="rc-rate">Total linehaul (gross)</label>
+              <input id="rc-rate" placeholder="e.g. 1850.00" />
+
+              <label for="rc-notes">Notes</label>
+              <textarea id="rc-notes" rows="2" placeholder="Quick notes, layover, TONU, etc."></textarea>
+
+              <label for="rc-file">Attach Rate Con (optional)</label>
+              <input id="rc-file" type="file" />
+
+              <button type="button" id="add-rc-btn">Add Rate Con</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Rate Con list (local)</div>
+              </div>
+              <div id="rc-list"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- DOCUMENTS TAB -->
+      <section id="tab-docs" class="tab-panel">
+        <h2 style="font-size:1rem; margin-bottom:6px;">Documents</h2>
+        <p class="small">
+          A simple place to log other documents: maintenance reports, insurance, escrow statements,
+          carrier packets from your side, etc.
+        </p>
+
+        <div class="split">
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Add Document</div>
+              </div>
+
+              <label for="doc-type">Document type</label>
+              <select id="doc-type">
+                <option value="maintenance-report">Maintenance report</option>
+                <option value="insurance">Insurance document</option>
+                <option value="escrow-statement">Escrow statement</option>
+                <option value="carrier-packet">Carrier packet</option>
+                <option value="other">Other</option>
+              </select>
+
+              <label for="doc-ref">Reference / description</label>
+              <input id="doc-ref" placeholder="e.g. PM #3 on Truck 101, Progressive policy, etc." />
+
+              <label for="doc-notes">Notes</label>
+              <textarea id="doc-notes" rows="2" placeholder="Quick details about this doc."></textarea>
+
+              <label for="doc-file">Attach file (optional)</label>
+              <input id="doc-file" type="file" />
+
+              <button type="button" id="add-doc-btn">Add Document</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Document list (local)</div>
+              </div>
+              <div id="doc-list"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- YOUR METRICS TAB -->
+      <section id="tab-metrics" class="tab-panel">
+        <h2 style="font-size:1rem; margin-bottom:6px;">Your Metrics</h2>
+        <p class="small">
+          See how you did this week: miles, revenue, and expenses. Log each trip below and enter your
+          monthly fixed expenses so the system can break down your performance. We also pull in
+          real loads from the system where a rate is set.
+        </p>
+
+        <!-- Sub-tabs for metrics views -->
+        <div class="subtabs">
+          <button class="subtab-button active" data-subtab="miles">Miles</button>
+          <button class="subtab-button" data-subtab="revenue">Revenue</button>
+          <button class="subtab-button" data-subtab="expenses">Expenses</button>
+        </div>
+
+        <!-- Trip log + summary -->
+        <div class="split">
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Trip log (this week)</div>
+              </div>
+
+              <label for="trip-date">Date</label>
+              <input id="trip-date" type="date" />
+
+              <label for="trip-deadhead">Deadhead miles</label>
+              <input id="trip-deadhead" placeholder="e.g. 50" />
+
+              <label for="trip-loaded">Loaded miles</label>
+              <input id="trip-loaded" placeholder="e.g. 450" />
+
+              <label for="trip-gross">Gross revenue (for this trip)</label>
+              <input id="trip-gross" placeholder="e.g. 1850.00" />
+
+              <label for="trip-expense">Trip-specific expenses (fuel, tolls, etc.)</label>
+              <input id="trip-expense" placeholder="e.g. 650.00" />
+
+              <button type="button" id="add-trip-btn">Add trip</button>
+              <p class="small">
+                The system also auto-adds trips from loads that have a rate set, so your gross & net
+                reflect real data from your account.
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Weekly trip list</div>
+              </div>
+              <div id="trip-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics subtabs content -->
+        <div class="full">
+          <!-- Miles view -->
+          <div id="subtab-miles" class="subtab-panel active">
+            <h3 style="font-size:0.95rem; margin-bottom:4px;">Miles breakdown (this period)</h3>
+            <div class="metrics-grid" id="miles-metrics"></div>
+          </div>
+
+          <!-- Revenue view -->
+          <div id="subtab-revenue" class="subtab-panel">
+            <h3 style="font-size:0.95rem; margin-bottom:4px;">Revenue breakdown (this period)</h3>
+            <div class="metrics-grid" id="revenue-metrics"></div>
+          </div>
+
+          <!-- Expenses view -->
+          <div id="subtab-expenses" class="subtab-panel">
+            <h3 style="font-size:0.95rem; margin-bottom:4px;">Expenses & net (monthly → weekly)</h3>
+            <p class="small">
+              Enter your average <strong>monthly</strong> fixed expenses. We’ll estimate a weekly share
+              and combine that with your trip-level expenses to show your net.
+            </p>
+
+            <div class="split">
+              <div>
+                <div class="box">
+                  <div class="box-header">
+                    <div class="box-title">Monthly fixed expenses</div>
+                  </div>
+
+                  <label for="exp-fuel">Fuel budget (monthly)</label>
+                  <input id="exp-fuel" placeholder="e.g. 6000" />
+
+                  <label for="exp-insurance">Insurance (truck + trailer)</label>
+                  <input id="exp-insurance" placeholder="e.g. 1500" />
+
+                  <label for="exp-driver">Driver pay / your pay</label>
+                  <input id="exp-driver" placeholder="e.g. 5000" />
+
+                  <label for="exp-truck">Truck payment</label>
+                  <input id="exp-truck" placeholder="e.g. 2500" />
+
+                  <label for="exp-trailer">Trailer payment</label>
+                  <input id="exp-trailer" placeholder="e.g. 900" />
+
+                  <label for="exp-maint">Maintenance fund</label>
+                  <input id="exp-maint" placeholder="e.g. 1200" />
+
+                  <label for="exp-escrow">Escrow / savings</label>
+                  <input id="exp-escrow" placeholder="e.g. 800" />
+
+                  <label for="exp-other">Other overhead</label>
+                  <input id="exp-other" placeholder="e.g. 400" />
+
+                  <button type="button" id="save-expenses-btn">Save monthly expenses</button>
+                  <p class="small">
+                    These are stored in your browser for now (local only). Later we’ll sync them to your account.
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <div class="box">
+                  <div class="box-header">
+                    <div class="box-title">Weekly expense & net snapshot</div>
+                  </div>
+                  <div class="metrics-grid" id="expense-metrics"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
-  </section>
-</main>
+  </main>
 
-<script>
-  // -------- TAB SWITCHING --------
-  const featureButtons = document.querySelectorAll('.feature-btn');
-  const panels = document.querySelectorAll('.panel');
-
-  function activatePanel(panelId) {
-    featureButtons.forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.panel === panelId);
-    });
-    panels.forEach(p => {
-      p.classList.toggle('active', p.id === 'panel-' + panelId);
-    });
-
-    if (panelId === 'fleet') {
-      loadFleet();
-    } else if (panelId === 'bols') {
-      renderBolTable();
-    } else if (panelId === 'ratecons') {
-      renderRcTable();
+  <script>
+    // -------------------------------
+    // Simple helpers
+    // -------------------------------
+    function safeNumber(value) {
+      const n = Number(value);
+      return Number.isNaN(n) ? 0 : n;
     }
-  }
 
-  featureButtons.forEach(btn => {
-    btn.addEventListener('click', () => activatePanel(btn.dataset.panel));
-  });
+    function makeLocalToken(length = 10) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let t = '';
+      for (let i = 0; i < length; i++) {
+        t += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return t;
+    }
 
-  // -------- FLEET OVERVIEW --------
-  let fleetMap;
-  let fleetMarkers = [];
+    // -------------------------------
+    // Tab behavior (top-level)
+    // -------------------------------
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabPanels = {
+      fleet: document.getElementById('tab-fleet'),
+      bols: document.getElementById('tab-bols'),
+      ratecons: document.getElementById('tab-ratecons'),
+      docs: document.getElementById('tab-docs'),
+      metrics: document.getElementById('tab-metrics')
+    };
 
-  function initMap() {
-    const mapEl = document.getElementById('fleet-map');
-    if (!mapEl) return;
-    fleetMap = new google.maps.Map(mapEl, {
-      center: { lat: 39.8283, lng: -98.5795 },
-      zoom: 4
-    });
-  }
-
-  function clearFleetMarkers() {
-    fleetMarkers.forEach(m => m.setMap(null));
-    fleetMarkers = [];
-  }
-
-  function updateFleetMap(units) {
-    if (!fleetMap) return;
-    clearFleetMarkers();
-
-    const bounds = new google.maps.LatLngBounds();
-    let hasPoints = false;
-
-    units.forEach(unit => {
-      if (unit.lastLocation) {
-        const pos = {
-          lat: unit.lastLocation.lat,
-          lng: unit.lastLocation.lng
-        };
-        const marker = new google.maps.Marker({
-          position: pos,
-          map: fleetMap,
-          title: `${unit.truckNumber || 'Truck'} – ${unit.driverName || ''}`
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const name = btn.dataset.tab;
+        tabButtons.forEach(b => b.classList.toggle('active', b === btn));
+        Object.entries(tabPanels).forEach(([key, el]) => {
+          el.classList.toggle('active', key === name);
         });
-        fleetMarkers.push(marker);
-        bounds.extend(pos);
-        hasPoints = true;
-      }
+      });
     });
 
-    if (hasPoints) {
-      fleetMap.fitBounds(bounds);
+    // -------------------------------
+    // Subtabs for "Your Metrics"
+    // -------------------------------
+    const subtabButtons = document.querySelectorAll('.subtab-button');
+    const subtabPanels = {
+      miles: document.getElementById('subtab-miles'),
+      revenue: document.getElementById('subtab-revenue'),
+      expenses: document.getElementById('subtab-expenses')
+    };
+
+    subtabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const name = btn.dataset.subtab;
+        subtabButtons.forEach(b => b.classList.toggle('active', b === btn));
+        Object.entries(subtabPanels).forEach(([key, el]) => {
+          el.classList.toggle('active', key === name);
+        });
+      });
+    });
+
+    // -------------------------------
+    // Fleet Overview - driver pairing
+    // -------------------------------
+    const pairBtn = document.getElementById('generate-pair-link-btn');
+    const pairBox = document.getElementById('pair-link-box');
+    const truckInput = document.getElementById('fleet-truck-id');
+
+    if (pairBtn) {
+      pairBtn.addEventListener('click', () => {
+        const truckLabel = (truckInput.value || 'Unassigned truck').trim();
+        const token = makeLocalToken(12);
+        const base = window.location.origin || '';
+        const fakeLink = `${base}/driver-app?s=${token}`;
+
+        pairBox.style.display = 'block';
+        pairBox.innerHTML = `
+          <strong>Driver pairing link for: ${truckLabel}</strong><br>
+          <span>${fakeLink}</span>
+          <br><br>
+          <span class="small">
+            Send this link to your driver. In the future driver app, they’ll tap this to
+            pair their phone and start sending GPS pings tied to this truck.
+          </span>
+        `;
+      });
     }
-  }
 
-  const fleetSummary = document.getElementById('fleetSummary');
-  const fleetTableBox = document.getElementById('fleetTableBox');
-  const refreshFleetBtn = document.getElementById('refreshFleetBtn');
+    // -------------------------------
+    // Local storage keys
+    // -------------------------------
+    const LS_TRIPS_KEY = 'mftCarrierTripsWeek';
+    const LS_BOLS_KEY = 'mftCarrierBols';
+    const LS_RCS_KEY = 'mftCarrierRateCons';
+    const LS_DOCS_KEY = 'mftCarrierDocs';
+    const LS_EXPENSES_KEY = 'mftCarrierMonthlyExpenses';
 
-  async function loadFleet() {
-    if (!fleetSummary || !fleetTableBox) return;
-    fleetSummary.textContent = 'Loading fleet…';
-    fleetTableBox.innerHTML = '<p class="no-rows">Loading units…</p>';
+    // -------------------------------
+    // Trip log + metrics (weekly-ish)
+// -------------------------------
+    let trips = [];
 
-    try {
-      const resp = await fetch('/api/carrier/fleet');
-      if (!resp.ok) {
-        fleetSummary.textContent = 'Error loading fleet.';
-        fleetTableBox.innerHTML = '<p class="no-rows">Error loading units.</p>';
+    function loadTripsFromStorage() {
+      try {
+        const raw = localStorage.getItem(LS_TRIPS_KEY);
+        if (raw) {
+          trips = JSON.parse(raw);
+        }
+      } catch (e) {
+        trips = [];
+      }
+    }
+
+    function saveTripsToStorage() {
+      try {
+        localStorage.setItem(LS_TRIPS_KEY, JSON.stringify(trips));
+      } catch (e) {
+        console.warn('Unable to save trips', e);
+      }
+    }
+
+    const tripListEl = document.getElementById('trip-list');
+    const addTripBtn = document.getElementById('add-trip-btn');
+
+    function renderTripList() {
+      if (!trips.length) {
+        tripListEl.innerHTML = '<p class="no-rows">No trips logged yet.</p>';
+        updateAllMetrics();
         return;
       }
-      const units = await resp.json();
-
-      if (!units.length) {
-        fleetSummary.textContent = 'No active units yet.';
-        fleetTableBox.innerHTML = '<p class="no-rows">No units found.</p>';
-        updateFleetMap([]);
-        return;
-      }
-
-      const activeCount = units.length;
-      const trackingCount = units.filter(u => u.lastLocation).length;
-      fleetSummary.textContent = `Units: ${activeCount} total • ${trackingCount} reporting GPS.`;
 
       let html = `
         <table>
           <thead>
             <tr>
-              <th>Truck</th>
-              <th>Driver</th>
-              <th>Status</th>
-              <th>Last location</th>
+              <th>Date</th>
+              <th>Deadhead mi</th>
+              <th>Loaded mi</th>
+              <th>All mi</th>
+              <th>Gross $</th>
+              <th>Trip exp $</th>
             </tr>
           </thead>
           <tbody>
       `;
-      for (const u of units) {
-        let loc = '—';
-        if (u.lastLocation) {
-          loc = `${u.lastLocation.lat.toFixed(5)}, ${u.lastLocation.lng.toFixed(5)}
-(${u.lastLocation.recordedAt})`;
-        }
-        const statusText = u.status || (u.lastLocation ? 'Tracking' : 'Idle');
-        const statusClass = u.lastLocation ? 'badge good' : 'badge';
+
+      for (const t of trips) {
+        const dh = safeNumber(t.deadheadMiles);
+        const ld = safeNumber(t.loadedMiles);
+        const allMiles = dh + ld;
+        const gross = safeNumber(t.gross);
+        const tripExpense = safeNumber(t.tripExpense);
 
         html += `
           <tr>
-            <td>${u.truckNumber || '-'}</td>
-            <td>${u.driverName || '-'}</td>
-            <td><span class="${statusClass}">${statusText}</span></td>
-            <td style="white-space: pre-line;">${loc}</td>
+            <td>${t.date || ''}</td>
+            <td>${dh.toFixed(1)}</td>
+            <td>${ld.toFixed(1)}</td>
+            <td>${allMiles.toFixed(1)}</td>
+            <td>${gross.toFixed(2)}</td>
+            <td>${tripExpense.toFixed(2)}</td>
           </tr>
         `;
       }
+
       html += '</tbody></table>';
-      fleetTableBox.innerHTML = html;
-
-      updateFleetMap(units);
-    } catch (err) {
-      console.error(err);
-      fleetSummary.textContent = 'Error loading fleet.';
-      fleetTableBox.innerHTML = '<p class="no-rows">Error loading units.</p>';
+      tripListEl.innerHTML = html;
+      updateAllMetrics();
     }
-  }
 
-  if (refreshFleetBtn) {
-    refreshFleetBtn.addEventListener('click', loadFleet);
-  }
+    if (addTripBtn) {
+      addTripBtn.addEventListener('click', () => {
+        const date = document.getElementById('trip-date').value;
+        const deadheadMiles = safeNumber(document.getElementById('trip-deadhead').value);
+        const loadedMiles = safeNumber(document.getElementById('trip-loaded').value);
+        const gross = safeNumber(document.getElementById('trip-gross').value);
+        const tripExpense = safeNumber(document.getElementById('trip-expense').value);
 
-  // -------- UPLOAD HELPERS (front-end only for now) --------
-  function setupUploadArea(areaId, inputId, listId) {
-    const area = document.getElementById(areaId);
-    const input = document.getElementById(inputId);
-    const list = document.getElementById(listId);
-    if (!area || !input || !list) return;
+        if (!date && !deadheadMiles && !loadedMiles && !gross) {
+          alert('Enter at least date and some miles or revenue.');
+          return;
+        }
 
-    function handleFiles(files) {
-      if (!files.length) return;
-      const now = new Date().toLocaleTimeString();
-      for (const f of files) {
-        const div = document.createElement('div');
-        div.className = 'upload-list-item';
-        div.textContent = `${f.name} (${Math.round(f.size / 1024)} KB) – queued ${now}`;
-        list.appendChild(div);
+        trips.push({
+          source: 'manual',
+          date: date || '',
+          deadheadMiles,
+          loadedMiles,
+          gross,
+          tripExpense
+        });
+
+        saveTripsToStorage();
+        renderTripList();
+
+        document.getElementById('trip-date').value = '';
+        document.getElementById('trip-deadhead').value = '';
+        document.getElementById('trip-loaded').value = '';
+        document.getElementById('trip-gross').value = '';
+        document.getElementById('trip-expense').value = '';
+      });
+    }
+
+    // -------------------------------
+    // Pull real loads from backend into metrics
+    // -------------------------------
+    async function loadServerLoadsIntoTrips() {
+      try {
+        const resp = await fetch('/api/loads');
+        if (!resp.ok) {
+          console.warn('Failed to load /api/loads for metrics');
+          return;
+        }
+        const loads = await resp.json();
+
+        for (const load of loads) {
+          const loadId = load.id || null;
+          const gross = safeNumber(load.rate);
+
+          if (!gross) continue; // skip loads with no rate
+
+          // Avoid duplicates if we've already stored this load as a trip
+          const existing = trips.find(
+            t => t.source === 'server' && t.loadId === loadId
+          );
+          if (existing) continue;
+
+          trips.push({
+            source: 'server',
+            loadId,
+            reference: load.reference || '',
+            date: '',           // we can wire created_at later if needed
+            deadheadMiles: 0,   // carrier can still log actual DH miles manually in separate trips
+            loadedMiles: 0,
+            gross,
+            tripExpense: 0
+          });
+        }
+
+        saveTripsToStorage();
+      } catch (e) {
+        console.error('Error loading loads for metrics', e);
       }
-
-      // Later we can send to backend:
-      // const formData = new FormData();
-      // for (const f of files) formData.append('files', f);
-      // fetch('/api/carrier/documents/upload?type=bol", { method: "POST", body: formData })
     }
 
-    area.addEventListener('click', () => input.click());
+    // -------------------------------
+    // Monthly fixed expenses
+    // -------------------------------
+    const expenseFields = [
+      'exp-fuel',
+      'exp-insurance',
+      'exp-driver',
+      'exp-truck',
+      'exp-trailer',
+      'exp-maint',
+      'exp-escrow',
+      'exp-other'
+    ];
 
-    area.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      area.classList.add('dragover');
-    });
+    const saveExpensesBtn = document.getElementById('save-expenses-btn');
 
-    area.addEventListener('dragleave', (e) => {
-      e.preventDefault();
-      area.classList.remove('dragover');
-    });
-
-    area.addEventListener('drop', (e) => {
-      e.preventDefault();
-      area.classList.remove('dragover');
-      handleFiles(e.dataTransfer.files);
-    });
-
-    input.addEventListener('change', (e) => {
-      handleFiles(e.target.files);
-      input.value = '';
-    });
-  }
-
-  setupUploadArea('bolUploadArea', 'bolFileInput', 'bolUploadList');
-  setupUploadArea('rcUploadArea', 'rcFileInput', 'rcUploadList');
-
-  // -------- SIMPLE BOL/RATECON TABLES (front-end only for now) --------
-  // For now just mirror what has been "uploaded" in memory
-  const bolRecords = [];
-  const rcRecords = [];
-
-  // You can later replace these with calls to /api/carrier/documents?type=bol|ratecon
-
-  function renderBolTable() {
-    const box = document.getElementById('bolTableBox');
-    if (!box) return;
-    if (!bolRecords.length) {
-      box.innerHTML = '<p class="no-rows">No BOLs recorded yet.</p>';
-      return;
+    function loadExpensesFromStorage() {
+      try {
+        const raw = localStorage.getItem(LS_EXPENSES_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        expenseFields.forEach(id => {
+          if (parsed[id] !== undefined) {
+            const el = document.getElementById(id);
+            if (el) el.value = parsed[id];
+          }
+        });
+        return parsed;
+      } catch (e) {
+        return null;
+      }
     }
-    let html = `
-      <table>
-        <thead>
-          <tr>
-            <th>File</th>
-            <th>When added</th>
-          </tr>
-        </thead>
-        <tbody>
-    `;
-    for (const r of bolRecords) {
-      html += `
-        <tr>
-          <td>${r.name}</td>
-          <td>${r.addedAt}</td>
-        </tr>
+
+    function saveExpensesToStorage() {
+      const obj = {};
+      expenseFields.forEach(id => {
+        const el = document.getElementById(id);
+        obj[id] = el ? el.value : '';
+      });
+      try {
+        localStorage.setItem(LS_EXPENSES_KEY, JSON.stringify(obj));
+      } catch (e) {
+        console.warn('Unable to save monthly expenses', e);
+      }
+      updateAllMetrics();
+    }
+
+    if (saveExpensesBtn) {
+      saveExpensesBtn.addEventListener('click', () => {
+        saveExpensesToStorage();
+        alert('Monthly expenses saved (local to this browser).');
+      });
+    }
+
+    // -------------------------------
+    // Metrics rendering
+    // -------------------------------
+    const milesMetricsEl = document.getElementById('miles-metrics');
+    const revenueMetricsEl = document.getElementById('revenue-metrics');
+    const expenseMetricsEl = document.getElementById('expense-metrics');
+
+    function buildMetricCard(label, valueText, subLabel) {
+      return `
+        <div class="metric-card">
+          <div class="metric-label">${label}</div>
+          <div class="metric-value">${valueText}</div>
+          ${subLabel ? `<div class="metric-sub">${subLabel}</div>` : ''}
+        </div>
       `;
     }
-    html += '</tbody></table>';
-    box.innerHTML = html;
-  }
 
-  function renderRcTable() {
-    const box = document.getElementById('rcTableBox');
-    if (!box) return;
-    if (!rcRecords.length) {
-      box.innerHTML = '<p class="no-rows">No ratecons recorded yet.</p>';
-      return;
-    }
-    let html = `
-      <table>
-        <thead>
-          <tr>
-            <th>File</th>
-            <th>When added</th>
-          </tr>
-        </thead>
-        <tbody>
-    `;
-    for (const r of rcRecords) {
-      html += `
-        <tr>
-          <td>${r.name}</td>
-          <td>${r.addedAt}</td>
-        </tr>
-      `;
-    }
-    html += '</tbody></table>';
-    box.innerHTML = html;
-  }
+    function calculateWeeklyFromTrips() {
+      let deadhead = 0;
+      let loaded = 0;
+      let gross = 0;
+      let tripExpenses = 0;
 
-  // OPTIONAL: if you want to actually populate bolRecords/rcRecords when files are dropped,
-  // you can hook into setupUploadArea above. For now they’re just a placeholder.
-
-  // -------- DOCUMENT NOTES --------
-  const docForm = document.getElementById('docForm');
-  const docListBox = document.getElementById('docListBox');
-  const docNotesData = [];
-
-  if (docForm && docListBox) {
-    docForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const ref = document.getElementById('docRef').value.trim();
-      const notes = document.getElementById('docNotes').value.trim();
-      if (!ref && !notes) {
-        alert('Enter at least a note or reference.');
-        return;
+      for (const t of trips) {
+        deadhead += safeNumber(t.deadheadMiles);
+        loaded += safeNumber(t.loadedMiles);
+        gross += safeNumber(t.gross);
+        tripExpenses += safeNumber(t.tripExpense);
       }
-      const entry = {
-        ref,
-        notes,
-        addedAt: new Date().toLocaleString()
+
+      return {
+        deadhead,
+        loaded,
+        allMiles: deadhead + loaded,
+        gross,
+        tripExpenses
       };
-      docNotesData.push(entry);
-      docForm.reset();
-      renderDocNotes();
-    });
+    }
 
-    function renderDocNotes() {
-      if (!docNotesData.length) {
-        docListBox.innerHTML = '<p class="no-rows">No document notes yet.</p>';
+    function calculateMonthlyExpenses() {
+      const values = {};
+      let totalMonthly = 0;
+      expenseFields.forEach(id => {
+        const el = document.getElementById(id);
+        const val = safeNumber(el ? el.value : 0);
+        values[id] = val;
+        totalMonthly += val;
+      });
+      return { values, totalMonthly };
+    }
+
+    function updateMilesMetrics() {
+      const wk = calculateWeeklyFromTrips();
+      milesMetricsEl.innerHTML = `
+        ${buildMetricCard('Deadhead miles', wk.deadhead.toFixed(1), 'Total empty miles for the period')}
+        ${buildMetricCard('Loaded miles', wk.loaded.toFixed(1), 'Miles where you were getting paid (logged trips)')}
+        ${buildMetricCard('All miles', wk.allMiles.toFixed(1), 'Deadhead + loaded')}
+        ${buildMetricCard(
+          'Deadhead %',
+          wk.allMiles > 0 ? ((wk.deadhead / wk.allMiles) * 100).toFixed(1) + '%' : '0.0%',
+          'Goal is to keep this as low as possible'
+        )}
+      `;
+    }
+
+    function updateRevenueMetrics() {
+      const wk = calculateWeeklyFromTrips();
+      const { totalMonthly } = calculateMonthlyExpenses();
+
+      // Convert monthly fixed → weekly share (approx 4.33 weeks / month)
+      const weeklyFixed = totalMonthly / 4.33;
+      const netBeforeFixed = wk.gross - wk.tripExpenses;
+      const netAfterFixed = netBeforeFixed - weeklyFixed;
+      const allMiles = wk.allMiles || 1; // avoid divide by zero
+
+      revenueMetricsEl.innerHTML = `
+        ${buildMetricCard('Gross revenue', '$' + wk.gross.toFixed(2), 'Total revenue from trips + rated loads')}
+        ${buildMetricCard('Trip-level expenses', '$' + wk.tripExpenses.toFixed(2), 'Fuel/tolls/etc. entered per trip')}
+        ${buildMetricCard('Net before fixed', '$' + netBeforeFixed.toFixed(2), 'Gross minus trip-specific expenses')}
+        ${buildMetricCard('Est. weekly fixed', '$' + weeklyFixed.toFixed(2), 'Monthly fixed ÷ 4.33')}
+        ${buildMetricCard('Net after fixed', '$' + netAfterFixed.toFixed(2), 'What you roughly keep after ALL expenses')}
+        ${buildMetricCard(
+          'Net per mile',
+          '$' + (netAfterFixed / allMiles).toFixed(3),
+          'Approximate profit per mile (using miles you logged)'
+        )}
+      `;
+    }
+
+    function updateExpenseMetrics() {
+      const wk = calculateWeeklyFromTrips();
+      const { totalMonthly } = calculateMonthlyExpenses();
+      const weeklyFixed = totalMonthly / 4.33;
+      const netBeforeFixed = wk.gross - wk.tripExpenses;
+      const netAfterFixed = netBeforeFixed - weeklyFixed;
+
+      expenseMetricsEl.innerHTML = `
+        ${buildMetricCard('Monthly fixed total', '$' + totalMonthly.toFixed(2), 'All fixed expenses you entered')}
+        ${buildMetricCard('Est. weekly fixed', '$' + weeklyFixed.toFixed(2), 'Monthly ÷ 4.33')}
+        ${buildMetricCard('Trip expenses (this period)', '$' + wk.tripExpenses.toFixed(2), 'Trip-level costs you entered')}
+        ${buildMetricCard('Net after all expenses', '$' + netAfterFixed.toFixed(2), 'Rough profit estimate for this period')}
+      `;
+    }
+
+    function updateAllMetrics() {
+      updateMilesMetrics();
+      updateRevenueMetrics();
+      updateExpenseMetrics();
+    }
+
+    // -------------------------------
+    // BOLs (local)
+    // -------------------------------
+    let bols = [];
+    const bolListEl = document.getElementById('bol-list');
+    const addBolBtn = document.getElementById('add-bol-btn');
+
+    function loadBolsFromStorage() {
+      try {
+        const raw = localStorage.getItem(LS_BOLS_KEY);
+        if (raw) bols = JSON.parse(raw);
+      } catch (e) {
+        bols = [];
+      }
+    }
+
+    function saveBolsToStorage() {
+      try {
+        localStorage.setItem(LS_BOLS_KEY, JSON.stringify(bols));
+      } catch (e) {}
+    }
+
+    function renderBols() {
+      if (!bols.length) {
+        bolListEl.innerHTML = '<p class="no-rows">No BOLs logged yet.</p>';
         return;
       }
+
       let html = `
         <table>
           <thead>
             <tr>
+              <th>Load / Trip</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      for (const b of bols) {
+        html += `
+          <tr>
+            <td>${b.loadId || '-'}</td>
+            <td>${b.customer || '-'}</td>
+            <td>${b.date || '-'}</td>
+            <td>${b.notes || '-'}</td>
+          </tr>
+        `;
+      }
+      html += '</tbody></table>';
+      bolListEl.innerHTML = html;
+    }
+
+    if (addBolBtn) {
+      addBolBtn.addEventListener('click', () => {
+        const loadId = document.getElementById('bol-load-id').value.trim();
+        const customer = document.getElementById('bol-customer').value.trim();
+        const date = document.getElementById('bol-date').value;
+        const notes = document.getElementById('bol-notes').value.trim();
+
+        if (!loadId && !customer && !date) {
+          alert('Enter at least a load ID, customer, or date.');
+          return;
+        }
+
+        bols.push({ loadId, customer, date, notes });
+        saveBolsToStorage();
+        renderBols();
+
+        document.getElementById('bol-load-id').value = '';
+        document.getElementById('bol-customer').value = '';
+        document.getElementById('bol-date').value = '';
+        document.getElementById('bol-notes').value = '';
+        document.getElementById('bol-file').value = '';
+      });
+    }
+
+    // -------------------------------
+    // Rate Cons (local)
+    // -------------------------------
+    let rateCons = [];
+    const rcListEl = document.getElementById('rc-list');
+    const addRcBtn = document.getElementById('add-rc-btn');
+
+    function loadRateConsFromStorage() {
+      try {
+        const raw = localStorage.getItem(LS_RCS_KEY);
+        if (raw) rateCons = JSON.parse(raw);
+      } catch (e) {
+        rateCons = [];
+      }
+    }
+
+    function saveRateConsToStorage() {
+      try {
+        localStorage.setItem(LS_RCS_KEY, JSON.stringify(rateCons));
+      } catch (e) {}
+    }
+
+    function renderRateCons() {
+      if (!rateCons.length) {
+        rcListEl.innerHTML = '<p class="no-rows">No rate cons logged yet.</p>';
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Load / Trip</th>
+              <th>Broker / Shipper</th>
+              <th>Gross $</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      for (const r of rateCons) {
+        html += `
+          <tr>
+            <td>${r.loadId || '-'}</td>
+            <td>${r.broker || '-'}</td>
+            <td>${safeNumber(r.rate).toFixed(2)}</td>
+            <td>${r.notes || '-'}</td>
+          </tr>
+        `;
+      }
+      html += '</tbody></table>';
+      rcListEl.innerHTML = html;
+    }
+
+    if (addRcBtn) {
+      addRcBtn.addEventListener('click', () => {
+        const loadId = document.getElementById('rc-load-id').value.trim();
+        const broker = document.getElementById('rc-broker').value.trim();
+        const rate = safeNumber(document.getElementById('rc-rate').value);
+        const notes = document.getElementById('rc-notes').value.trim();
+
+        if (!loadId && !broker && !rate) {
+          alert('Enter at least load ID, broker, or rate.');
+          return;
+        }
+
+        rateCons.push({ loadId, broker, rate, notes });
+        saveRateConsToStorage();
+        renderRateCons();
+
+        document.getElementById('rc-load-id').value = '';
+        document.getElementById('rc-broker').value = '';
+        document.getElementById('rc-rate').value = '';
+        document.getElementById('rc-notes').value = '';
+        document.getElementById('rc-file').value = '';
+      });
+    }
+
+    // -------------------------------
+    // Other Documents (local)
+    // -------------------------------
+    let docs = [];
+    const docListEl = document.getElementById('doc-list');
+    const addDocBtn = document.getElementById('add-doc-btn');
+
+    function loadDocsFromStorage() {
+      try {
+        const raw = localStorage.getItem(LS_DOCS_KEY);
+        if (raw) docs = JSON.parse(raw);
+      } catch (e) {
+        docs = [];
+      }
+    }
+
+    function saveDocsToStorage() {
+      try {
+        localStorage.setItem(LS_DOCS_KEY, JSON.stringify(docs));
+      } catch (e) {}
+    }
+
+    function renderDocs() {
+      if (!docs.length) {
+        docListEl.innerHTML = '<p class="no-rows">No documents logged yet.</p>';
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
               <th>Reference</th>
               <th>Notes</th>
-              <th>Added</th>
             </tr>
           </thead>
           <tbody>
       `;
-      for (const d of docNotesData) {
+      for (const d of docs) {
         html += `
           <tr>
+            <td>${d.type}</td>
             <td>${d.ref || '-'}</td>
             <td>${d.notes || '-'}</td>
-            <td>${d.addedAt}</td>
           </tr>
         `;
       }
       html += '</tbody></table>';
-      docListBox.innerHTML = html;
+      docListEl.innerHTML = html;
     }
-  }
 
-  // -------- MILES & MONEY CALCULATOR --------
-  const calcForm = document.getElementById('calcForm');
-  const calcOutput = document.getElementById('calcOutput');
-  const calcResetBtn = document.getElementById('calcResetBtn');
+    if (addDocBtn) {
+      addDocBtn.addEventListener('click', () => {
+        const type = document.getElementById('doc-type').value;
+        const ref = document.getElementById('doc-ref').value.trim();
+        const notes = document.getElementById('doc-notes').value.trim();
 
-  function parseNum(id) {
-    const val = document.getElementById(id).value;
-    if (val === '' || isNaN(val)) return 0;
-    return parseFloat(val);
-  }
+        if (!ref && !notes) {
+          alert('Enter at least a reference or some notes.');
+          return;
+        }
 
-  if (calcForm && calcOutput) {
-    calcForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const deadhead = parseNum('deadheadMiles');
-      const loaded = parseNum('loadedMiles');
-      const totalRev = parseNum('totalRevenue');
-      const fuel = parseNum('fuelCost');
-      const truckPay = parseNum('truckPayment');
-      const other = parseNum('otherExpenses');
+        docs.push({ type, ref, notes });
+        saveDocsToStorage();
+        renderDocs();
 
-      const totalMiles = deadhead + loaded;
-      const totalExpenses = fuel + truckPay + other;
-      const net = totalRev - totalExpenses;
-      const revPerLoadedMile = loaded > 0 ? totalRev / loaded : 0;
-      const revPerAllMiles = totalMiles > 0 ? totalRev / totalMiles : 0;
-      const netPerLoadedMile = loaded > 0 ? net / loaded : 0;
+        document.getElementById('doc-ref').value = '';
+        document.getElementById('doc-notes').value = '';
+        document.getElementById('doc-file').value = '';
+      });
+    }
 
-      calcOutput.innerHTML = `
-        <strong>Summary</strong><br>
-        Total miles: ${totalMiles.toFixed(1)} (Deadhead: ${deadhead.toFixed(1)}, Loaded: ${loaded.toFixed(1)})<br>
-        Total revenue: $${totalRev.toFixed(2)}<br>
-        Total expenses: $${totalExpenses.toFixed(2)}<br>
-        <strong>Net profit: $${net.toFixed(2)}</strong><br><br>
-        Revenue per loaded mile: $${revPerLoadedMile.toFixed(2)}<br>
-        Revenue per all miles (deadhead + loaded): $${revPerAllMiles.toFixed(2)}<br>
-        Net per loaded mile: $${netPerLoadedMile.toFixed(2)}
-      `;
-    });
-  }
+    // -------------------------------
+    // Initial load
+    // -------------------------------
+    (async function init() {
+      loadTripsFromStorage();
+      loadBolsFromStorage();
+      loadRateConsFromStorage();
+      loadDocsFromStorage();
+      loadExpensesFromStorage();
 
-  if (calcResetBtn && calcForm && calcOutput) {
-    calcResetBtn.addEventListener('click', () => {
-      calcForm.reset();
-      calcOutput.textContent = 'Enter miles and money to see results.';
-    });
-  }
+      // Pull real loads from backend into metrics
+      await loadServerLoadsIntoTrips();
 
-  // -------- INIT --------
-  // Default to fleet panel on load
-  activatePanel('fleet');
-  loadFleet();
-</script>
-
-<!-- Put your real Maps API key in place of YOUR_API_KEY_HERE -->
-<script async
-  src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE&callback=initMap">
-</script>
+      renderTripList();
+      renderBols();
+      renderRateCons();
+      renderDocs();
+      updateAllMetrics();
+    })();
+  </script>
 </body>
 </html>
