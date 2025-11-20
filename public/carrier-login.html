@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Carrier / Dispatcher Login – MyFreightTracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #111827, #020617 55%, #000000);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      color: #f9fafb;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 380px;
+      background: #020617;
+      border-radius: 18px;
+      padding: 20px 18px 22px;
+      border: 1px solid #1f2937;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75);
+    }
+
+    .logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .logo span {
+      color: #22c55e;
+    }
+
+    .subtle {
+      font-size: 0.78rem;
+      color: #9ca3af;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 1.3rem;
+      margin-bottom: 4px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #111827;
+      border: 1px solid #4b5563;
+      color: #c4b5fd;
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: #e5e7eb;
+      margin-bottom: 4px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #4b5563;
+      background: #020617;
+      color: #f9fafb;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 1px #22c55e55;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 4px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: #22c55e;
+      color: #022c22;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    .error {
+      font-size: 0.78rem;
+      color: #fecaca;
+      margin-top: 6px;
+      min-height: 14px;
+    }
+
+    .back-link {
+      margin-top: 10px;
+      font-size: 0.78rem;
+    }
+
+    .back-link a {
+      color: #a5b4fc;
+      text-decoration: none;
+    }
+
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">MyFreight<span>Tracker</span></div>
+    <div class="subtle">Carrier / Dispatcher Portal</div>
+
+    <h1>Sign in</h1>
+    <div class="badge">Fleet overview • Docs • Miles & Revenue</div>
+
+    <form id="loginForm">
+      <label for="email">Email</label>
+      <input id="email" type="email" required placeholder="you@example.com" />
+
+      <label for="password">Password</label>
+      <input id="password" type="password" required placeholder="••••••••" />
+
+      <button type="submit" id="loginBtn">Login</button>
+    </form>
+
+    <div id="error" class="error"></div>
+
+    <div class="back-link">
+      ← <a href="/index.html">Back to landing</a>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const errorBox = document.getElementById('error');
+    const loginBtn = document.getElementById('loginBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorBox.textContent = '';
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Signing in…';
+
+      const body = {
+        email: document.getElementById('email').value.trim(),
+        password: document.getElementById('password').value.trim()
+      };
+
+      try {
+        const resp = await fetch('/carrier-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        const data = await resp.json().catch(() => ({}));
+
+        if (!resp.ok || !data.success) {
+          errorBox.textContent = data.error || 'Invalid email or password.';
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'Login';
+          return;
+        }
+
+        // On success, redirect to carrier dashboard
+        window.location.href = '/carrier-dashboard.html';
+      } catch (err) {
+        console.error(err);
+        errorBox.textContent = 'Server error. Please try again.';
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Login';
+      }
+    });
+  </script>
+</body>
+</html>
