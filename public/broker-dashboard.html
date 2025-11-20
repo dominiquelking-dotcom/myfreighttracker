@@ -139,6 +139,7 @@
     .feature-btn[data-panel="docs"] span.dot { background: #f97316; }
     .feature-btn[data-panel="carriers"] span.dot { background: #6366f1; }
     .feature-btn[data-panel="tracking"] span.dot { background: #16a34a; }
+    .feature-btn[data-panel="calendar"] span.dot { background: #ec4899; }
 
     .card {
       background: #ffffff;
@@ -394,13 +395,25 @@
 <main>
   <h1>Broker Dashboard</h1>
   <p class="subtitle">
-    Tabs for customers, quoting, load lifecycle, documents, carriers, and live driver tracking.
+    Tabs for customers, quoting, load lifecycle, documents, carriers, live driver tracking, and your calendar.
   </p>
 
   <div class="top-info-row">
     <div id="planBadge" class="plan-badge tracking">Tracking-only plan</div>
     <div id="trackingBalance" class="credit-box">Tracking credit balance: loading…</div>
   </div>
+
+  <!-- BANK / CASH OVERVIEW (Plaid-style integration stub) -->
+  <section class="card" id="banking-card">
+    <h2>Cash & Bank Overview</h2>
+    <p class="small">
+      Connect bank accounts securely (Plaid-style) to see balances and cash flow inside MyFreightTracker.
+    </p>
+    <button type="button" id="connect-bank-btn">Connect bank account</button>
+    <div id="bank-accounts-summary" class="small" style="margin-top:8px;">
+      Loading bank summary…
+    </div>
+  </section>
 
   <!-- MAIN TABS (ORDER) -->
   <div class="feature-buttons">
@@ -433,6 +446,10 @@
     </button>
     <button class="feature-btn" data-panel="tracking">
       <span class="dot"></span> Driver Tracking
+    </button>
+    <!-- NEW: Calendar tab (LAST) -->
+    <button class="feature-btn" data-panel="calendar">
+      <span class="dot"></span> Calendar
     </button>
   </div>
 
@@ -677,7 +694,7 @@
     </div>
   </section>
 
-  <!-- DOCUMENTS PANEL (unchanged logic, just as before) -->
+  <!-- DOCUMENTS PANEL -->
   <section id="panel-docs" class="feature-panel card">
     <h2 id="docs-heading">Rate Confirmation (Ratecon) Docs</h2>
     <p class="small" id="docs-description">
@@ -749,7 +766,7 @@
       <button type="button" class="subtab-btn" data-car-sub="list">Carrier list</button>
     </div>
 
-    <!-- Create carrier sub-panel (no Verify button, no DAT/Truckstop, added Truck/Trailer #) -->
+    <!-- Create carrier sub-panel -->
     <div id="carrier-create-panel" class="subtab-panel active">
       <form id="carrier-form">
         <label>Carrier name</label>
@@ -777,7 +794,7 @@
       </form>
     </div>
 
-    <!-- Carrier list sub-panel: pure lookup list -->
+    <!-- Carrier list sub-panel -->
     <div id="carrier-list-panel" class="subtab-panel">
       <div class="doc-list-header">
         <h3 style="font-size:0.9rem;">Carrier list</h3>
@@ -806,6 +823,52 @@
 
     <div id="tracking-table" style="margin-top:10px;">
       <p class="no-loads">No loads are actively tracking yet.</p>
+    </div>
+
+    <!-- EMERGENCY ALERTS (from driver emergency button) -->
+    <div style="margin-top:16px;">
+      <h3 style="font-size:0.95rem;">Emergency alerts</h3>
+      <p class="small">
+        Live emergencies triggered from driver emergency buttons. Acknowledge and resolve them here.
+      </p>
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
+        <button id="refresh-emergencies-btn" type="button" class="btn-secondary">Refresh emergencies</button>
+      </div>
+      <div id="emergencies-container">
+        <p class="no-loads">No active emergencies.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CALENDAR PANEL (NEW MAIN TAB) -->
+  <section id="panel-calendar" class="feature-panel card">
+    <h2>Broker Calendar</h2>
+    <p class="small">
+      Add follow-ups, pickup reminders, billing tasks, or anything else. We’ll pop a reminder the day before
+      and the morning of each event.
+    </p>
+
+    <form id="calendar-form">
+      <label for="cal-title">Event title</label>
+      <input id="cal-title" placeholder="e.g. Call ACME about lane renewal" required />
+
+      <label for="cal-date">Date</label>
+      <input id="cal-date" type="date" required />
+
+      <label for="cal-time">Time (optional)</label>
+      <input id="cal-time" type="time" />
+
+      <label for="cal-notes">Notes (optional)</label>
+      <textarea id="cal-notes" rows="2" placeholder="Any extra details or phone numbers"></textarea>
+
+      <button type="submit">Add to calendar</button>
+    </form>
+
+    <div style="margin-top:12px;">
+      <h3 style="font-size:0.95rem;">Upcoming events</h3>
+      <div id="calendar-list" class="small" style="margin-top:4px;">
+        No events yet.
+      </div>
     </div>
   </section>
 </main>
@@ -851,6 +914,92 @@
     }
   }
 
+  // -------- BANK / CASH OVERVIEW (PLAID-STYLE STUB) --------
+  const bankSummaryEl = document.getElementById('bank-accounts-summary');
+  const connectBankBtn = document.getElementById('connect-bank-btn');
+
+  async function loadBankSummary() {
+    if (!bankSummaryEl) return;
+    try {
+      const resp = await fetch('/api/banking/summary');
+      if (!resp.ok) {
+        bankSummaryEl.textContent = 'Bank summary unavailable (not configured yet).';
+        return;
+      }
+      const data = await resp.json();
+      const accounts = Array.isArray(data.accounts) ? data.accounts : [];
+      if (!accounts.length) {
+        bankSummaryEl.textContent = 'No bank accounts connected yet.';
+        return;
+      }
+
+      let totalBalance = 0;
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Account</th>
+              <th>Type</th>
+              <th>Last 4</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      accounts.forEach(acc => {
+        const bal = typeof acc.balance === 'number' ? acc.balance : 0;
+        totalBalance += bal;
+        html += `
+          <tr>
+            <td>${acc.name || '-'}</td>
+            <td>${acc.type || '-'}</td>
+            <td>${acc.last4 || '-'}</td>
+            <td>$${bal.toFixed(2)}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+          <tr>
+            <td colspan="3"><strong>Total</strong></td>
+            <td><strong>$${totalBalance.toFixed(2)}</strong></td>
+          </tr>
+        </tbody>
+        </table>
+      `;
+
+      bankSummaryEl.innerHTML = html;
+    } catch (err) {
+      console.error(err);
+      bankSummaryEl.textContent = 'Error loading bank summary.';
+    }
+  }
+
+  if (connectBankBtn) {
+    connectBankBtn.addEventListener('click', async () => {
+      try {
+        const resp = await fetch('/api/banking/connect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) {
+          alert(data.error || 'Unable to start bank connection.');
+          return;
+        }
+        if (data.redirectUrl) {
+          window.location.href = data.redirectUrl;
+        } else {
+          alert('Bank connection flow started. Follow any additional instructions that appear.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error starting bank connection.');
+      }
+    });
+  }
+
   // -------- FEATURE PANELS SWITCHING --------
   const featureButtons = document.querySelectorAll('.feature-btn');
   const panels = document.querySelectorAll('.feature-panel');
@@ -869,6 +1018,7 @@
     }
     if (panelId === 'tracking') {
       renderTrackingView();
+      loadEmergencies();
     }
     if (panelId === 'docs') {
       setDocMode(currentDocType);
@@ -879,6 +1029,9 @@
     }
     if (panelId === 'carriers') {
       refreshCarrierList();
+    }
+    if (panelId === 'calendar') {
+      renderCalendarEvents();
     }
   }
 
@@ -904,7 +1057,6 @@
     const resp = await fetch('/api/loads');
     if (!resp.ok) throw new Error('Failed to load loads');
     const loads = await resp.json();
-    // If some loads don’t have status, treat them as pending.
     allLoads = loads.map(l => ({ ...l, status: l.status || LOAD_STATUS.PENDING }));
   }
 
@@ -932,30 +1084,30 @@
     `;
 
     for (const load of loads) {
-      const routeText = `${load.pickupAddress || '-'} → ${load.deliveryAddress || '-'}`;
+      const routeText = \`\${load.pickupAddress || '-'} → \${load.deliveryAddress || '-'}\`;
       let lastLocText = '—';
       if (load.lastLocation) {
-        lastLocText = `${load.lastLocation.lat.toFixed(5)}, ${load.lastLocation.lng.toFixed(5)}
-(${load.lastLocation.recordedAt})`;
+        lastLocText = \`\${load.lastLocation.lat.toFixed(5)}, \${load.lastLocation.lng.toFixed(5)}
+(\${load.lastLocation.recordedAt})\`;
       }
 
-      html += `
+      html += \`
         <tr>
-          <td>${load.id}</td>
+          <td>\${load.id}</td>
           <td>
-            <strong>${load.reference || '-'}</strong><br>
-            ${load.customerName || ''}
+            <strong>\${load.reference || '-'}</strong><br>
+            \${load.customerName || ''}
           </td>
-          <td>${load.equipmentType || '-'}</td>
-          <td style="white-space: pre-line;">${routeText}</td>
-          <td>${load.status}</td>
-          <td style="white-space: pre-line;">${lastLocText}</td>
+          <td>\${load.equipmentType || '-'}</td>
+          <td style="white-space: pre-line;">\${routeText}</td>
+          <td>\${load.status}</td>
+          <td style="white-space: pre-line;">\${lastLocText}</td>
           <td>
-            ${renderStatusButtons(load)}
-            <button type="button" class="btn-secondary" onclick="createDocFromLoad(${load.id})">Create doc</button>
+            \${renderStatusButtons(load)}
+            <button type="button" class="btn-secondary" onclick="createDocFromLoad(\${load.id})">Create doc</button>
           </td>
         </tr>
-      `;
+      \`;
     }
 
     html += '</tbody></table>';
@@ -968,19 +1120,19 @@
     let out = '';
 
     if (s !== LOAD_STATUS.PENDING) {
-      out += `<button type="button" class="btn-secondary" onclick="changeLoadStatus(${id}, '${LOAD_STATUS.PENDING}')">To Pending</button> `;
+      out += \`<button type="button" class="btn-secondary" onclick="changeLoadStatus(\${id}, '\${LOAD_STATUS.PENDING}')">To Pending</button> \`;
     }
 
     if (s !== LOAD_STATUS.ASSIGNED) {
-      out += `<button type="button" class="btn-secondary" onclick="changeLoadStatus(${id}, '${LOAD_STATUS.ASSIGNED}')">To Assigned</button> `;
+      out += \`<button type="button" class="btn-secondary" onclick="changeLoadStatus(\${id}, '\${LOAD_STATUS.ASSIGNED}')">To Assigned</button> \`;
     }
 
     if (s !== LOAD_STATUS.PICKED) {
-      out += `<button type="button" class="btn-secondary" onclick="changeLoadStatus(${id}, '${LOAD_STATUS.PICKED}')">To Picked Up</button> `;
+      out += \`<button type="button" class="btn-secondary" onclick="changeLoadStatus(\${id}, '\${LOAD_STATUS.PICKED}')">To Picked Up</button> \`;
     }
 
     if (s !== LOAD_STATUS.COMPLETED) {
-      out += `<button type="button" class="btn-secondary" onclick="changeLoadStatus(${id}, '${LOAD_STATUS.COMPLETED}')">To Completed</button>`;
+      out += \`<button type="button" class="btn-secondary" onclick="changeLoadStatus(\${id}, '\${LOAD_STATUS.COMPLETED}')">To Completed</button>\`;
     }
 
     return out;
@@ -988,7 +1140,7 @@
 
   async function changeLoadStatus(id, newStatus) {
     try {
-      const resp = await fetch(`/api/loads/${id}/status`, {
+      const resp = await fetch(\`/api/loads/\${id}/status\`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -1079,7 +1231,7 @@
   if (refreshPickedBtn) refreshPickedBtn.addEventListener('click', renderAllLoadPanels);
   if (refreshCompletedBtn) refreshCompletedBtn.addEventListener('click', renderAllLoadPanels);
 
-  // -------- NOTIFICATION BAR (for geofence) --------
+  // -------- NOTIFICATION BAR (geofence + calendar + emergencies) --------
   const notificationBar = document.getElementById('notificationBar');
   let notifiedLoads = new Set();
 
@@ -1127,7 +1279,7 @@
         const marker = new google.maps.Marker({
           position: pos,
           map: trackingMap,
-          title: `${load.reference || ''} (${load.customerName || ''})`
+          title: \`\${load.reference || ''} (\${load.customerName || ''})\`
         });
         trackingMarkers.push(marker);
         bounds.extend(pos);
@@ -1144,7 +1296,6 @@
     const trackingTable = document.getElementById('tracking-table');
     if (!trackingTable) return;
 
-    // Consider "tracking" any non-completed load that has a lastLocation
     const trackingLoads = allLoads.filter(
       l => l.status !== LOAD_STATUS.COMPLETED && l.lastLocation
     );
@@ -1170,25 +1321,25 @@
     `;
 
     for (const load of trackingLoads) {
-      const routeText = `${load.pickupAddress || '-'} → ${load.deliveryAddress || '-'}`;
+      const routeText = \`\${load.pickupAddress || '-'} → \${load.deliveryAddress || '-'}\`;
       let lastLocText = '—';
       if (load.lastLocation) {
-        lastLocText = `${load.lastLocation.lat.toFixed(5)}, ${load.lastLocation.lng.toFixed(5)}
-(${load.lastLocation.recordedAt})`;
+        lastLocText = \`\${load.lastLocation.lat.toFixed(5)}, \${load.lastLocation.lng.toFixed(5)}
+(\${load.lastLocation.recordedAt})\`;
       }
 
-      html += `
+      html += \`
         <tr>
-          <td>${load.id}</td>
+          <td>\${load.id}</td>
           <td>
-            <strong>${load.reference || '-'}</strong><br>
-            ${load.customerName || ''}
+            <strong>\${load.reference || '-'}</strong><br>
+            \${load.customerName || ''}
           </td>
-          <td>${load.status}</td>
-          <td style="white-space: pre-line;">${routeText}</td>
-          <td style="white-space: pre-line;">${lastLocText}</td>
+          <td>\${load.status}</td>
+          <td style="white-space: pre-line;">\${routeText}</td>
+          <td style="white-space: pre-line;">\${lastLocText}</td>
         </tr>
-      `;
+      \`;
     }
 
     html += '</tbody></table>';
@@ -1203,7 +1354,7 @@
     trackingLoads.forEach(load => {
       if (load.atReceiver && !notifiedLoads.has(load.id)) {
         notifiedLoads.add(load.id);
-        showNotification(`Load #${load.id} (${load.reference || ''}) has reached the receiver.`);
+        showNotification(\`Load #\${load.id} (\${load.reference || ''}) has reached the receiver.\`);
       }
     });
   }
@@ -1219,6 +1370,132 @@
   setInterval(async () => {
     await renderAllLoadPanels();
   }, 300000);
+
+  // -------- EMERGENCY ALERTS (BROKER VIEW FOR DRIVER EMERGENCY BUTTONS) --------
+  let emergencies = [];
+  const emergenciesContainer = document.getElementById('emergencies-container');
+  const refreshEmergenciesBtn = document.getElementById('refresh-emergencies-btn');
+  let seenEmergencyIds = new Set();
+
+  async function loadEmergencies() {
+    if (!emergenciesContainer) return;
+    try {
+      const resp = await fetch('/api/emergencies');
+      if (!resp.ok) {
+        emergenciesContainer.innerHTML = '<p class="no-loads">Unable to load emergencies.</p>';
+        return;
+      }
+      const data = await resp.json();
+      emergencies = Array.isArray(data) ? data : [];
+
+      // Notify on newly-seen ACTIVE emergencies
+      emergencies.forEach(em => {
+        if (em.status === 'ACTIVE' && !seenEmergencyIds.has(em.id)) {
+          seenEmergencyIds.add(em.id);
+          showNotification(\`EMERGENCY: \${em.driverName || 'Driver'} (\${em.truckNumber || 'Truck'}) – \${em.locationSummary || 'Check emergency tab.'}\`);
+        }
+      });
+
+      renderEmergencies();
+    } catch (err) {
+      console.error(err);
+      emergenciesContainer.innerHTML = '<p class="no-loads">Error loading emergencies.</p>';
+    }
+  }
+
+  function renderEmergencies() {
+    if (!emergenciesContainer) return;
+    if (!emergencies.length) {
+      emergenciesContainer.innerHTML = '<p class="no-loads">No active emergencies.</p>';
+      return;
+    }
+
+    let html = `
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Driver / Truck</th>
+            <th>Load</th>
+            <th>When</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    emergencies.forEach(em => {
+      const created = em.createdAt ? new Date(em.createdAt) : null;
+      const createdText = created ? created.toLocaleString() : '-';
+      html += `
+        <tr>
+          <td>${em.id}</td>
+          <td>
+            ${em.driverName || 'Driver'}<br>
+            ${em.truckNumber ? 'Truck: ' + em.truckNumber : ''}
+          </td>
+          <td>
+            ${em.loadReference || '-'}<br>
+            ${em.locationSummary || ''}
+          </td>
+          <td>${createdText}</td>
+          <td>${em.status || '-'}</td>
+          <td>
+            <button type="button" class="btn-secondary emergency-ack-btn" data-id="${em.id}">Acknowledge</button>
+            <button type="button" class="btn-secondary emergency-res-btn" data-id="${em.id}">Resolve</button>
+          </td>
+        </tr>
+      `;
+    });
+
+    html += '</tbody></table>';
+    emergenciesContainer.innerHTML = html;
+
+    const ackButtons = emergenciesContainer.querySelectorAll('.emergency-ack-btn');
+    const resButtons = emergenciesContainer.querySelectorAll('.emergency-res-btn');
+
+    ackButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        updateEmergencyStatus(id, 'ACKNOWLEDGED');
+      });
+    });
+
+    resButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        updateEmergencyStatus(id, 'RESOLVED');
+      });
+    });
+  }
+
+  async function updateEmergencyStatus(id, newStatus) {
+    try {
+      const resp = await fetch(`/api/emergencies/${encodeURIComponent(id)}/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        alert(data.error || 'Error updating emergency status.');
+        return;
+      }
+      loadEmergencies();
+    } catch (err) {
+      console.error(err);
+      alert('Error updating emergency status.');
+    }
+  }
+
+  if (refreshEmergenciesBtn) {
+    refreshEmergenciesBtn.addEventListener('click', loadEmergencies);
+  }
+
+  function startEmergencyPoller() {
+    setInterval(loadEmergencies, 60000); // every minute
+  }
 
   // -------- QUOTE CALCULATOR JS --------
   const quoteOriginInput = document.getElementById('quote-origin');
@@ -1814,9 +2091,151 @@
 
   window.createDocFromLoad = createDocFromLoad;
 
+  // -------- CALENDAR (BROKER REMINDERS) --------
+  const calendarForm = document.getElementById('calendar-form');
+  const calendarListEl = document.getElementById('calendar-list');
+  let calendarEvents = [];
+
+  function loadCalendarFromStorage() {
+    try {
+      const raw = localStorage.getItem('mft_calendar_events');
+      calendarEvents = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(calendarEvents)) calendarEvents = [];
+    } catch (err) {
+      console.error('Error loading calendar from storage', err);
+      calendarEvents = [];
+    }
+    renderCalendarEvents();
+  }
+
+  function saveCalendarToStorage() {
+    try {
+      localStorage.setItem('mft_calendar_events', JSON.stringify(calendarEvents));
+    } catch (err) {
+      console.error('Error saving calendar to storage', err);
+    }
+  }
+
+  function renderCalendarEvents() {
+    if (!calendarListEl) return;
+    if (!calendarEvents.length) {
+      calendarListEl.innerHTML = 'No events yet.';
+      return;
+    }
+
+    // sort by datetime ascending
+    const sorted = [...calendarEvents].sort((a, b) => {
+      const da = new Date(a.datetime).getTime();
+      const db = new Date(b.datetime).getTime();
+      return da - db;
+    });
+
+    const now = new Date();
+    let html = `
+      <table>
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Title</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    sorted.forEach(ev => {
+      const dt = new Date(ev.datetime);
+      const isPast = dt < now;
+      const whenText = dt.toLocaleString();
+      html += `
+        <tr>
+          <td>${whenText}${isPast ? '<br><span class="status-pill">Past</span>' : ''}</td>
+          <td>${ev.title}</td>
+          <td>${ev.notes || '-'}</td>
+        </tr>
+      `;
+    });
+
+    html += '</tbody></table>';
+    calendarListEl.innerHTML = html;
+  }
+
+  if (calendarForm) {
+    calendarForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = document.getElementById('cal-title').value.trim();
+      const date = document.getElementById('cal-date').value;
+      const time = document.getElementById('cal-time').value;
+      const notes = document.getElementById('cal-notes').value.trim();
+
+      if (!title || !date) {
+        alert('Title and date are required.');
+        return;
+      }
+
+      const timePart = time || '09:00';
+      const isoString = new Date(`${date}T${timePart}:00`).toISOString();
+
+      const ev = {
+        id: Date.now(),
+        title,
+        notes,
+        datetime: isoString,
+        notifiedDayBefore: false,
+        notifiedDayOf: false
+      };
+
+      calendarEvents.push(ev);
+      saveCalendarToStorage();
+      renderCalendarEvents();
+      calendarForm.reset();
+    });
+  }
+
+  function checkCalendarReminders() {
+    if (!calendarEvents || !calendarEvents.length) return;
+    const now = new Date();
+    let changed = false;
+
+    calendarEvents.forEach(ev => {
+      const evDate = new Date(ev.datetime);
+      const dayBefore = new Date(evDate);
+      dayBefore.setDate(dayBefore.getDate() - 1);
+      dayBefore.setHours(9, 0, 0, 0);   // 9am day before
+
+      const morningOf = new Date(evDate);
+      morningOf.setHours(8, 0, 0, 0);   // 8am day of
+
+      if (!ev.notifiedDayBefore && now >= dayBefore && now < evDate) {
+        showNotification(`Reminder: "${ev.title}" is scheduled for ${evDate.toLocaleString()}.`);
+        ev.notifiedDayBefore = true;
+        changed = true;
+      }
+
+      if (!ev.notifiedDayOf && now >= morningOf && now <= evDate) {
+        showNotification(`Today: "${ev.title}" at ${evDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`);
+        ev.notifiedDayOf = true;
+        changed = true;
+      }
+    });
+
+    if (changed) saveCalendarToStorage();
+  }
+
+  function startCalendarReminderLoop() {
+    // Check once on load, then every minute
+    checkCalendarReminders();
+    setInterval(checkCalendarReminders, 60000);
+  }
+
   // -------- INITIALIZE --------
   renderAllLoadPanels();
   loadTrackingBalance();
+  loadBankSummary();
+  loadCalendarFromStorage();
+  startCalendarReminderLoop();
+  loadEmergencies();
+  startEmergencyPoller();
 </script>
 
 <!-- Put your real Maps API key in place of YOUR_API_KEY_HERE -->
