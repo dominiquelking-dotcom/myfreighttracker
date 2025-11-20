@@ -314,6 +314,44 @@
       margin-top: 6px;
     }
 
+    /* Drag & drop zones */
+    .dropzone {
+      border: 2px dashed #9ca3af;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #6b7280;
+      cursor: pointer;
+      background: #f9fafb;
+      margin-bottom: 6px;
+    }
+
+    .dropzone.dragover {
+      background: #eef2ff;
+      border-color: #4f46e5;
+      color: #111827;
+    }
+
+    /* Week selector controls in Metrics tab */
+    .week-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin-top: 6px;
+      margin-bottom: 4px;
+    }
+
+    .week-controls button {
+      margin-top: 0;
+    }
+
+    .week-controls-label {
+      font-size: 0.8rem;
+      color: #6b7280;
+    }
+
     @media (max-width: 900px) {
       .split {
         grid-template-columns: 1fr;
@@ -334,13 +372,14 @@
   <main>
     <h1>Carrier / Dispatcher Dashboard</h1>
     <p class="subtitle">
-      Track your fleet, organize your documents, and understand your weekly numbers at a glance.
+      Track your fleet, work your boards, organize your docs, and see your Monday-to-Monday numbers.
     </p>
 
     <div class="card">
       <!-- TOP-LEVEL TABS -->
       <div class="tabs">
         <button class="tab-button active" data-tab="fleet">Fleet Overview</button>
+        <button class="tab-button" data-tab="aggregator">Loadboard Aggregator</button>
         <button class="tab-button" data-tab="bols">BOLs</button>
         <button class="tab-button" data-tab="ratecons">Rate Cons</button>
         <button class="tab-button" data-tab="docs">Documents</button>
@@ -368,8 +407,8 @@
                 <span class="pill">Pairing</span>
               </div>
               <p class="small">
-                Use this to link drivers’ phones (driver app) to your main carrier account so
-                their GPS pings show up in the Fleet Overview map.
+                Link drivers’ phones (driver app) to your main carrier account so
+                their GPS pings show in the Fleet Overview.
               </p>
 
               <label for="fleet-truck-id">Truck / Unit #</label>
@@ -383,8 +422,59 @@
 
               <p class="small" style="margin-top:6px;">
                 Later, the driver app will let the driver tap this link or enter a code,
-                and it will start sending GPS pings every few minutes tied to that truck.
+                and it will send GPS pings every few minutes tied to that truck.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LOADBOARD AGGREGATOR TAB -->
+      <section id="tab-aggregator" class="tab-panel">
+        <h2 style="font-size:1rem; margin-bottom:6px;">Loadboard Aggregator</h2>
+        <p class="small">
+          Log the lanes you’re hunting so you can quickly see where you’re working DAT, Truckstop, etc.
+          (API integration will plug in here later.)
+        </p>
+
+        <div class="split">
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">New lane watch</div>
+                <span class="pill">Manual</span>
+              </div>
+
+              <label for="agg-origin">Origin (market)</label>
+              <input id="agg-origin" placeholder="e.g. Louisville, KY" />
+
+              <label for="agg-destination">Destination (market)</label>
+              <input id="agg-destination" placeholder="e.g. Atlanta, GA" />
+
+              <label for="agg-equipment">Equipment</label>
+              <select id="agg-equipment">
+                <option value="van">Dry Van</option>
+                <option value="reefer">Reefer</option>
+                <option value="flatbed">Flatbed</option>
+                <option value="hotshot">Hotshot</option>
+                <option value="stepdeck">Stepdeck</option>
+                <option value="rgn">RGN</option>
+                <option value="lowboy">Lowboy</option>
+              </select>
+
+              <label for="agg-notes">Notes (board, min CPM, etc.)</label>
+              <textarea id="agg-notes" rows="2" placeholder="DAT, Truckstop, min $/mi, time window, etc."></textarea>
+
+              <button type="button" id="agg-add-btn">Add to watchlist</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="box">
+              <div class="box-header">
+                <div class="box-title">Saved lanes</div>
+              </div>
+              <div id="agg-list"></div>
             </div>
           </div>
         </div>
@@ -394,8 +484,7 @@
       <section id="tab-bols" class="tab-panel">
         <h2 style="font-size:1rem; margin-bottom:6px;">Bill of Lading (BOLs)</h2>
         <p class="small">
-          Store and organize your BOLs for quick reference. Drag and drop coming later — for now
-          you can log details and attach files locally.
+          Store and organize your BOLs for quick reference. File content is local-only for now.
         </p>
 
         <div class="split">
@@ -416,13 +505,15 @@
               <label for="bol-notes">Notes</label>
               <textarea id="bol-notes" rows="2" placeholder="Pickup/delivery notes, reference #, etc."></textarea>
 
-              <label for="bol-file">Attach BOL (optional)</label>
-              <input id="bol-file" type="file" />
+              <label>Attach BOL (optional)</label>
+              <div id="bol-dropzone" class="dropzone">
+                <span class="drop-label">Drag & drop BOL file here, or click to browse.</span>
+              </div>
+              <input id="bol-file" type="file" style="margin-top:6px;" />
 
               <button type="button" id="add-bol-btn">Add BOL</button>
               <p class="small">
-                File attachments are local-only for now. Later we’ll send these to the server so they sync
-                across devices.
+                Attachments stay on this device for now. Later we’ll sync to the server.
               </p>
             </div>
           </div>
@@ -463,8 +554,11 @@
               <label for="rc-notes">Notes</label>
               <textarea id="rc-notes" rows="2" placeholder="Quick notes, layover, TONU, etc."></textarea>
 
-              <label for="rc-file">Attach Rate Con (optional)</label>
-              <input id="rc-file" type="file" />
+              <label>Attach Rate Con (optional)</label>
+              <div id="rc-dropzone" class="dropzone">
+                <span class="drop-label">Drag & drop Rate Con file here, or click to browse.</span>
+              </div>
+              <input id="rc-file" type="file" style="margin-top:6px;" />
 
               <button type="button" id="add-rc-btn">Add Rate Con</button>
             </div>
@@ -511,8 +605,11 @@
               <label for="doc-notes">Notes</label>
               <textarea id="doc-notes" rows="2" placeholder="Quick details about this doc."></textarea>
 
-              <label for="doc-file">Attach file (optional)</label>
-              <input id="doc-file" type="file" />
+              <label>Attach file (optional)</label>
+              <div id="doc-dropzone" class="dropzone">
+                <span class="drop-label">Drag & drop document here, or click to browse.</span>
+              </div>
+              <input id="doc-file" type="file" style="margin-top:6px;" />
 
               <button type="button" id="add-doc-btn">Add Document</button>
             </div>
@@ -533,10 +630,17 @@
       <section id="tab-metrics" class="tab-panel">
         <h2 style="font-size:1rem; margin-bottom:6px;">Your Metrics</h2>
         <p class="small">
-          See how you did this week: miles, revenue, and expenses. Log each trip below and enter your
-          monthly fixed expenses so the system can break down your performance. We also pull in
-          real loads from the system where a rate is set.
+          See how you did from <strong>Monday to Monday</strong>: miles, revenue, and expenses.
+          We pull in real loads (with rates) plus anything you log manually.
         </p>
+
+        <!-- Week selector -->
+        <div class="week-controls">
+          <button type="button" id="prev-week-btn" class="btn-secondary">◀ Previous week</button>
+          <button type="button" id="this-week-btn" class="btn-secondary">This week</button>
+          <button type="button" id="next-week-btn" class="btn-secondary">Next week ▶</button>
+          <span class="week-controls-label" id="metrics-range-label"></span>
+        </div>
 
         <!-- Sub-tabs for metrics views -->
         <div class="subtabs">
@@ -546,11 +650,11 @@
         </div>
 
         <!-- Trip log + summary -->
-        <div class="split">
+        <div class="split" style="margin-top:10px;">
           <div>
             <div class="box">
               <div class="box-header">
-                <div class="box-title">Trip log (this week)</div>
+                <div class="box-title">Trip log (selected Monday → Monday)</div>
               </div>
 
               <label for="trip-date">Date</label>
@@ -570,8 +674,7 @@
 
               <button type="button" id="add-trip-btn">Add trip</button>
               <p class="small">
-                The system also auto-adds trips from loads that have a rate set, so your gross & net
-                reflect real data from your account.
+                We also auto-add trips from loads that have a rate set (from your MyFreightTracker loads).
               </p>
             </div>
           </div>
@@ -579,7 +682,7 @@
           <div>
             <div class="box">
               <div class="box-header">
-                <div class="box-title">Weekly trip list</div>
+                <div class="box-title">Trips in this week window</div>
               </div>
               <div id="trip-list"></div>
             </div>
@@ -590,13 +693,13 @@
         <div class="full">
           <!-- Miles view -->
           <div id="subtab-miles" class="subtab-panel active">
-            <h3 style="font-size:0.95rem; margin-bottom:4px;">Miles breakdown (this period)</h3>
+            <h3 style="font-size:0.95rem; margin-bottom:4px;">Miles breakdown (selected Monday → Monday)</h3>
             <div class="metrics-grid" id="miles-metrics"></div>
           </div>
 
           <!-- Revenue view -->
           <div id="subtab-revenue" class="subtab-panel">
-            <h3 style="font-size:0.95rem; margin-bottom:4px;">Revenue breakdown (this period)</h3>
+            <h3 style="font-size:0.95rem; margin-bottom:4px;">Revenue breakdown (selected Monday → Monday)</h3>
             <div class="metrics-grid" id="revenue-metrics"></div>
           </div>
 
@@ -604,8 +707,8 @@
           <div id="subtab-expenses" class="subtab-panel">
             <h3 style="font-size:0.95rem; margin-bottom:4px;">Expenses & net (monthly → weekly)</h3>
             <p class="small">
-              Enter your average <strong>monthly</strong> fixed expenses. We’ll estimate a weekly share
-              and combine that with your trip-level expenses to show your net.
+              Enter your average <strong>monthly</strong> fixed expenses. We estimate a weekly share
+              (and combine that with trip expenses) to show your net inside this Monday-to-Monday window.
             </p>
 
             <div class="split">
@@ -641,7 +744,7 @@
 
                   <button type="button" id="save-expenses-btn">Save monthly expenses</button>
                   <p class="small">
-                    These are stored in your browser for now (local only). Later we’ll sync them to your account.
+                    Stored locally in this browser for now. Later we’ll sync to your account.
                   </p>
                 </div>
               </div>
@@ -680,12 +783,44 @@
       return t;
     }
 
+    // weekOffset = 0 => current week; -1 => previous week, etc.
+    let weekOffset = 0;
+
+    function getMonday(date) {
+      const d = new Date(date);
+      const day = d.getDay(); // 0 (Sun) - 6 (Sat)
+      const diff = (day + 6) % 7; // days since Monday
+      d.setDate(d.getDate() - diff);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+
+    function getWeekRange(offsetWeeks = 0) {
+      const now = new Date();
+      const start = getMonday(now);
+      if (offsetWeeks) {
+        start.setDate(start.getDate() + offsetWeeks * 7);
+      }
+      const end = new Date(start);
+      end.setDate(start.getDate() + 7);
+      return { start, end };
+    }
+
+    function formatDateLabel(d) {
+      return d.toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
+
     // -------------------------------
     // Tab behavior (top-level)
     // -------------------------------
     const tabButtons = document.querySelectorAll('.tab-button');
     const tabPanels = {
       fleet: document.getElementById('tab-fleet'),
+      aggregator: document.getElementById('tab-aggregator'),
       bols: document.getElementById('tab-bols'),
       ratecons: document.getElementById('tab-ratecons'),
       docs: document.getElementById('tab-docs'),
@@ -750,18 +885,81 @@
     }
 
     // -------------------------------
+    // Drag & drop setup
+    // -------------------------------
+    function setupDropzone(zoneId, inputId) {
+      const zone = document.getElementById(zoneId);
+      const input = document.getElementById(inputId);
+      if (!zone || !input) return;
+
+      const labelSpan = zone.querySelector('.drop-label');
+
+      function setLabelFromFiles(files) {
+        if (!files || !files.length) {
+          if (labelSpan) labelSpan.textContent = labelSpan.dataset.defaultText || labelSpan.textContent;
+          return;
+        }
+        const first = files[0];
+        const extra = files.length > 1 ? ` (+${files.length - 1} more)` : '';
+        if (labelSpan) {
+          if (!labelSpan.dataset.defaultText) {
+            labelSpan.dataset.defaultText = labelSpan.textContent;
+          }
+          labelSpan.textContent = `${first.name}${extra}`;
+        }
+      }
+
+      zone.addEventListener('click', () => input.click());
+
+      ['dragenter', 'dragover'].forEach(evt => {
+        zone.addEventListener(evt, e => {
+          e.preventDefault();
+          e.stopPropagation();
+          zone.classList.add('dragover');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(evt => {
+        zone.addEventListener(evt, e => {
+          e.preventDefault();
+          e.stopPropagation();
+          zone.classList.remove('dragover');
+        });
+      });
+
+      zone.addEventListener('drop', e => {
+        const dt = e.dataTransfer;
+        if (!dt || !dt.files || !dt.files.length) return;
+        input.files = dt.files;
+        setLabelFromFiles(dt.files);
+      });
+
+      input.addEventListener('change', () => {
+        setLabelFromFiles(input.files);
+      });
+    }
+
+    setupDropzone('bol-dropzone', 'bol-file');
+    setupDropzone('rc-dropzone', 'rc-file');
+    setupDropzone('doc-dropzone', 'doc-file');
+
+    // -------------------------------
     // Local storage keys
     // -------------------------------
-    const LS_TRIPS_KEY = 'mftCarrierTripsWeek';
+    const LS_TRIPS_KEY = 'mftCarrierTripsAll';
     const LS_BOLS_KEY = 'mftCarrierBols';
     const LS_RCS_KEY = 'mftCarrierRateCons';
     const LS_DOCS_KEY = 'mftCarrierDocs';
     const LS_EXPENSES_KEY = 'mftCarrierMonthlyExpenses';
+    const LS_AGG_KEY = 'mftCarrierAggregatorLanes';
 
     // -------------------------------
-    // Trip log + metrics (weekly-ish)
+    // Trip log + metrics (all time, then filtered by weekOffset)
 // -------------------------------
     let trips = [];
+    const tripListEl = document.getElementById('trip-list');
+    const addTripBtn = document.getElementById('add-trip-btn');
+    const metricsRangeLabel = document.getElementById('metrics-range-label');
 
     function loadTripsFromStorage() {
       try {
@@ -782,12 +980,50 @@
       }
     }
 
-    const tripListEl = document.getElementById('trip-list');
-    const addTripBtn = document.getElementById('add-trip-btn');
+    function getTripDateObject(trip) {
+      if (trip.dateRaw) {
+        const d = new Date(trip.dateRaw);
+        if (!isNaN(d.getTime())) return d;
+      }
+      if (trip.date) {
+        const d = new Date(trip.date + 'T00:00:00');
+        if (!isNaN(d.getTime())) return d;
+      }
+      return null;
+    }
+
+    function getTripsInCurrentWeek() {
+      const { start, end } = getWeekRange(weekOffset);
+      return trips.filter(t => {
+        const d = getTripDateObject(t);
+        if (!d) return false;
+        return d >= start && d < end;
+      });
+    }
+
+    function updateWeekRangeLabel() {
+      const { start, end } = getWeekRange(weekOffset);
+      let suffix = '';
+      if (weekOffset === 0) {
+        suffix = ' (this week)';
+      } else if (weekOffset === -1) {
+        suffix = ' (previous week)';
+      } else if (weekOffset === 1) {
+        suffix = ' (next week)';
+      } else if (weekOffset < 0) {
+        suffix = ` (${Math.abs(weekOffset)} weeks ago)`;
+      } else if (weekOffset > 0) {
+        suffix = ` (${weekOffset} weeks ahead)`;
+      }
+      metricsRangeLabel.textContent =
+        `Window: ${formatDateLabel(start)} → ${formatDateLabel(end)} (Mon → Mon)` + suffix;
+    }
 
     function renderTripList() {
-      if (!trips.length) {
-        tripListEl.innerHTML = '<p class="no-rows">No trips logged yet.</p>';
+      const weekTrips = getTripsInCurrentWeek();
+
+      if (!weekTrips.length) {
+        tripListEl.innerHTML = '<p class="no-rows">No trips logged in this Monday → Monday window.</p>';
         updateAllMetrics();
         return;
       }
@@ -807,16 +1043,17 @@
           <tbody>
       `;
 
-      for (const t of trips) {
+      for (const t of weekTrips) {
         const dh = safeNumber(t.deadheadMiles);
         const ld = safeNumber(t.loadedMiles);
         const allMiles = dh + ld;
         const gross = safeNumber(t.gross);
         const tripExpense = safeNumber(t.tripExpense);
+        const displayDate = t.date || (t.dateRaw ? new Date(t.dateRaw).toISOString().slice(0,10) : '');
 
         html += `
           <tr>
-            <td>${t.date || ''}</td>
+            <td>${displayDate}</td>
             <td>${dh.toFixed(1)}</td>
             <td>${ld.toFixed(1)}</td>
             <td>${allMiles.toFixed(1)}</td>
@@ -847,6 +1084,7 @@
         trips.push({
           source: 'manual',
           date: date || '',
+          dateRaw: date ? date + 'T00:00:00' : null,
           deadheadMiles,
           loadedMiles,
           gross,
@@ -865,8 +1103,40 @@
     }
 
     // -------------------------------
-    // Pull real loads from backend into metrics
+    // Week selector buttons
     // -------------------------------
+    const prevWeekBtn = document.getElementById('prev-week-btn');
+    const thisWeekBtn = document.getElementById('this-week-btn');
+    const nextWeekBtn = document.getElementById('next-week-btn');
+
+    if (prevWeekBtn) {
+      prevWeekBtn.addEventListener('click', () => {
+        weekOffset -= 1;
+        updateWeekRangeLabel();
+        renderTripList();
+      });
+    }
+
+    if (thisWeekBtn) {
+      thisWeekBtn.addEventListener('click', () => {
+        weekOffset = 0;
+        updateWeekRangeLabel();
+        renderTripList();
+      });
+    }
+
+    if (nextWeekBtn) {
+      nextWeekBtn.addEventListener('click', () => {
+        weekOffset += 1;
+        updateWeekRangeLabel();
+        renderTripList();
+      });
+    }
+
+    // -------------------------------
+    // Pull real loads from backend into metrics
+    // (expects /api/loads to eventually return createdAt or created_at)
+// -------------------------------
     async function loadServerLoadsIntoTrips() {
       try {
         const resp = await fetch('/api/loads');
@@ -882,18 +1152,27 @@
 
           if (!gross) continue; // skip loads with no rate
 
-          // Avoid duplicates if we've already stored this load as a trip
           const existing = trips.find(
             t => t.source === 'server' && t.loadId === loadId
           );
           if (existing) continue;
 
+          const createdRaw = load.createdAt || load.created_at || null;
+          let dateStr = '';
+          if (createdRaw) {
+            const d = new Date(createdRaw);
+            if (!isNaN(d.getTime())) {
+              dateStr = d.toISOString().slice(0, 10);
+            }
+          }
+
           trips.push({
             source: 'server',
             loadId,
             reference: load.reference || '',
-            date: '',           // we can wire created_at later if needed
-            deadheadMiles: 0,   // carrier can still log actual DH miles manually in separate trips
+            date: dateStr,
+            dateRaw: createdRaw,
+            deadheadMiles: 0,
             loadedMiles: 0,
             gross,
             tripExpense: 0
@@ -978,12 +1257,13 @@
     }
 
     function calculateWeeklyFromTrips() {
+      const weekTrips = getTripsInCurrentWeek();
       let deadhead = 0;
       let loaded = 0;
       let gross = 0;
       let tripExpenses = 0;
 
-      for (const t of trips) {
+      for (const t of weekTrips) {
         deadhead += safeNumber(t.deadheadMiles);
         loaded += safeNumber(t.loadedMiles);
         gross += safeNumber(t.gross);
@@ -1014,7 +1294,7 @@
     function updateMilesMetrics() {
       const wk = calculateWeeklyFromTrips();
       milesMetricsEl.innerHTML = `
-        ${buildMetricCard('Deadhead miles', wk.deadhead.toFixed(1), 'Total empty miles for the period')}
+        ${buildMetricCard('Deadhead miles', wk.deadhead.toFixed(1), 'Total empty miles this week')}
         ${buildMetricCard('Loaded miles', wk.loaded.toFixed(1), 'Miles where you were getting paid (logged trips)')}
         ${buildMetricCard('All miles', wk.allMiles.toFixed(1), 'Deadhead + loaded')}
         ${buildMetricCard(
@@ -1029,14 +1309,13 @@
       const wk = calculateWeeklyFromTrips();
       const { totalMonthly } = calculateMonthlyExpenses();
 
-      // Convert monthly fixed → weekly share (approx 4.33 weeks / month)
       const weeklyFixed = totalMonthly / 4.33;
       const netBeforeFixed = wk.gross - wk.tripExpenses;
       const netAfterFixed = netBeforeFixed - weeklyFixed;
-      const allMiles = wk.allMiles || 1; // avoid divide by zero
+      const allMiles = wk.allMiles || 1;
 
       revenueMetricsEl.innerHTML = `
-        ${buildMetricCard('Gross revenue', '$' + wk.gross.toFixed(2), 'Total revenue from trips + rated loads')}
+        ${buildMetricCard('Gross revenue', '$' + wk.gross.toFixed(2), 'From rated loads + manual trips in this week')}
         ${buildMetricCard('Trip-level expenses', '$' + wk.tripExpenses.toFixed(2), 'Fuel/tolls/etc. entered per trip')}
         ${buildMetricCard('Net before fixed', '$' + netBeforeFixed.toFixed(2), 'Gross minus trip-specific expenses')}
         ${buildMetricCard('Est. weekly fixed', '$' + weeklyFixed.toFixed(2), 'Monthly fixed ÷ 4.33')}
@@ -1044,7 +1323,7 @@
         ${buildMetricCard(
           'Net per mile',
           '$' + (netAfterFixed / allMiles).toFixed(3),
-          'Approximate profit per mile (using miles you logged)'
+          'Approximate profit per mile (using miles you logged this week)'
         )}
       `;
     }
@@ -1059,8 +1338,8 @@
       expenseMetricsEl.innerHTML = `
         ${buildMetricCard('Monthly fixed total', '$' + totalMonthly.toFixed(2), 'All fixed expenses you entered')}
         ${buildMetricCard('Est. weekly fixed', '$' + weeklyFixed.toFixed(2), 'Monthly ÷ 4.33')}
-        ${buildMetricCard('Trip expenses (this period)', '$' + wk.tripExpenses.toFixed(2), 'Trip-level costs you entered')}
-        ${buildMetricCard('Net after all expenses', '$' + netAfterFixed.toFixed(2), 'Rough profit estimate for this period')}
+        ${buildMetricCard('Trip expenses (this week)', '$' + wk.tripExpenses.toFixed(2), 'Trip-level costs you entered')}
+        ${buildMetricCard('Net after all expenses', '$' + netAfterFixed.toFixed(2), 'Rough profit estimate for this week')}
       `;
     }
 
@@ -1105,6 +1384,7 @@
               <th>Load / Trip</th>
               <th>Customer</th>
               <th>Date</th>
+              <th>File</th>
               <th>Notes</th>
             </tr>
           </thead>
@@ -1116,6 +1396,7 @@
             <td>${b.loadId || '-'}</td>
             <td>${b.customer || '-'}</td>
             <td>${b.date || '-'}</td>
+            <td>${b.fileName || '-'}</td>
             <td>${b.notes || '-'}</td>
           </tr>
         `;
@@ -1130,13 +1411,15 @@
         const customer = document.getElementById('bol-customer').value.trim();
         const date = document.getElementById('bol-date').value;
         const notes = document.getElementById('bol-notes').value.trim();
+        const fileInput = document.getElementById('bol-file');
+        const fileName = fileInput && fileInput.files[0] ? fileInput.files[0].name : '';
 
-        if (!loadId && !customer && !date) {
-          alert('Enter at least a load ID, customer, or date.');
+        if (!loadId && !customer && !date && !fileName) {
+          alert('Enter at least a load ID, customer, date or attach a file.');
           return;
         }
 
-        bols.push({ loadId, customer, date, notes });
+        bols.push({ loadId, customer, date, notes, fileName });
         saveBolsToStorage();
         renderBols();
 
@@ -1144,7 +1427,7 @@
         document.getElementById('bol-customer').value = '';
         document.getElementById('bol-date').value = '';
         document.getElementById('bol-notes').value = '';
-        document.getElementById('bol-file').value = '';
+        if (fileInput) fileInput.value = '';
       });
     }
 
@@ -1183,6 +1466,7 @@
               <th>Load / Trip</th>
               <th>Broker / Shipper</th>
               <th>Gross $</th>
+              <th>File</th>
               <th>Notes</th>
             </tr>
           </thead>
@@ -1194,6 +1478,7 @@
             <td>${r.loadId || '-'}</td>
             <td>${r.broker || '-'}</td>
             <td>${safeNumber(r.rate).toFixed(2)}</td>
+            <td>${r.fileName || '-'}</td>
             <td>${r.notes || '-'}</td>
           </tr>
         `;
@@ -1208,13 +1493,15 @@
         const broker = document.getElementById('rc-broker').value.trim();
         const rate = safeNumber(document.getElementById('rc-rate').value);
         const notes = document.getElementById('rc-notes').value.trim();
+        const fileInput = document.getElementById('rc-file');
+        const fileName = fileInput && fileInput.files[0] ? fileInput.files[0].name : '';
 
-        if (!loadId && !broker && !rate) {
-          alert('Enter at least load ID, broker, or rate.');
+        if (!loadId && !broker && !rate && !fileName) {
+          alert('Enter at least load ID, broker, rate, or attach a file.');
           return;
         }
 
-        rateCons.push({ loadId, broker, rate, notes });
+        rateCons.push({ loadId, broker, rate, notes, fileName });
         saveRateConsToStorage();
         renderRateCons();
 
@@ -1222,7 +1509,7 @@
         document.getElementById('rc-broker').value = '';
         document.getElementById('rc-rate').value = '';
         document.getElementById('rc-notes').value = '';
-        document.getElementById('rc-file').value = '';
+        if (fileInput) fileInput.value = '';
       });
     }
 
@@ -1260,6 +1547,7 @@
             <tr>
               <th>Type</th>
               <th>Reference</th>
+              <th>File</th>
               <th>Notes</th>
             </tr>
           </thead>
@@ -1270,6 +1558,7 @@
           <tr>
             <td>${d.type}</td>
             <td>${d.ref || '-'}</td>
+            <td>${d.fileName || '-'}</td>
             <td>${d.notes || '-'}</td>
           </tr>
         `;
@@ -1283,19 +1572,96 @@
         const type = document.getElementById('doc-type').value;
         const ref = document.getElementById('doc-ref').value.trim();
         const notes = document.getElementById('doc-notes').value.trim();
+        const fileInput = document.getElementById('doc-file');
+        const fileName = fileInput && fileInput.files[0] ? fileInput.files[0].name : '';
 
-        if (!ref && !notes) {
-          alert('Enter at least a reference or some notes.');
+        if (!ref && !notes && !fileName) {
+          alert('Enter at least a reference, notes, or attach a file.');
           return;
         }
 
-        docs.push({ type, ref, notes });
+        docs.push({ type, ref, notes, fileName });
         saveDocsToStorage();
         renderDocs();
 
         document.getElementById('doc-ref').value = '';
         document.getElementById('doc-notes').value = '';
-        document.getElementById('doc-file').value = '';
+        if (fileInput) fileInput.value = '';
+      });
+    }
+
+    // -------------------------------
+    // Loadboard Aggregator (local)
+    // -------------------------------
+    let aggLanes = [];
+    const aggListEl = document.getElementById('agg-list');
+    const aggAddBtn = document.getElementById('agg-add-btn');
+
+    function loadAggFromStorage() {
+      try {
+        const raw = localStorage.getItem(LS_AGG_KEY);
+        if (raw) aggLanes = JSON.parse(raw);
+      } catch (e) {
+        aggLanes = [];
+      }
+    }
+
+    function saveAggToStorage() {
+      try {
+        localStorage.setItem(LS_AGG_KEY, JSON.stringify(aggLanes));
+      } catch (e) {}
+    }
+
+    function renderAggList() {
+      if (!aggLanes.length) {
+        aggListEl.innerHTML = '<p class="no-rows">No lanes saved yet.</p>';
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Lane</th>
+              <th>Equipment</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      for (const lane of aggLanes) {
+        html += `
+          <tr>
+            <td>${lane.origin || '-'} → ${lane.destination || '-'}</td>
+            <td>${lane.equipment || '-'}</td>
+            <td>${lane.notes || '-'}</td>
+          </tr>
+        `;
+      }
+      html += '</tbody></table>';
+      aggListEl.innerHTML = html;
+    }
+
+    if (aggAddBtn) {
+      aggAddBtn.addEventListener('click', () => {
+        const origin = document.getElementById('agg-origin').value.trim();
+        const destination = document.getElementById('agg-destination').value.trim();
+        const equipment = document.getElementById('agg-equipment').value;
+        const notes = document.getElementById('agg-notes').value.trim();
+
+        if (!origin && !destination) {
+          alert('Enter at least an origin or destination.');
+          return;
+        }
+
+        aggLanes.push({ origin, destination, equipment, notes });
+        saveAggToStorage();
+        renderAggList();
+
+        document.getElementById('agg-origin').value = '';
+        document.getElementById('agg-destination').value = '';
+        document.getElementById('agg-equipment').value = 'van';
+        document.getElementById('agg-notes').value = '';
       });
     }
 
@@ -1308,14 +1674,17 @@
       loadRateConsFromStorage();
       loadDocsFromStorage();
       loadExpensesFromStorage();
+      loadAggFromStorage();
 
-      // Pull real loads from backend into metrics
+      // Pull real loads from backend into metrics (expects createdAt/created_at from server later)
       await loadServerLoadsIntoTrips();
 
+      updateWeekRangeLabel();
       renderTripList();
       renderBols();
       renderRateCons();
       renderDocs();
+      renderAggList();
       updateAllMetrics();
     })();
   </script>
