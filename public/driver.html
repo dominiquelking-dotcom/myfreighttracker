@@ -9,414 +9,539 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      font-family: Arial, Helvetica, sans-serif;
     }
 
     body {
       min-height: 100vh;
-      background: radial-gradient(circle at top, #1f2937, #020617 55%);
-      color: #e5e7eb;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #f9fafb;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 16px;
     }
 
-    .shell {
+    .card {
       width: 100%;
-      max-width: 460px;
-      background: rgba(15, 23, 42, 0.96);
-      border-radius: 20px;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
-      padding: 22px 20px 18px;
-      border: 1px solid rgba(55, 65, 81, 0.9);
-    }
-
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 14px;
+      max-width: 420px;
+      background: #020617;
+      border-radius: 18px;
+      padding: 20px 18px 22px;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.7);
+      border: 1px solid #1f2937;
     }
 
     .logo {
       font-size: 1.1rem;
       font-weight: 700;
+      margin-bottom: 4px;
     }
 
     .logo span {
       color: #22c55e;
     }
 
-    .badge {
-      font-size: 0.7rem;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: rgba(31, 41, 55, 0.85);
-      border: 1px solid rgba(75, 85, 99, 0.8);
+    .subtle {
+      font-size: 0.8rem;
       color: #9ca3af;
+      margin-bottom: 10px;
     }
 
     h1 {
-      font-size: 1.25rem;
+      font-size: 1.3rem;
       margin-bottom: 4px;
     }
 
-    .subtitle {
-      font-size: 0.85rem;
-      color: #9ca3af;
-      margin-bottom: 12px;
-      line-height: 1.5;
-    }
-
-    .card {
-      background: rgba(15, 23, 42, 0.9);
-      border-radius: 16px;
-      padding: 14px 14px 12px;
-      border: 1px solid rgba(55, 65, 81, 0.9);
+    .pill {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(34, 197, 94, 0.1);
+      color: #4ade80;
       margin-bottom: 10px;
     }
 
     .section-title {
       font-size: 0.9rem;
       font-weight: 600;
-      margin-bottom: 8px;
+      margin-top: 12px;
+      margin-bottom: 4px;
     }
 
-    .status-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 6px;
-      font-size: 0.8rem;
-    }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.8rem;
-      padding: 3px 10px;
-      border-radius: 999px;
-      background: rgba(31, 41, 55, 0.9);
-      border: 1px solid rgba(55, 65, 81, 0.9);
-    }
-
-    .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: #9ca3af;
-    }
-
-    .dot.active {
-      background: #22c55e;
-    }
-
-    .label {
-      font-size: 0.75rem;
+    .small {
+      font-size: 0.78rem;
       color: #9ca3af;
-      margin-bottom: 2px;
-    }
-
-    .value {
-      font-size: 0.85rem;
-      color: #e5e7eb;
-      word-break: break-word;
-    }
-
-    .muted {
-      color: #6b7280;
-    }
-
-    .buttons {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
+      margin-bottom: 4px;
     }
 
     button {
-      flex: 1;
-      padding: 9px 8px;
+      width: 100%;
+      padding: 11px 14px;
       border-radius: 999px;
       border: none;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
+      margin-top: 10px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      transition: transform 0.05s ease, box-shadow 0.1s ease, filter 0.1s ease;
-    }
-
-    button:disabled {
-      opacity: 0.5;
-      cursor: default;
-      box-shadow: none;
-      transform: none;
+      gap: 8px;
     }
 
     .btn-primary {
       background: #22c55e;
-      color: #052e16;
-      box-shadow: 0 8px 18px rgba(34, 197, 94, 0.4);
+      color: #022c22;
     }
 
-    .btn-primary:active:not(:disabled) {
-      transform: translateY(1px);
-      box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3);
-      filter: brightness(0.98);
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: default;
     }
 
     .btn-secondary {
-      background: rgba(31, 41, 55, 0.95);
+      background: #111827;
       color: #e5e7eb;
-      border: 1px solid rgba(55, 65, 81, 0.95);
-    }
-
-    .btn-secondary:active:not(:disabled) {
-      transform: translateY(1px);
-      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.8);
-      filter: brightness(1.02);
-    }
-
-    .info-text {
-      font-size: 0.75rem;
-      color: #6b7280;
+      border: 1px solid #4b5563;
       margin-top: 6px;
-      line-height: 1.4;
     }
 
-    .error-box {
-      margin-top: 8px;
-      padding: 8px 10px;
-      border-radius: 10px;
-      background: rgba(127, 29, 29, 0.1);
-      border: 1px solid rgba(153, 27, 27, 0.8);
-      color: #fecaca;
+    .status-line {
+      margin-top: 10px;
       font-size: 0.8rem;
-      display: none;
+      color: #e5e7eb;
     }
 
-    .footer {
-      margin-top: 8px;
-      font-size: 0.7rem;
-      color: #4b5563;
-      text-align: center;
-    }
-
-    .footer span {
+    .status-line span.label {
       color: #9ca3af;
     }
 
-    @media (max-width: 480px) {
-      .shell {
-        padding: 18px 16px 16px;
-        border-radius: 16px;
-      }
+    .loc-box {
+      margin-top: 10px;
+      padding: 8px 9px;
+      border-radius: 10px;
+      border: 1px dashed #4b5563;
+      background: #020617;
+      font-size: 0.78rem;
+      color: #e5e7eb;
+      word-break: break-all;
+    }
+
+    .loc-box code {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.78rem;
+    }
+
+    .badge-row {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 0.7rem;
+    }
+
+    .badge {
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: #111827;
+      border: 1px solid #374151;
+      color: #d1d5db;
+    }
+
+    .badge.good {
+      border-color: #22c55e;
+      color: #bbf7d0;
+    }
+
+    .badge.warn {
+      border-color: #facc15;
+      color: #fef3c7;
+    }
+
+    .arrival-banner {
+      margin-top: 10px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid #22c55e;
+      font-size: 0.82rem;
+      color: #bbf7d0;
+      display: none;
+    }
+
+    .error-msg {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: #fecaca;
+    }
+
+    .map-container {
+      margin-top: 12px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #111827;
+    }
+
+    #map {
+      width: 100%;
+      height: 200px;
+    }
+
+    .footer-note {
+      margin-top: 10px;
+      font-size: 0.72rem;
+      color: #6b7280;
     }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <header>
-      <div class="logo">
-        MyFreight<span>Tracker</span>
-      </div>
-      <div class="badge">Driver link</div>
-    </header>
+<div class="card">
+  <div class="logo">MyFreight<span>Tracker</span></div>
+  <p class="subtle">Driver GPS link – keep this tab open while you’re under this load.</p>
 
-    <main>
-      <h1>Share your live location</h1>
-      <p class="subtitle">
-        This page securely shares your GPS position with the broker so they can keep the shipper updated.
-        You can stop sharing at any time.
-      </p>
+  <h1>Share Location</h1>
+  <div class="pill" id="loadLabel">Load ID: loading…</div>
 
-      <section class="card">
-        <div class="section-title">Connection status</div>
+  <p class="small">
+    When you tap <strong>Start Sharing Location</strong>, we’ll send your GPS to the broker every few minutes
+    while this page is open.
+  </p>
 
-        <div class="status-row">
-          <div>
-            <div class="label">Status</div>
-            <div class="value" id="statusText">Checking link…</div>
-          </div>
-          <div class="status-pill">
-            <span class="dot" id="statusDot"></span>
-            <span id="statusPillText">Idle</span>
-          </div>
-        </div>
+  <button id="startBtn" class="btn-primary">
+    <span id="startBtnLabel">Start Sharing Location</span>
+  </button>
+  <button id="stopBtn" class="btn-secondary" disabled>
+    Stop Sharing
+  </button>
 
-        <div style="margin-top: 6px;">
-          <div class="label">Driver link ID</div>
-          <div class="value" id="tokenShort" class="muted">—</div>
-        </div>
-
-        <div style="margin-top: 6px;">
-          <div class="label">Last location sent</div>
-          <div class="value" id="lastLocation">Not sent yet</div>
-        </div>
-
-        <div style="margin-top: 4px;">
-          <div class="label">Last updated</div>
-          <div class="value" id="lastUpdated" class="muted">—</div>
-        </div>
-
-        <div class="buttons">
-          <button id="startBtn" class="btn-primary">
-            ▶ Start sharing
-          </button>
-          <button id="stopBtn" class="btn-secondary" disabled>
-            ✕ Stop
-          </button>
-        </div>
-
-        <p class="info-text">
-          Keep this page open while you’re under load. If you close it or lose signal, location updates will pause.
-        </p>
-
-        <div id="errorBox" class="error-box"></div>
-      </section>
-
-      <p class="footer">
-        Location is shared only with your broker for this load. <span>Powered by Leatherneck Trucking LLC.</span>
-      </p>
-    </main>
+  <div class="status-line">
+    <span class="label">Status:</span> <span id="statusText">Waiting to start…</span>
   </div>
 
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('s');
+  <div class="loc-box" id="locBox" style="display:none;">
+    <div><strong>Last GPS fix:</strong></div>
+    <code id="locText">lat, lng</code>
+    <div style="margin-top:4px;" id="locMeta"></div>
+  </div>
 
-    const statusText = document.getElementById('statusText');
-    const statusDot = document.getElementById('statusDot');
-    const statusPillText = document.getElementById('statusPillText');
-    const tokenShort = document.getElementById('tokenShort');
-    const lastLocation = document.getElementById('lastLocation');
-    const lastUpdated = document.getElementById('lastUpdated');
-    const errorBox = document.getElementById('errorBox');
-    const startBtn = document.getElementById('startBtn');
-    const stopBtn = document.getElementById('stopBtn');
+  <div class="badge-row">
+    <div class="badge" id="gpsBadge">GPS: idle</div>
+    <div class="badge" id="pingBadge">Last ping: —</div>
+  </div>
 
-    let watchId = null;
-    let isSending = false;
+  <div class="arrival-banner" id="arrivalBanner">
+    ✅ You’re inside the receiver geofence. Your broker has been notified that you’ve arrived.
+  </div>
 
-    function setStatus({ text, pill = 'Idle', active = false }) {
-      statusText.textContent = text;
-      statusPillText.textContent = pill;
-      if (active) {
-        statusDot.classList.add('active');
-      } else {
-        statusDot.classList.remove('active');
-      }
-    }
+  <div class="error-msg" id="errorText" style="display:none;"></div>
 
-    function showError(msg) {
-      errorBox.textContent = msg;
-      errorBox.style.display = 'block';
-    }
+  <div class="map-container">
+    <div id="map"></div>
+  </div>
 
-    function clearError() {
-      errorBox.textContent = '';
-      errorBox.style.display = 'none';
-    }
+  <p class="footer-note">
+    We only use your location for this load. If you close this page or hit <strong>Stop Sharing</strong>,
+    location updates will stop.
+  </p>
+</div>
 
-    // Initialize token display
-    if (!token) {
-      setStatus({ text: 'Invalid or missing driver link.', pill: 'Error', active: false });
-      tokenShort.textContent = '—';
-      startBtn.disabled = true;
-      showError('This tracking link is missing its ID. Ask your broker to resend the link.');
+<script>
+  // -------- URL PARAMS (loadId, token, optional destLat/destLng/radius) --------
+  const params = new URLSearchParams(window.location.search);
+  const loadId = params.get('loadId');
+  const token = params.get('token') || null;
+
+  const destLatParam = params.get('destLat');
+  const destLngParam = params.get('destLng');
+  const radiusParam = params.get('radius'); // meters
+
+  const loadLabel = document.getElementById('loadLabel');
+  if (loadLabel) {
+    loadLabel.textContent = loadId ? 'Load ID: ' + loadId : 'Load ID: not set';
+  }
+
+  // -------- DOM ELEMENTS --------
+  const startBtn = document.getElementById('startBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const statusText = document.getElementById('statusText');
+  const locBox = document.getElementById('locBox');
+  const locText = document.getElementById('locText');
+  const locMeta = document.getElementById('locMeta');
+  const gpsBadge = document.getElementById('gpsBadge');
+  const pingBadge = document.getElementById('pingBadge');
+  const errorText = document.getElementById('errorText');
+  const arrivalBanner = document.getElementById('arrivalBanner');
+  const startBtnLabel = document.getElementById('startBtnLabel');
+
+  // -------- STATE --------
+  let watchId = null;
+  let pingIntervalId = null;
+  let lastPosition = null;
+  let map = null;
+  let marker = null;
+  let arrivalAnnounced = false;
+
+  let geofenceCenter = null;  // {lat, lng}
+  let geofenceRadiusMeters = null;
+
+  // -------- MAP --------
+  function initMap() {
+    const mapEl = document.getElementById('map');
+    if (!mapEl) return;
+
+    // Default center: USA-ish
+    map = new google.maps.Map(mapEl, {
+      center: { lat: 39.8283, lng: -98.5795 },
+      zoom: 4,
+      disableDefaultUI: true,
+      zoomControl: true
+    });
+  }
+
+  function updateMapPosition(lat, lng) {
+    if (!map) return;
+
+    const pos = { lat, lng };
+    if (!marker) {
+      marker = new google.maps.Marker({
+        position: pos,
+        map,
+        title: 'Your location'
+      });
     } else {
-      const short = token.length > 8
-        ? token.slice(0, 4) + '…' + token.slice(-4)
-        : token;
-      tokenShort.textContent = short;
-      setStatus({ text: 'Ready to start sharing your location.', pill: 'Idle', active: false });
+      marker.setPosition(pos);
+    }
+    map.setCenter(pos);
+    map.setZoom(12);
+  }
+
+  // -------- GEOFENCE CONFIG --------
+  async function loadGeofenceForLoad() {
+    // Priority 1: URL params
+    if (destLatParam && destLngParam) {
+      geofenceCenter = {
+        lat: parseFloat(destLatParam),
+        lng: parseFloat(destLngParam)
+      };
+      geofenceRadiusMeters = radiusParam ? parseFloat(radiusParam) : 300; // default 300 m
+      return;
     }
 
-    async function sendPing(lat, lng) {
-      try {
-        isSending = true;
-        const resp = await fetch('/api/ping', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ token, lat, lng })
-        });
+    // Priority 2: /api/loads/:id
+    if (!loadId) return;
+    try {
+      const resp = await fetch('/api/loads/' + encodeURIComponent(loadId));
+      if (!resp.ok) return; // soft fail, tracking still works
+      const data = await resp.json();
+      if (typeof data.deliveryLat === 'number' && typeof data.deliveryLng === 'number') {
+        geofenceCenter = {
+          lat: data.deliveryLat,
+          lng: data.deliveryLng
+        };
+        geofenceRadiusMeters = typeof data.geofenceRadiusMeters === 'number'
+          ? data.geofenceRadiusMeters
+          : 300; // default
+      }
+    } catch (err) {
+      console.error('Error loading geofence config for load:', err);
+    }
+  }
 
-        if (!resp.ok) {
-          const data = await resp.json().catch(() => ({}));
-          throw new Error(data.error || resp.statusText);
-        }
+  function haversineDistanceMeters(lat1, lng1, lat2, lng2) {
+    const R = 6371000; // Earth radius in meters
+    const toRad = deg => deg * (Math.PI / 180);
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
 
-        const now = new Date();
-        lastLocation.textContent = lat.toFixed(5) + ', ' + lng.toFixed(5);
-        lastUpdated.textContent = now.toLocaleString();
-        clearError();
-      } catch (err) {
-        console.error(err);
-        showError('Problem sending location to broker. We will keep trying as your signal improves.');
-      } finally {
-        isSending = false;
+  function checkGeofenceAndFlag(lat, lng) {
+    if (!geofenceCenter || !geofenceRadiusMeters) return false;
+    const dist = haversineDistanceMeters(lat, lng, geofenceCenter.lat, geofenceCenter.lng);
+    return dist <= geofenceRadiusMeters;
+  }
+
+  // -------- LOCATION PING --------
+  async function sendLocationUpdate(position, isImmediatePing) {
+    if (!loadId) {
+      statusText.textContent = 'Missing loadId in link.';
+      return;
+    }
+
+    const coords = position.coords;
+    const body = {
+      lat: coords.latitude,
+      lng: coords.longitude,
+      accuracy: coords.accuracy ?? null,
+      heading: coords.heading ?? null,
+      speed: coords.speed ?? null,
+      timestamp: new Date(position.timestamp).toISOString(),
+      atReceiver: false,
+      token: token
+    };
+
+    // Check geofence
+    if (!arrivalAnnounced && checkGeofenceAndFlag(body.lat, body.lng)) {
+      body.atReceiver = true;
+      arrivalAnnounced = true;
+      if (arrivalBanner) {
+        arrivalBanner.style.display = 'block';
       }
     }
 
-    function handlePosition(pos) {
-      const { latitude, longitude } = pos.coords;
-      setStatus({ text: 'Sharing your live location with the broker.', pill: 'Live', active: true });
-      // Avoid sending overlapping requests
-      if (!isSending) {
-        sendPing(latitude, longitude);
-      }
-    }
+    try {
+      const resp = await fetch('/api/loads/' + encodeURIComponent(loadId) + '/location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
 
-    function handleGeoError(err) {
-      console.error(err);
-      setStatus({ text: 'Unable to read GPS location.', pill: 'Error', active: false });
-      showError(
-        'We could not access your location. Make sure location services are enabled and allowed for your browser.'
-      );
-    }
-
-    function startSharing() {
-      if (!token) return;
-      if (!navigator.geolocation) {
-        setStatus({ text: 'This device does not support GPS.', pill: 'Error', active: false });
-        showError('Geolocation is not supported on this device.');
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => ({}));
+        console.error('Location update failed:', data);
+        pingBadge.textContent = 'Last ping: error';
         return;
       }
 
-      clearError();
-      setStatus({ text: 'Requesting GPS permission…', pill: 'Connecting', active: false });
-      startBtn.disabled = true;
-      stopBtn.disabled = false;
+      const tsLabel = new Date().toLocaleTimeString();
+      pingBadge.textContent = 'Last ping: ' + tsLabel + (isImmediatePing ? ' (live)' : ' (interval)');
+      pingBadge.classList.add('good');
+    } catch (err) {
+      console.error('Error sending location:', err);
+      pingBadge.textContent = 'Last ping: error';
+    }
+  }
 
-      watchId = navigator.geolocation.watchPosition(handlePosition, handleGeoError, {
-        enableHighAccuracy: true,
-        maximumAge: 5000,
-        timeout: 15000
-      });
+  // -------- GEOLOCATION HANDLERS --------
+  function onPositionSuccess(position) {
+    lastPosition = position;
+
+    const { latitude, longitude, accuracy, speed, heading } = position.coords;
+    const ts = new Date(position.timestamp);
+
+    if (locBox && locText && locMeta) {
+      locBox.style.display = 'block';
+      locText.textContent = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+      const parts = [];
+      if (accuracy != null) parts.push(`±${Math.round(accuracy)} m`);
+      if (speed != null) parts.push(`${(speed * 2.23694).toFixed(1)} mph`); // m/s -> mph
+      if (heading != null) parts.push(`${Math.round(heading)}°`);
+
+      locMeta.textContent = `Time: ${ts.toLocaleTimeString()}${parts.length ? ' | ' + parts.join(' • ') : ''}`;
     }
 
-    function stopSharing() {
-      if (watchId !== null) {
-        navigator.geolocation.clearWatch(watchId);
-        watchId = null;
+    gpsBadge.textContent = 'GPS: updating';
+    gpsBadge.classList.add('good');
+
+    updateMapPosition(latitude, longitude);
+
+    // Immediate ping on new fix
+    sendLocationUpdate(position, true);
+  }
+
+  function onPositionError(err) {
+    console.error('Geolocation error:', err);
+    statusText.textContent = 'GPS error: ' + err.message;
+    gpsBadge.textContent = 'GPS: error';
+    gpsBadge.classList.remove('good');
+    gpsBadge.classList.add('warn');
+
+    errorText.style.display = 'block';
+    errorText.textContent = 'If you denied GPS, enable location permissions in your browser and try again.';
+  }
+
+  function startTracking() {
+    if (!navigator.geolocation) {
+      statusText.textContent = 'Geolocation not supported on this device.';
+      return;
+    }
+
+    if (watchId != null) {
+      statusText.textContent = 'Already tracking.';
+      return;
+    }
+
+    errorText.style.display = 'none';
+    arrivalBanner.style.display = 'none';
+    arrivalAnnounced = false;
+
+    gpsBadge.textContent = 'GPS: starting…';
+    gpsBadge.classList.remove('good', 'warn');
+
+    statusText.textContent = 'Requesting GPS permission…';
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+    startBtnLabel.textContent = 'Sharing Location…';
+
+    watchId = navigator.geolocation.watchPosition(onPositionSuccess, onPositionError, {
+      enableHighAccuracy: true,
+      maximumAge: 10000,
+      timeout: 20000
+    });
+
+    // 5-minute interval ping using last known position
+    pingIntervalId = setInterval(() => {
+      if (lastPosition) {
+        sendLocationUpdate(lastPosition, false);
       }
-      setStatus({ text: 'Location sharing paused.', pill: 'Paused', active: false });
-      stopBtn.disabled = true;
-      startBtn.disabled = false;
+    }, 300000); // 5 minutes
+
+    statusText.textContent = 'Tracking active. Keep this tab open.';
+  }
+
+  function stopTracking() {
+    if (watchId != null) {
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+    }
+    if (pingIntervalId != null) {
+      clearInterval(pingIntervalId);
+      pingIntervalId = null;
     }
 
-    startBtn.addEventListener('click', startSharing);
-    stopBtn.addEventListener('click', stopSharing);
+    statusText.textContent = 'Tracking stopped.';
+    gpsBadge.textContent = 'GPS: stopped';
+    gpsBadge.classList.remove('good');
+    gpsBadge.classList.add('warn');
 
-    // Optional: auto-start sharing when the page loads and token is valid
-    // Uncomment this line if you want auto-start:
-    // if (token) startSharing();
-  </script>
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+    startBtnLabel.textContent = 'Start Sharing Location';
+  }
+
+  // -------- BUTTON EVENTS --------
+  if (startBtn) {
+    startBtn.addEventListener('click', () => {
+      startTracking();
+    });
+  }
+
+  if (stopBtn) {
+    stopBtn.addEventListener('click', () => {
+      stopTracking();
+    });
+  }
+
+  // -------- INIT --------
+  (async function init() {
+    if (!loadId) {
+      statusText.textContent = 'Missing loadId in link. Ask your broker to resend the tracking link.';
+    }
+
+    await loadGeofenceForLoad();
+  })();
+</script>
+
+<!-- Put your real Maps API key in place of YOUR_API_KEY_HERE -->
+<script async
+  src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE&callback=initMap">
+</script>
 </body>
 </html>
