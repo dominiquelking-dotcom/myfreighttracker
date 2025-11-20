@@ -403,11 +403,11 @@
     <div id="trackingBalance" class="credit-box">Tracking credit balance: loading…</div>
   </div>
 
-  <!-- BANK / CASH OVERVIEW (Plaid-style integration stub) -->
-  <section class="card" id="banking-card">
+  <!-- BANK / CASH OVERVIEW (Plaid-style concept, backend later) -->
+  <section class="card">
     <h2>Cash & Bank Overview</h2>
     <p class="small">
-      Connect bank accounts securely (Plaid-style) to see balances and cash flow inside MyFreightTracker.
+      Connect your bank accounts securely (Plaid-style) to see balances and cash flow inside MyFreightTracker.
     </p>
     <button type="button" id="connect-bank-btn">Connect bank account</button>
     <div id="bank-accounts-summary" class="small" style="margin-top:8px;">
@@ -415,7 +415,7 @@
     </div>
   </section>
 
-  <!-- MAIN TABS (ORDER) -->
+  <!-- MAIN TABS -->
   <div class="feature-buttons">
     <button class="feature-btn active" data-panel="customers">
       <span class="dot"></span> Customers
@@ -447,7 +447,7 @@
     <button class="feature-btn" data-panel="tracking">
       <span class="dot"></span> Driver Tracking
     </button>
-    <!-- NEW: Calendar tab (LAST) -->
+    <!-- NEW: Calendar tab last -->
     <button class="feature-btn" data-panel="calendar">
       <span class="dot"></span> Calendar
     </button>
@@ -825,18 +825,13 @@
       <p class="no-loads">No loads are actively tracking yet.</p>
     </div>
 
-    <!-- EMERGENCY ALERTS (from driver emergency button) -->
+    <!-- EMERGENCY SECTION (UI only for now) -->
     <div style="margin-top:16px;">
-      <h3 style="font-size:0.95rem;">Emergency alerts</h3>
+      <h3 style="font-size:0.95rem;">Emergency alerts (driver SOS)</h3>
       <p class="small">
-        Live emergencies triggered from driver emergency buttons. Acknowledge and resolve them here.
+        In the future, when a driver hits the Emergency button in the driver app, active alerts will appear here and on
+        your notification bar. You’ll be able to acknowledge and resolve them, and see GPS + load info in real time.
       </p>
-      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
-        <button id="refresh-emergencies-btn" type="button" class="btn-secondary">Refresh emergencies</button>
-      </div>
-      <div id="emergencies-container">
-        <p class="no-loads">No active emergencies.</p>
-      </div>
     </div>
   </section>
 
@@ -844,7 +839,7 @@
   <section id="panel-calendar" class="feature-panel card">
     <h2>Broker Calendar</h2>
     <p class="small">
-      Add follow-ups, pickup reminders, billing tasks, or anything else. We’ll pop a reminder the day before
+      Add follow-ups, pickups, billing tasks, or anything else. We’ll pop a reminder the day before
       and the morning of each event.
     </p>
 
@@ -914,92 +909,6 @@
     }
   }
 
-  // -------- BANK / CASH OVERVIEW (PLAID-STYLE STUB) --------
-  const bankSummaryEl = document.getElementById('bank-accounts-summary');
-  const connectBankBtn = document.getElementById('connect-bank-btn');
-
-  async function loadBankSummary() {
-    if (!bankSummaryEl) return;
-    try {
-      const resp = await fetch('/api/banking/summary');
-      if (!resp.ok) {
-        bankSummaryEl.textContent = 'Bank summary unavailable (not configured yet).';
-        return;
-      }
-      const data = await resp.json();
-      const accounts = Array.isArray(data.accounts) ? data.accounts : [];
-      if (!accounts.length) {
-        bankSummaryEl.textContent = 'No bank accounts connected yet.';
-        return;
-      }
-
-      let totalBalance = 0;
-      let html = `
-        <table>
-          <thead>
-            <tr>
-              <th>Account</th>
-              <th>Type</th>
-              <th>Last 4</th>
-              <th>Balance</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-
-      accounts.forEach(acc => {
-        const bal = typeof acc.balance === 'number' ? acc.balance : 0;
-        totalBalance += bal;
-        html += `
-          <tr>
-            <td>${acc.name || '-'}</td>
-            <td>${acc.type || '-'}</td>
-            <td>${acc.last4 || '-'}</td>
-            <td>$${bal.toFixed(2)}</td>
-          </tr>
-        `;
-      });
-
-      html += `
-          <tr>
-            <td colspan="3"><strong>Total</strong></td>
-            <td><strong>$${totalBalance.toFixed(2)}</strong></td>
-          </tr>
-        </tbody>
-        </table>
-      `;
-
-      bankSummaryEl.innerHTML = html;
-    } catch (err) {
-      console.error(err);
-      bankSummaryEl.textContent = 'Error loading bank summary.';
-    }
-  }
-
-  if (connectBankBtn) {
-    connectBankBtn.addEventListener('click', async () => {
-      try {
-        const resp = await fetch('/api/banking/connect', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        const data = await resp.json().catch(() => ({}));
-        if (!resp.ok) {
-          alert(data.error || 'Unable to start bank connection.');
-          return;
-        }
-        if (data.redirectUrl) {
-          window.location.href = data.redirectUrl;
-        } else {
-          alert('Bank connection flow started. Follow any additional instructions that appear.');
-        }
-      } catch (err) {
-        console.error(err);
-        alert('Error starting bank connection.');
-      }
-    });
-  }
-
   // -------- FEATURE PANELS SWITCHING --------
   const featureButtons = document.querySelectorAll('.feature-btn');
   const panels = document.querySelectorAll('.feature-panel');
@@ -1018,7 +927,6 @@
     }
     if (panelId === 'tracking') {
       renderTrackingView();
-      loadEmergencies();
     }
     if (panelId === 'docs') {
       setDocMode(currentDocType);
@@ -1057,6 +965,7 @@
     const resp = await fetch('/api/loads');
     if (!resp.ok) throw new Error('Failed to load loads');
     const loads = await resp.json();
+    // If some loads don’t have status, treat them as pending.
     allLoads = loads.map(l => ({ ...l, status: l.status || LOAD_STATUS.PENDING }));
   }
 
@@ -1084,30 +993,30 @@
     `;
 
     for (const load of loads) {
-      const routeText = \`\${load.pickupAddress || '-'} → \${load.deliveryAddress || '-'}\`;
+      const routeText = `${load.pickupAddress || '-'} → ${load.deliveryAddress || '-'}`;
       let lastLocText = '—';
       if (load.lastLocation) {
-        lastLocText = \`\${load.lastLocation.lat.toFixed(5)}, \${load.lastLocation.lng.toFixed(5)}
-(\${load.lastLocation.recordedAt})\`;
+        lastLocText = `${load.lastLocation.lat.toFixed(5)}, ${load.lastLocation.lng.toFixed(5)}
+(${load.lastLocation.recordedAt})`;
       }
 
-      html += \`
+      html += `
         <tr>
-          <td>\${load.id}</td>
+          <td>${load.id}</td>
           <td>
-            <strong>\${load.reference || '-'}</strong><br>
-            \${load.customerName || ''}
+            <strong>${load.reference || '-'}</strong><br>
+            ${load.customerName || ''}
           </td>
-          <td>\${load.equipmentType || '-'}</td>
-          <td style="white-space: pre-line;">\${routeText}</td>
-          <td>\${load.status}</td>
-          <td style="white-space: pre-line;">\${lastLocText}</td>
+          <td>${load.equipmentType || '-'}</td>
+          <td style="white-space: pre-line;">${routeText}</td>
+          <td>${load.status}</td>
+          <td style="white-space: pre-line;">${lastLocText}</td>
           <td>
-            \${renderStatusButtons(load)}
-            <button type="button" class="btn-secondary" onclick="createDocFromLoad(\${load.id})">Create doc</button>
+            ${renderStatusButtons(load)}
+            <button type="button" class="btn-secondary" onclick="createDocFromLoad(${load.id})">Create doc</button>
           </td>
         </tr>
-      \`;
+      `;
     }
 
     html += '</tbody></table>';
@@ -1120,19 +1029,19 @@
     let out = '';
 
     if (s !== LOAD_STATUS.PENDING) {
-      out += \`<button type="button" class="btn-secondary" onclick="changeLoadStatus(\${id}, '\${LOAD_STATUS.PENDING}')">To Pending</button> \`;
+      out += `<button type="button" class="btn-secondary" onclick="changeLoadStatus(${id}, '${LOAD_STATUS.PENDING}')">To Pending</button> `;
     }
 
     if (s !== LOAD_STATUS.ASSIGNED) {
-      out += \`<button type="button" class="btn-secondary" onclick="changeLoadStatus(\${id}, '\${LOAD_STATUS.ASSIGNED}')">To Assigned</button> \`;
+      out += `<button type="button" class="btn-secondary" onclick="changeLoadStatus(${id}, '${LOAD_STATUS.ASSIGNED}')">To Assigned</button> `;
     }
 
     if (s !== LOAD_STATUS.PICKED) {
-      out += \`<button type="button" class="btn-secondary" onclick="changeLoadStatus(\${id}, '\${LOAD_STATUS.PICKED}')">To Picked Up</button> \`;
+      out += `<button type="button" class="btn-secondary" onclick="changeLoadStatus(${id}, '${LOAD_STATUS.PICKED}')">To Picked Up</button> `;
     }
 
     if (s !== LOAD_STATUS.COMPLETED) {
-      out += \`<button type="button" class="btn-secondary" onclick="changeLoadStatus(\${id}, '\${LOAD_STATUS.COMPLETED}')">To Completed</button>\`;
+      out += `<button type="button" class="btn-secondary" onclick="changeLoadStatus(${id}, '${LOAD_STATUS.COMPLETED}')">To Completed</button>`;
     }
 
     return out;
@@ -1140,7 +1049,7 @@
 
   async function changeLoadStatus(id, newStatus) {
     try {
-      const resp = await fetch(\`/api/loads/\${id}/status\`, {
+      const resp = await fetch(`/api/loads/${id}/status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -1231,7 +1140,7 @@
   if (refreshPickedBtn) refreshPickedBtn.addEventListener('click', renderAllLoadPanels);
   if (refreshCompletedBtn) refreshCompletedBtn.addEventListener('click', renderAllLoadPanels);
 
-  // -------- NOTIFICATION BAR (geofence + calendar + emergencies) --------
+  // -------- NOTIFICATION BAR (for geofence + calendar) --------
   const notificationBar = document.getElementById('notificationBar');
   let notifiedLoads = new Set();
 
@@ -1279,7 +1188,7 @@
         const marker = new google.maps.Marker({
           position: pos,
           map: trackingMap,
-          title: \`\${load.reference || ''} (\${load.customerName || ''})\`
+          title: `${load.reference || ''} (${load.customerName || ''})`
         });
         trackingMarkers.push(marker);
         bounds.extend(pos);
@@ -1296,6 +1205,7 @@
     const trackingTable = document.getElementById('tracking-table');
     if (!trackingTable) return;
 
+    // Consider "tracking" any non-completed load that has a lastLocation
     const trackingLoads = allLoads.filter(
       l => l.status !== LOAD_STATUS.COMPLETED && l.lastLocation
     );
@@ -1321,25 +1231,25 @@
     `;
 
     for (const load of trackingLoads) {
-      const routeText = \`\${load.pickupAddress || '-'} → \${load.deliveryAddress || '-'}\`;
+      const routeText = `${load.pickupAddress || '-'} → ${load.deliveryAddress || '-'}`;
       let lastLocText = '—';
       if (load.lastLocation) {
-        lastLocText = \`\${load.lastLocation.lat.toFixed(5)}, \${load.lastLocation.lng.toFixed(5)}
-(\${load.lastLocation.recordedAt})\`;
+        lastLocText = `${load.lastLocation.lat.toFixed(5)}, ${load.lastLocation.lng.toFixed(5)}
+(${load.lastLocation.recordedAt})`;
       }
 
-      html += \`
+      html += `
         <tr>
-          <td>\${load.id}</td>
+          <td>${load.id}</td>
           <td>
-            <strong>\${load.reference || '-'}</strong><br>
-            \${load.customerName || ''}
+            <strong>${load.reference || '-'}</strong><br>
+            ${load.customerName || ''}
           </td>
-          <td>\${load.status}</td>
-          <td style="white-space: pre-line;">\${routeText}</td>
-          <td style="white-space: pre-line;">\${lastLocText}</td>
+          <td>${load.status}</td>
+          <td style="white-space: pre-line;">${routeText}</td>
+          <td style="white-space: pre-line;">${lastLocText}</td>
         </tr>
-      \`;
+      `;
     }
 
     html += '</tbody></table>';
@@ -1354,7 +1264,7 @@
     trackingLoads.forEach(load => {
       if (load.atReceiver && !notifiedLoads.has(load.id)) {
         notifiedLoads.add(load.id);
-        showNotification(\`Load #\${load.id} (\${load.reference || ''}) has reached the receiver.\`);
+        showNotification(`Load #${load.id} (${load.reference || ''}) has reached the receiver.`);
       }
     });
   }
@@ -1370,132 +1280,6 @@
   setInterval(async () => {
     await renderAllLoadPanels();
   }, 300000);
-
-  // -------- EMERGENCY ALERTS (BROKER VIEW FOR DRIVER EMERGENCY BUTTONS) --------
-  let emergencies = [];
-  const emergenciesContainer = document.getElementById('emergencies-container');
-  const refreshEmergenciesBtn = document.getElementById('refresh-emergencies-btn');
-  let seenEmergencyIds = new Set();
-
-  async function loadEmergencies() {
-    if (!emergenciesContainer) return;
-    try {
-      const resp = await fetch('/api/emergencies');
-      if (!resp.ok) {
-        emergenciesContainer.innerHTML = '<p class="no-loads">Unable to load emergencies.</p>';
-        return;
-      }
-      const data = await resp.json();
-      emergencies = Array.isArray(data) ? data : [];
-
-      // Notify on newly-seen ACTIVE emergencies
-      emergencies.forEach(em => {
-        if (em.status === 'ACTIVE' && !seenEmergencyIds.has(em.id)) {
-          seenEmergencyIds.add(em.id);
-          showNotification(\`EMERGENCY: \${em.driverName || 'Driver'} (\${em.truckNumber || 'Truck'}) – \${em.locationSummary || 'Check emergency tab.'}\`);
-        }
-      });
-
-      renderEmergencies();
-    } catch (err) {
-      console.error(err);
-      emergenciesContainer.innerHTML = '<p class="no-loads">Error loading emergencies.</p>';
-    }
-  }
-
-  function renderEmergencies() {
-    if (!emergenciesContainer) return;
-    if (!emergencies.length) {
-      emergenciesContainer.innerHTML = '<p class="no-loads">No active emergencies.</p>';
-      return;
-    }
-
-    let html = `
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Driver / Truck</th>
-            <th>Load</th>
-            <th>When</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-    `;
-
-    emergencies.forEach(em => {
-      const created = em.createdAt ? new Date(em.createdAt) : null;
-      const createdText = created ? created.toLocaleString() : '-';
-      html += `
-        <tr>
-          <td>${em.id}</td>
-          <td>
-            ${em.driverName || 'Driver'}<br>
-            ${em.truckNumber ? 'Truck: ' + em.truckNumber : ''}
-          </td>
-          <td>
-            ${em.loadReference || '-'}<br>
-            ${em.locationSummary || ''}
-          </td>
-          <td>${createdText}</td>
-          <td>${em.status || '-'}</td>
-          <td>
-            <button type="button" class="btn-secondary emergency-ack-btn" data-id="${em.id}">Acknowledge</button>
-            <button type="button" class="btn-secondary emergency-res-btn" data-id="${em.id}">Resolve</button>
-          </td>
-        </tr>
-      `;
-    });
-
-    html += '</tbody></table>';
-    emergenciesContainer.innerHTML = html;
-
-    const ackButtons = emergenciesContainer.querySelectorAll('.emergency-ack-btn');
-    const resButtons = emergenciesContainer.querySelectorAll('.emergency-res-btn');
-
-    ackButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.id;
-        updateEmergencyStatus(id, 'ACKNOWLEDGED');
-      });
-    });
-
-    resButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.id;
-        updateEmergencyStatus(id, 'RESOLVED');
-      });
-    });
-  }
-
-  async function updateEmergencyStatus(id, newStatus) {
-    try {
-      const resp = await fetch(`/api/emergencies/${encodeURIComponent(id)}/status`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      });
-      const data = await resp.json().catch(() => ({}));
-      if (!resp.ok) {
-        alert(data.error || 'Error updating emergency status.');
-        return;
-      }
-      loadEmergencies();
-    } catch (err) {
-      console.error(err);
-      alert('Error updating emergency status.');
-    }
-  }
-
-  if (refreshEmergenciesBtn) {
-    refreshEmergenciesBtn.addEventListener('click', loadEmergencies);
-  }
-
-  function startEmergencyPoller() {
-    setInterval(loadEmergencies, 60000); // every minute
-  }
 
   // -------- QUOTE CALCULATOR JS --------
   const quoteOriginInput = document.getElementById('quote-origin');
@@ -2091,6 +1875,101 @@
 
   window.createDocFromLoad = createDocFromLoad;
 
+  // -------- INITIALIZE (core) --------
+  renderAllLoadPanels();
+  loadTrackingBalance();
+</script>
+
+<!-- SECOND SCRIPT: BANK + CALENDAR (kept small to avoid breaking core) -->
+<script>
+  // -------- BANK / CASH OVERVIEW --------
+  const bankSummaryEl = document.getElementById('bank-accounts-summary');
+  const connectBankBtn = document.getElementById('connect-bank-btn');
+
+  async function loadBankSummary() {
+    if (!bankSummaryEl) return;
+    try {
+      const resp = await fetch('/api/banking/summary');
+      if (!resp.ok) {
+        bankSummaryEl.textContent = 'Bank summary unavailable (backend not configured yet).';
+        return;
+      }
+      const data = await resp.json();
+      const accounts = Array.isArray(data.accounts) ? data.accounts : [];
+      if (!accounts.length) {
+        bankSummaryEl.textContent = 'No bank accounts connected yet.';
+        return;
+      }
+
+      let totalBalance = 0;
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Account</th>
+              <th>Type</th>
+              <th>Last 4</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      accounts.forEach(acc => {
+        const bal = typeof acc.balance === 'number' ? acc.balance : 0;
+        totalBalance += bal;
+        html += `
+          <tr>
+            <td>${acc.name || '-'}</td>
+            <td>${acc.type || '-'}</td>
+            <td>${acc.last4 || '-'}</td>
+            <td>$${bal.toFixed(2)}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+          <tr>
+            <td colspan="3"><strong>Total</strong></td>
+            <td><strong>$${totalBalance.toFixed(2)}</strong></td>
+          </tr>
+        </tbody>
+        </table>
+      `;
+
+      bankSummaryEl.innerHTML = html;
+    } catch (err) {
+      console.error(err);
+      bankSummaryEl.textContent = 'Error loading bank summary.';
+    }
+  }
+
+  if (connectBankBtn) {
+    connectBankBtn.addEventListener('click', async () => {
+      try {
+        const resp = await fetch('/api/banking/connect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) {
+          alert(data.error || 'Unable to start bank connection.');
+          return;
+        }
+        if (data.redirectUrl) {
+          window.location.href = data.redirectUrl;
+        } else {
+          alert('Bank connection flow started. Follow any additional steps that appear.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error starting bank connection.');
+      }
+    });
+  }
+
+  loadBankSummary();
+
   // -------- CALENDAR (BROKER REMINDERS) --------
   const calendarForm = document.getElementById('calendar-form');
   const calendarListEl = document.getElementById('calendar-list');
@@ -2123,7 +2002,6 @@
       return;
     }
 
-    // sort by datetime ascending
     const sorted = [...calendarEvents].sort((a, b) => {
       const da = new Date(a.datetime).getTime();
       const db = new Date(b.datetime).getTime();
@@ -2199,6 +2077,7 @@
 
     calendarEvents.forEach(ev => {
       const evDate = new Date(ev.datetime);
+
       const dayBefore = new Date(evDate);
       dayBefore.setDate(dayBefore.getDate() - 1);
       dayBefore.setHours(9, 0, 0, 0);   // 9am day before
@@ -2207,13 +2086,17 @@
       morningOf.setHours(8, 0, 0, 0);   // 8am day of
 
       if (!ev.notifiedDayBefore && now >= dayBefore && now < evDate) {
-        showNotification(`Reminder: "${ev.title}" is scheduled for ${evDate.toLocaleString()}.`);
+        if (typeof showNotification === 'function') {
+          showNotification(`Reminder: "${ev.title}" is scheduled for ${evDate.toLocaleString()}.`);
+        }
         ev.notifiedDayBefore = true;
         changed = true;
       }
 
       if (!ev.notifiedDayOf && now >= morningOf && now <= evDate) {
-        showNotification(`Today: "${ev.title}" at ${evDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`);
+        if (typeof showNotification === 'function') {
+          showNotification(`Today: "${ev.title}" at ${evDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`);
+        }
         ev.notifiedDayOf = true;
         changed = true;
       }
@@ -2223,19 +2106,12 @@
   }
 
   function startCalendarReminderLoop() {
-    // Check once on load, then every minute
     checkCalendarReminders();
     setInterval(checkCalendarReminders, 60000);
   }
 
-  // -------- INITIALIZE --------
-  renderAllLoadPanels();
-  loadTrackingBalance();
-  loadBankSummary();
   loadCalendarFromStorage();
   startCalendarReminderLoop();
-  loadEmergencies();
-  startEmergencyPoller();
 </script>
 
 <!-- Put your real Maps API key in place of YOUR_API_KEY_HERE -->
