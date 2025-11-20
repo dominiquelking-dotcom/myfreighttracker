@@ -135,7 +135,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 //
 // ----------------------
-//  BROKER ACCOUNTS (LEGACY FALLBACK)
+//  BROKER / SHIPPER / CARRIER ACCOUNTS (LEGACY FALLBACK)
 // ----------------------
 // Real accounts are in app_users (Postgres). This keeps old test users working.
 const BROKER_USERS = [
@@ -148,6 +148,14 @@ const BROKER_USERS = [
     email: 'tms@test.com',
     password: 'password123',
     plan: 'tms'
+  }
+];
+
+// Optional shipper test account (legacy fallback)
+const SHIPPER_USERS = [
+  {
+    email: 'shipper@test.com',
+    password: 'password123'
   }
 ];
 
@@ -1133,6 +1141,63 @@ app.post('/broker-login', async (req, res) => {
       <h1>Login failed</h1>
       <p>Server error. Please try again later.</p>
       <a href="/broker-login.html">Back to login</a>
+    `);
+  }
+});
+
+//
+// ----------------------
+//  SHIPPER LOGIN (DB-first with legacy fallback)
+// ----------------------
+app.post('/shipper-login', async (req, res) => {
+  const { email, password } = req.body || {};
+
+  if (!email || !password) {
+    return res.status(400).send(`
+      <h1>Login failed</h1>
+      <p>Email and password are required.</p>
+      <a href="/index.html">Back</a>
+    `);
+  }
+
+  try {
+    // First try real user in Postgres with role='shipper'
+    const dbUser = await db.query(
+      `SELECT id, email, role
+         FROM app_users
+        WHERE email = $1
+          AND password_plain = $2
+          AND role = 'shipper'
+          AND (is_active IS NULL OR is_active = TRUE)
+        LIMIT 1`,
+      [email, password]
+    );
+
+    if (dbUser.rowCount > 0) {
+      // Later we can scope loads by this user id
+      return res.redirect('/shipper-dashboard.html');
+    }
+
+    // Legacy fallback test user
+    const legacy = SHIPPER_USERS.find(
+      u => u.email === email && u.password === password
+    );
+
+    if (!legacy) {
+      return res.status(401).send(`
+        <h1>Login failed</h1>
+        <p>Invalid email or password.</p>
+        <a href="/index.html">Back</a>
+      `);
+    }
+
+    return res.redirect('/shipper-dashboard.html');
+  } catch (err) {
+    console.error('Shipper login error:', err);
+    return res.status(500).send(`
+      <h1>Login failed</h1>
+      <p>Server error. Please try again later.</p>
+      <a href="/index.html">Back</a>
     `);
   }
 });
